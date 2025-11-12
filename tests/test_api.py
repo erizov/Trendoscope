@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test API endpoint locally to find the error."""
 import sys
 import os
+import io
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Fix UTF-8 encoding for Windows console
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(
+        sys.stdout.buffer,
+        encoding='utf-8',
+        errors='replace'
+    )
+
+# Add src to path (go up one level from tests/ folder)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from trendascope.pipeline.orchestrator import run_pipeline
 

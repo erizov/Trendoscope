@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Quick demo of Trendoscope pipeline.
 Demonstrates the full workflow without actual scraping.
@@ -6,14 +7,24 @@ Demonstrates the full workflow without actual scraping.
 import sys
 import os
 import json
+import io
+from pathlib import Path
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Fix UTF-8 encoding for Windows console
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(
+        sys.stdout.buffer,
+        encoding='utf-8',
+        errors='replace'
+    )
 
-from src.trendascope.pipeline.orchestrator import Pipeline
-from src.trendascope.nlp.analyzer import analyze_text
-from src.trendascope.nlp.style_analyzer import get_style_prompt
-from src.trendascope.trends.engine import get_trending_topics
+# Add src to path (go up one level from demo/ folder)
+sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+
+from trendascope.pipeline.orchestrator import Pipeline
+from trendascope.nlp.analyzer import analyze_text
+from trendascope.nlp.style_analyzer import get_style_prompt
+from trendascope.trends.engine import get_trending_topics
 
 
 def create_sample_posts():

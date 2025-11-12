@@ -7,8 +7,8 @@ import sys
 import os
 import json
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Add src to path (go up one level from demo/ folder)
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 
 def main():

@@ -83,12 +83,17 @@ pytest tests/test_mcp_browser.py
 See `/demo` folder:
 
 ```bash
-# Simple demo
+# Simple demo (works without dependencies)
 python demo/demo_simple.py
 
-# Full demo
+# Full demo (requires dependencies)
 python demo/demo.py
+
+# Test API
+python tests/test_api.py
 ```
+
+All demos and tests work correctly after reorganization! ✅
 
 ---
 
