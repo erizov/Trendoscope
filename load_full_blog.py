@@ -56,7 +56,9 @@ def load_full_blog(
     try:
         posts = scrape_livejournal(
             blog_url=blog_url,
-            max_posts=max_posts
+            max_posts=max_posts,
+            use_rss=True,
+            use_archive=True  # Enable archive crawling for more posts!
         )
         
         print(f"✅ Scraped {len(posts)} posts")
