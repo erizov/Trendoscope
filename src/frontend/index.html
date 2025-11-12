@@ -373,15 +373,27 @@
                 <div id="styleStatusContent">Проверка статуса...</div>
             </div>
             
-            <div class="form-group">
-                <label for="postStyle">Стиль поста</label>
-                <select id="postStyle">
-                    <option value="philosophical">Философский</option>
-                    <option value="ironic">Ироничный</option>
-                    <option value="analytical">Аналитический</option>
-                    <option value="provocative">Провокационный</option>
-                </select>
-            </div>
+        <div class="form-group">
+            <label for="postTopic">Тема поста</label>
+            <select id="postTopic">
+                <option value="any">Любая (авто-выбор)</option>
+                <option value="ai">🤖 Искусственный интеллект (AI)</option>
+                <option value="politics">🏛️ Политика и международные отношения</option>
+                <option value="us_affairs">🇺🇸 США и американская политика</option>
+                <option value="russian_history">🇷🇺 Российская история</option>
+                <option value="science">🔬 Наука и технологии</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="postStyle">Стиль поста</label>
+            <select id="postStyle">
+                <option value="philosophical">Философский</option>
+                <option value="ironic">Ироничный</option>
+                <option value="analytical">Аналитический</option>
+                <option value="provocative">Провокационный</option>
+            </select>
+        </div>
 
             <div class="form-group">
                 <label for="postProvider">LLM для генерации</label>
@@ -631,22 +643,23 @@
         // Store analyzed posts globally for post generation
         let globalAnalyzedPosts = [];
 
-        async function generatePost() {
-            const postStyle = document.getElementById('postStyle').value;
-            const postProvider = document.getElementById('postProvider').value;
-            const btn = document.getElementById('generatePostBtn');
+    async function generatePost() {
+        const postStyle = document.getElementById('postStyle').value;
+        const postTopic = document.getElementById('postTopic').value;
+        const postProvider = document.getElementById('postProvider').value;
+        const btn = document.getElementById('generatePostBtn');
 
-            // Disable button and show loading state
-            btn.disabled = true;
-            btn.textContent = 'Генерирую пост...';
-            document.getElementById('generatedPost').style.display = 'none';
+        // Disable button and show loading state
+        btn.disabled = true;
+        btn.textContent = 'Генерирую пост...';
+        document.getElementById('generatedPost').style.display = 'none';
 
-            try {
-                // Use stored posts if no analyzed posts available
-                const postsToSend = globalAnalyzedPosts.length > 0 ? globalAnalyzedPosts : [];
+        try {
+            // Use stored posts if no analyzed posts available
+            const postsToSend = globalAnalyzedPosts.length > 0 ? globalAnalyzedPosts : [];
 
-                const response = await fetch(
-                    `/api/post/generate?style=${postStyle}&provider=${postProvider}`,
+            const response = await fetch(
+                `/api/post/generate?style=${postStyle}&topic=${postTopic}&provider=${postProvider}`,
                     {
                         method: 'POST',
                         headers: {

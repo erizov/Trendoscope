@@ -194,6 +194,10 @@ async def generate_post_endpoint(
         default="philosophical",
         description="Post style"
     ),
+    topic: str = Query(
+        default="any",
+        description="Post topic focus"
+    ),
     provider: str = Query(
         default="openai",
         description="LLM provider"
@@ -209,6 +213,7 @@ async def generate_post_endpoint(
     Args:
         analyzed_posts: Previously analyzed blog posts (optional, loads from storage)
         style: Post style (philosophical, ironic, analytical, provocative)
+        topic: Topic focus (any, ai, politics, us_affairs, russian_history, science)
         provider: LLM provider
         model: Model name
 
@@ -222,6 +227,7 @@ async def generate_post_endpoint(
         if not analyzed_posts:
             result = generate_post_from_storage(
                 style=style,
+                topic=topic,
                 provider=provider,
                 model=model
             )
@@ -230,6 +236,7 @@ async def generate_post_endpoint(
             result = generate_post(
                 analyzed_posts=analyzed_posts,
                 style=style,
+                topic=topic,
                 provider=provider,
                 model=model
             )

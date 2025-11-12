@@ -10,6 +10,60 @@ from ..index.vector_db import search_similar
 from .llm.providers import call_llm
 
 
+# Topic definitions for filtering and instruction
+TOPIC_DEFINITIONS = {
+    "ai": {
+        "keywords": ["AI", "artificial intelligence", "machine learning", "neural", "GPT", "ChatGPT", 
+                     "LLM", "нейросет", "искусственный интеллект", "ИИ", "алгоритм"],
+        "instruction": "Сфокусируйся на теме искусственного интеллекта, нейросетей, машинного обучения и их влиянии на общество."
+    },
+    "politics": {
+        "keywords": ["politics", "government", "election", "policy", "diplomacy", "политик", "правительств", 
+                     "выборы", "дипломат", "парламент", "геополитик"],
+        "instruction": "Сфокусируйся на политических событиях, международных отношениях и геополитике."
+    },
+    "us_affairs": {
+        "keywords": ["USA", "US", "America", "American", "Washington", "White House", "Congress", "Trump", "Biden",
+                     "США", "Америк", "Вашингтон", "Белый дом", "Конгресс"],
+        "instruction": "Сфокусируйся на событиях в США, американской политике и влиянии США на мировую арену."
+    },
+    "russian_history": {
+        "keywords": ["Russia", "Russian", "USSR", "Soviet", "Россия", "российск", "советск", "СССР", 
+                     "истори", "петербург", "москв", "кремл"],
+        "instruction": "Сфокусируйся на российской истории, исторических параллелях и связи прошлого с настоящим."
+    },
+    "science": {
+        "keywords": ["science", "research", "study", "technology", "space", "physics", "biology", 
+                     "наука", "научн", "исследован", "технолог", "космос", "физик"],
+        "instruction": "Сфокусируйся на научных открытиях, технологических прорывах и их значении для человечества."
+    }
+}
+
+
+def _filter_news_by_topic(news_items: List[Dict[str, Any]], topic: str) -> List[Dict[str, Any]]:
+    """Filter news items by topic keywords."""
+    if topic == "any" or topic not in TOPIC_DEFINITIONS:
+        return news_items
+    
+    keywords = TOPIC_DEFINITIONS[topic]["keywords"]
+    filtered = []
+    
+    for item in news_items:
+        text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+        if any(keyword.lower() in text for keyword in keywords):
+            filtered.append(item)
+    
+    # If no matches, return all (better than empty)
+    return filtered if filtered else news_items
+
+
+def _get_topic_instruction(topic: str) -> str:
+    """Get instruction text for the specified topic."""
+    if topic == "any" or topic not in TOPIC_DEFINITIONS:
+        return ""
+    return TOPIC_DEFINITIONS[topic]["instruction"]
+
+
 # Post generation styles
 POST_STYLES = {
     "philosophical": {
@@ -180,6 +234,7 @@ def get_author_style_context(
 def generate_post(
     analyzed_posts: List[Dict[str, Any]],
     style: str = "philosophical",
+    topic: str = "any",
     provider: str = "openai",
     model: Optional[str] = None,
     temperature: float = 0.8
@@ -190,6 +245,7 @@ def generate_post(
     Args:
         analyzed_posts: Previously analyzed blog posts for style
         style: Generation style (philosophical, ironic, analytical, provocative)
+        topic: Topic focus (any, ai, politics, us_affairs, russian_history, science)
         provider: LLM provider
         model: Model name
         temperature: Generation temperature
@@ -208,15 +264,28 @@ def generate_post(
 
     # Fetch trending news
     news_data = fetch_trending_news(max_items=10)
-
-    # Format news context
+    
+    # Filter news by topic if specified
+    filtered_news = _filter_news_by_topic(news_data['news_items'], topic)
+    
+    # Format news context with topic focus
+    topic_instruction = _get_topic_instruction(topic)
     news_context = "\n\n".join([
         f"- {item['title']} ({item['source']})\n  {item['summary'][:200]}..."
-        for item in news_data['news_items'][:5]
+        for item in filtered_news[:5]
     ])
 
-    # Build prompt
-    prompt = style_config["prompt_template"].format(
+    # Build prompt with topic focus
+    prompt_base = style_config["prompt_template"]
+    
+    # Add topic instruction if specified
+    if topic != "any":
+        prompt_base = prompt_base.replace(
+            "ЗАДАЧА:",
+            f"ФОКУС ТЕМЫ:\n{topic_instruction}\n\nЗАДАЧА:"
+        )
+    
+    prompt = prompt_base.format(
         author_style=author_context["description"],
         style_examples="\n\n---\n\n".join([
             f"Пример {i+1}:\n{ex}"
@@ -333,6 +402,7 @@ def generate_post(
 
 def generate_post_from_storage(
     style: str = "philosophical",
+    topic: str = "any",
     provider: str = "openai",
     model: Optional[str] = None,
     temperature: float = 0.8
@@ -342,6 +412,7 @@ def generate_post_from_storage(
 
     Args:
         style: Generation style
+        topic: Topic focus (any, ai, politics, us_affairs, russian_history, science)
         provider: LLM provider
         model: Model name
         temperature: Generation temperature
@@ -388,6 +459,7 @@ def generate_post_from_storage(
     return generate_post(
         analyzed_posts=analyzed_posts,
         style=style,
+        topic=topic,
         provider=provider,
         model=model,
         temperature=temperature
