@@ -1,0 +1,19 @@
+[Unit]
+Description=Trendoscope - AI Post Generator
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/trendoscope
+Environment="PATH=/var/www/trendoscope/venv/bin"
+EnvironmentFile=/var/www/trendoscope/.env
+ExecStart=/var/www/trendoscope/venv/bin/python run.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/trendoscope/access.log
+StandardError=append:/var/log/trendoscope/error.log
+
+[Install]
+WantedBy=multi-user.target
+

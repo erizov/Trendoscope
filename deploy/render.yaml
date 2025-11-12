@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: trendoscope
+    env: python
+    region: frankfurt  # or your preferred region
+    plan: free  # or starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: OPENAI_API_BASE
+        value: https://api.proxyapi.ru/openai/v1
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    healthCheckPath: /
+    autoDeploy: true
+
