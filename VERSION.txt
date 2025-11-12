@@ -1,13 +1,19 @@
-2.0.0
+2.1.0
 
 Release Date: 2025-11-12
 
-Major Features:
+New in 2.1.0:
+- 🎯 Topic Focus for Post Generation
+- 5 Topic Areas (AI, Politics, US Affairs, Russian History, Science)
+- Smart News Filtering by Keywords
+- Topic-Specific LLM Instructions
+
+v2.0.0 Features:
 - Post Generator with Author's Style
 - Persistent RAG Storage (FAISS)
 - News Aggregation (RU + International)
 - Always-Available UI
 - 4 Generation Styles
 
-See CHANGELOG.md for details.
+See CHANGELOG.md and TOPIC_FOCUS_GUIDE.md for details.
 

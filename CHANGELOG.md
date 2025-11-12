@@ -1,5 +1,50 @@
 # Changelog
 
+## [2.1.0] - 2025-11-12
+
+### 🎯 New Feature: Topic Focus
+
+#### Topic-Focused Post Generation
+- **5 topic areas**: AI, Politics, US Affairs, Russian History, Science
+- **Smart filtering**: Automatic news filtering by keywords (RU + EN)
+- **LLM guidance**: Topic-specific instructions in prompts
+- **Fallback**: Uses all news if no topic matches
+
+#### Topics Available
+1. 🤖 **Искусственный интеллект (AI)**
+   - Machine learning, neural networks, algorithms
+2. 🏛️ **Политика и международные отношения**
+   - Geopolitics, government, diplomacy
+3. 🇺🇸 **США и американская политика**
+   - American politics, Washington, White House
+4. 🇷🇺 **Российская история**
+   - USSR, historical parallels, Russian events
+5. 🔬 **Наука и технологии**
+   - Research, discoveries, space, physics
+
+#### UI Improvements
+- New dropdown "Тема поста" with 6 options
+- Emoji indicators for topics
+- Better UX and visual hierarchy
+
+#### Technical Implementation
+- `TOPIC_DEFINITIONS` dictionary with keywords and instructions
+- `_filter_news_by_topic()` - smart filtering helper
+- `_get_topic_instruction()` - instruction builder
+- Topic parameter throughout the stack (UI → API → Generator)
+
+### 📚 Documentation
+- `TOPIC_FOCUS_GUIDE.md` - Complete guide with examples
+- `GIT_SETUP.md` - Git push instructions
+- `RELEASE_NOTES_v2.0.0.md` - v2.0 release notes
+
+### 🔧 Bug Fixes
+- Improved JSON parsing robustness
+- Fixed control character issues
+- Better error messages
+
+---
+
 ## [2.0.0] - 2025-11-12
 
 ### 🎉 Major Features
