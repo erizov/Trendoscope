@@ -293,3 +293,40 @@ class LiveJournalScraper:
         """Context manager exit."""
         self.close()
 
+
+def scrape_livejournal(
+    blog_url: str,
+    max_posts: int = 50,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    use_rss: bool = True,
+    use_archive: bool = False
+) -> List[Dict[str, Any]]:
+    """
+    Convenience function to scrape LiveJournal blog.
+    
+    Args:
+        blog_url: Blog URL to scrape
+        max_posts: Maximum number of posts to fetch
+        username: Optional username for hidden posts
+        password: Optional password for hidden posts
+        use_rss: Whether to use RSS feed (default: True)
+        use_archive: Whether to crawl archive (default: False)
+    
+    Returns:
+        List of post dictionaries
+    
+    Example:
+        >>> posts = scrape_livejournal(
+        ...     "https://civil-engineer.livejournal.com",
+        ...     max_posts=100
+        ... )
+    """
+    with LiveJournalScraper(username=username, password=password) as scraper:
+        return scraper.fetch_all_posts(
+            blog_url=blog_url,
+            max_posts=max_posts,
+            use_rss=use_rss,
+            use_archive=use_archive
+        )
+
