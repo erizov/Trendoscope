@@ -1,0 +1,13 @@
+2.0.0
+
+Release Date: 2025-11-12
+
+Major Features:
+- Post Generator with Author's Style
+- Persistent RAG Storage (FAISS)
+- News Aggregation (RU + International)
+- Always-Available UI
+- 4 Generation Styles
+
+See CHANGELOG.md for details.
+
