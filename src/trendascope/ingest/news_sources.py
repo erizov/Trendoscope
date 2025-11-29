@@ -128,9 +128,21 @@ class NewsAggregator:
 
             items = []
             for entry in feed.entries[:max_items]:
+                # Try multiple fields for content
+                content = ""
+                
+                # Try to get the most detailed content available
+                if hasattr(entry, 'content') and entry.content:
+                    # Some feeds have content field with full text
+                    content = entry.content[0].get('value', '') if isinstance(entry.content, list) else str(entry.content)
+                
+                if not content:
+                    # Fallback to summary or description
+                    content = entry.get("summary", entry.get("description", ""))
+                
                 item = {
                     "title": entry.get("title", ""),
-                    "summary": entry.get("summary", entry.get("description", "")),
+                    "summary": content,
                     "link": entry.get("link", ""),
                     "published": entry.get("published", ""),
                     "source": self._extract_source(url),
@@ -142,8 +154,13 @@ class NewsAggregator:
                         soup = BeautifulSoup(item["summary"], 'lxml')
                         item["summary"] = soup.get_text(strip=True)
                     except:
-                        # If lxml fails, keep original
+                        # If cleaning fails, keep original
                         pass
+                
+                # Ensure we have at least title
+                if not item["summary"] and item["title"]:
+                    # If no summary, use title as fallback message
+                    item["summary"] = f"Полный текст доступен на источнике: {item['title']}"
 
                 # Only add if has title
                 if item["title"]:

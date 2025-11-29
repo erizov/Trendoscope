@@ -678,17 +678,40 @@
             const item = allNews[index];
             currentNewsItem = item;
             
-            document.getElementById('modalSource').textContent = item.source;
-            document.getElementById('modalCategory').textContent = item.category.toUpperCase();
-            document.getElementById('modalTitle').textContent = item.title;
+            document.getElementById('modalSource').textContent = item.source || 'Неизвестный источник';
+            document.getElementById('modalCategory').textContent = (item.category || 'general').toUpperCase();
+            document.getElementById('modalTitle').textContent = item.title || 'Без заголовка';
             document.getElementById('modalTime').textContent = timeAgo(item.published);
-            document.getElementById('modalControversy').textContent = 
-                `${item.controversy.emoji} Провокационность: ${item.controversy.score}%`;
-            document.getElementById('modalText').textContent = item.summary;
-            document.getElementById('modalLink').href = item.link;
+            
+            // Handle controversy safely
+            if (item.controversy) {
+                document.getElementById('modalControversy').textContent = 
+                    `${item.controversy.emoji} Провокационность: ${item.controversy.score}%`;
+            } else {
+                document.getElementById('modalControversy').textContent = '📰 Без оценки';
+            }
+            
+            // Handle summary - show full text or message if empty
+            const summary = item.summary || item.description || '';
+            if (summary && summary.trim().length > 0) {
+                document.getElementById('modalText').textContent = summary;
+            } else {
+                document.getElementById('modalText').innerHTML = 
+                    '<p style="color: #71767b; font-style: italic;">Полный текст недоступен. Нажмите "Читать на источнике" ниже.</p>';
+            }
+            
+            document.getElementById('modalLink').href = item.link || '#';
             
             document.getElementById('modal').classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Log for debugging
+            console.log('Modal opened for:', {
+                title: item.title,
+                summary: summary.substring(0, 100) + '...',
+                summaryLength: summary.length,
+                source: item.source
+            });
         }
 
         // Close modal
