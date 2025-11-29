@@ -3,12 +3,14 @@ FastAPI application for Trendoscope.
 """
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Optional
 import os
 
 from ..gen.generate import generate_summary
 from ..pipeline.orchestrator import run_pipeline
+from ..gen.post_generator import generate_post_from_storage, get_available_styles
 
 app = FastAPI(
     title="Trendoscope API",
@@ -16,6 +18,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Serve static files (frontend)
 static_dir = os.path.join(
@@ -189,7 +199,6 @@ async def get_style_status():
 
 @app.post("/api/post/generate")
 async def generate_post_endpoint(
-    analyzed_posts: Optional[List[Dict]] = None,
     style: str = Query(
         default="philosophical",
         description="Post style"
@@ -205,45 +214,47 @@ async def generate_post_endpoint(
     model: Optional[str] = Query(
         default=None,
         description="Model name"
+    ),
+    temperature: float = Query(
+        default=0.8,
+        description="Generation temperature"
     )
 ):
     """
     Generate a new post in author's style based on trending news.
 
     Args:
-        analyzed_posts: Previously analyzed blog posts (optional, loads from storage)
         style: Post style (philosophical, ironic, analytical, provocative)
         topic: Topic focus (any, ai, politics, us_affairs, russian_history, science)
         provider: LLM provider
         model: Model name
+        temperature: Generation temperature
 
     Returns:
         Generated post with title, text, and tags
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     try:
         from ..gen.post_generator import generate_post_from_storage
+        
+        logger.info(f"Generating post: style={style}, topic={topic}, provider={provider}")
 
-        # If no posts provided, use stored posts from vector DB
-        if not analyzed_posts:
-            result = generate_post_from_storage(
-                style=style,
-                topic=topic,
-                provider=provider,
-                model=model
-            )
-        else:
-            from ..gen.post_generator import generate_post
-            result = generate_post(
-                analyzed_posts=analyzed_posts,
-                style=style,
-                topic=topic,
-                provider=provider,
-                model=model
-            )
+        result = generate_post_from_storage(
+            style=style,
+            topic=topic,
+            provider=provider,
+            model=model,
+            temperature=temperature
+        )
+        
+        logger.info(f"Post generated successfully: {result.get('title', 'No title')[:50]}")
 
         return result
 
     except Exception as e:
+        logger.error(f"Post generation failed: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Post generation failed: {str(e)}"

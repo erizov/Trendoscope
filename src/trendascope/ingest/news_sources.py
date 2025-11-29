@@ -25,7 +25,7 @@ except ImportError:
 class NewsAggregator:
     """Aggregate news from multiple sources."""
 
-    # Russian sources
+    # Russian general news sources
     RUSSIAN_SOURCES = [
         "https://lenta.ru/rss",
         "https://www.kommersant.ru/RSS/main.xml",
@@ -33,11 +33,41 @@ class NewsAggregator:
         "https://tass.ru/rss/v2.xml",
     ]
 
-    # International sources
+    # Russian tech/AI sources
+    RUSSIAN_TECH_SOURCES = [
+        "https://habr.com/ru/rss/best/",
+        "https://vc.ru/rss/all",
+        "https://dtf.ru/rss/all",
+        "https://3dnews.ru/news/rss",
+    ]
+
+    # Russian politics sources
+    RUSSIAN_POLITICS_SOURCES = [
+        "https://www.gazeta.ru/export/rss/first.xml",
+        "https://meduza.io/rss/all",
+    ]
+
+    # International general news sources
     INTERNATIONAL_SOURCES = [
         "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
         "https://feeds.bbci.co.uk/news/world/rss.xml",
         "https://www.theguardian.com/world/rss",
+    ]
+
+    # AI-specialized sources
+    AI_SOURCES = [
+        "https://www.technologyreview.com/feed/",
+        "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
+        "https://www.artificialintelligence-news.com/feed/",
+        "https://openai.com/blog/rss.xml",
+    ]
+
+    # Politics-specialized sources
+    POLITICS_SOURCES = [
+        "https://www.politico.com/rss/politics08.xml",
+        "https://foreignpolicy.com/feed/",
+        "https://www.foreignaffairs.com/rss.xml",
     ]
 
     def __init__(self, timeout: int = 30):
@@ -100,9 +130,23 @@ class NewsAggregator:
             "kommersant.ru": "Коммерсантъ",
             "vedomosti.ru": "Ведомости",
             "tass.ru": "ТАСС",
+            "habr.com": "Habr",
+            "vc.ru": "VC.ru",
+            "dtf.ru": "DTF",
+            "3dnews.ru": "3DNews",
+            "gazeta.ru": "Gazeta.ru",
+            "meduza.io": "Meduza",
             "nytimes.com": "NY Times",
             "bbc": "BBC",
             "theguardian.com": "The Guardian",
+            "technologyreview.com": "MIT Tech Review",
+            "techcrunch.com": "TechCrunch",
+            "theverge.com": "The Verge",
+            "artificialintelligence-news.com": "AI News",
+            "openai.com": "OpenAI Blog",
+            "politico.com": "Politico",
+            "foreignpolicy.com": "Foreign Policy",
+            "foreignaffairs.com": "Foreign Affairs",
         }
 
         for pattern, name in patterns.items():
@@ -115,14 +159,18 @@ class NewsAggregator:
         self,
         include_russian: bool = True,
         include_international: bool = True,
+        include_ai: bool = True,
+        include_politics: bool = True,
         max_per_source: int = 5
     ) -> List[Dict[str, Any]]:
         """
         Fetch trending topics from all sources.
 
         Args:
-            include_russian: Include Russian sources
-            include_international: Include international sources
+            include_russian: Include Russian general sources
+            include_international: Include international general sources
+            include_ai: Include AI-specialized sources
+            include_politics: Include politics-specialized sources
             max_per_source: Max items per source
 
         Returns:
@@ -133,8 +181,14 @@ class NewsAggregator:
         sources = []
         if include_russian:
             sources.extend(self.RUSSIAN_SOURCES)
+            sources.extend(self.RUSSIAN_TECH_SOURCES)
+            sources.extend(self.RUSSIAN_POLITICS_SOURCES)
         if include_international:
             sources.extend(self.INTERNATIONAL_SOURCES)
+        if include_ai:
+            sources.extend(self.AI_SOURCES)
+        if include_politics:
+            sources.extend(self.POLITICS_SOURCES)
 
         for source_url in sources:
             items = self.fetch_rss_feed(source_url, max_per_source)
@@ -201,7 +255,9 @@ class NewsAggregator:
 def fetch_trending_news(
     max_items: int = 20,
     include_russian: bool = True,
-    include_international: bool = True
+    include_international: bool = True,
+    include_ai: bool = True,
+    include_politics: bool = True
 ) -> Dict[str, Any]:
     """
     Fetch trending news (convenience function).
@@ -210,16 +266,20 @@ def fetch_trending_news(
         max_items: Maximum total items
         include_russian: Include Russian sources
         include_international: Include international sources
+        include_ai: Include AI-specialized sources
+        include_politics: Include politics-specialized sources
 
     Returns:
         Dictionary with news and topics
     """
     with NewsAggregator() as aggregator:
-        items_per_source = max(2, max_items // 5)
+        items_per_source = max(2, max_items // 10)
 
         news_items = aggregator.fetch_trending_topics(
             include_russian=include_russian,
             include_international=include_international,
+            include_ai=include_ai,
+            include_politics=include_politics,
             max_per_source=items_per_source
         )
 
