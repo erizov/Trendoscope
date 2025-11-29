@@ -483,10 +483,7 @@
 
     <!-- Feed -->
     <div class="feed" id="newsFeed">
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Загрузка провокационных новостей из 40+ источников...</p>
-        </div>
+        <!-- News will be loaded here dynamically -->
     </div>
 
     <!-- FAB -->
@@ -570,13 +567,16 @@
 
         // Load news from API
         async function loadNews(category) {
-            const loading = document.getElementById('loading');
             const feed = document.getElementById('newsFeed');
             const stats = document.getElementById('stats');
             
-            loading.style.display = 'block';
-            feed.innerHTML = '';
-            feed.appendChild(loading);
+            // Show loading state
+            feed.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Загрузка провокационных новостей из 40+ источников...</p>
+                </div>
+            `;
 
             try {
                 console.log(`Loading news for category: ${category}`);
@@ -614,8 +614,6 @@
                         </button>
                     </div>
                 `;
-            } finally {
-                loading.style.display = 'none';
             }
         }
 
