@@ -521,7 +521,7 @@
                 <button class="action-btn" onclick="shareToVK()">
                     📘 VK
                 </button>
-                <button class="action-btn" onclick="copyLink()">
+                <button class="action-btn" onclick="copyLink(undefined, event)">
                     📋 Копировать
                 </button>
             </div>
@@ -679,7 +679,7 @@
                             <button class="action-btn" onclick="event.stopPropagation(); shareToVK(${index})">
                                 📘 VK
                             </button>
-                            <button class="action-btn" onclick="event.stopPropagation(); copyLink(${index})">
+                            <button class="action-btn" onclick="event.stopPropagation(); copyLink(${index}, event)">
                                 📋 Копировать
                             </button>
                             <button class="action-btn" onclick="event.stopPropagation(); window.open('${item.link}', '_blank')">
@@ -770,7 +770,7 @@
         }
         
         // Copy link
-        function copyLink(index) {
+        function copyLink(index, event) {
             const item = index !== undefined ? allNews[index] : currentNewsItem;
             if (!item) return;
             
@@ -778,21 +778,33 @@
             
             navigator.clipboard.writeText(text)
                 .then(() => {
-                    // Show success message
-                    const btn = event.target;
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '✅ Скопировано!';
-                    btn.style.background = '#10b981';
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.style.background = '';
-                    }, 2000);
+                    // Show success message - find the button that was clicked
+                    let btn = null;
+                    if (event && event.target) {
+                        btn = event.target.closest('.action-btn');
+                    }
+                    
+                    if (btn) {
+                        const originalText = btn.innerHTML;
+                        btn.innerHTML = '✅ Скопировано!';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '';
+                        }, 2000);
+                    } else {
+                        // Fallback - just show alert
+                        alert('✅ Ссылка скопирована в буфер обмена!');
+                    }
                 })
-                .catch(err => alert('Ошибка копирования'));
+                .catch(err => {
+                    console.error('Copy error:', err);
+                    alert('❌ Ошибка копирования. Попробуйте еще раз.');
+                });
         }
         
         // Generic share (fallback)
-        function shareNews(index) {
+        function shareNews(index, event) {
             const item = index !== undefined ? allNews[index] : currentNewsItem;
             if (!item) return;
             
@@ -802,7 +814,7 @@
                 navigator.share({ title: item.title, url: item.link })
                     .catch(err => console.log('Share cancelled'));
             } else {
-                copyLink(index);
+                copyLink(index, event);
             }
         }
 
