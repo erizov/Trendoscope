@@ -39,12 +39,22 @@ class NewsAggregator:
         "https://vc.ru/rss/all",
         "https://dtf.ru/rss/all",
         "https://3dnews.ru/news/rss",
+        "https://roem.ru/feed/",
     ]
 
     # Russian politics sources
     RUSSIAN_POLITICS_SOURCES = [
         "https://www.gazeta.ru/export/rss/first.xml",
         "https://meduza.io/rss/all",
+        "https://www.interfax.ru/rss.asp",
+        "https://ria.ru/export/rss2/archive/index.xml",
+    ]
+    
+    # European sources
+    EUROPEAN_SOURCES = [
+        "https://www.euronews.com/rss",
+        "https://www.politico.eu/feed/",
+        "https://www.dw.com/rss/rss-en-world/s-31201/rss.xml",
     ]
 
     # International general news sources
@@ -61,6 +71,8 @@ class NewsAggregator:
         "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
         "https://www.artificialintelligence-news.com/feed/",
         "https://openai.com/blog/rss.xml",
+        "https://www.deeplearning.ai/the-batch/feed/",
+        "https://machinelearningmastery.com/feed/",
     ]
 
     # Politics-specialized sources
@@ -68,6 +80,14 @@ class NewsAggregator:
         "https://www.politico.com/rss/politics08.xml",
         "https://foreignpolicy.com/feed/",
         "https://www.foreignaffairs.com/rss.xml",
+        "https://www.brookings.edu/feed/",
+    ]
+    
+    # US-specific sources
+    US_SOURCES = [
+        "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+        "https://www.washingtonpost.com/rss/politics",
+        "https://feeds.npr.org/1001/rss.xml",
     ]
 
     def __init__(self, timeout: int = 30):
@@ -134,19 +154,30 @@ class NewsAggregator:
             "vc.ru": "VC.ru",
             "dtf.ru": "DTF",
             "3dnews.ru": "3DNews",
+            "roem.ru": "Roem.ru",
             "gazeta.ru": "Gazeta.ru",
             "meduza.io": "Meduza",
+            "interfax.ru": "Интерфакс",
+            "ria.ru": "РИА Новости",
             "nytimes.com": "NY Times",
+            "washingtonpost.com": "Washington Post",
+            "npr.org": "NPR",
             "bbc": "BBC",
             "theguardian.com": "The Guardian",
+            "euronews.com": "Euronews",
+            "dw.com": "Deutsche Welle",
+            "politico.eu": "Politico Europe",
             "technologyreview.com": "MIT Tech Review",
             "techcrunch.com": "TechCrunch",
             "theverge.com": "The Verge",
             "artificialintelligence-news.com": "AI News",
             "openai.com": "OpenAI Blog",
+            "deeplearning.ai": "DeepLearning.AI",
+            "machinelearningmastery.com": "ML Mastery",
             "politico.com": "Politico",
             "foreignpolicy.com": "Foreign Policy",
             "foreignaffairs.com": "Foreign Affairs",
+            "brookings.edu": "Brookings",
         }
 
         for pattern, name in patterns.items():
@@ -161,6 +192,8 @@ class NewsAggregator:
         include_international: bool = True,
         include_ai: bool = True,
         include_politics: bool = True,
+        include_us: bool = True,
+        include_eu: bool = True,
         max_per_source: int = 5
     ) -> List[Dict[str, Any]]:
         """
@@ -171,6 +204,8 @@ class NewsAggregator:
             include_international: Include international general sources
             include_ai: Include AI-specialized sources
             include_politics: Include politics-specialized sources
+            include_us: Include US-specific sources
+            include_eu: Include European sources
             max_per_source: Max items per source
 
         Returns:
@@ -189,6 +224,10 @@ class NewsAggregator:
             sources.extend(self.AI_SOURCES)
         if include_politics:
             sources.extend(self.POLITICS_SOURCES)
+        if include_us:
+            sources.extend(self.US_SOURCES)
+        if include_eu:
+            sources.extend(self.EUROPEAN_SOURCES)
 
         for source_url in sources:
             items = self.fetch_rss_feed(source_url, max_per_source)

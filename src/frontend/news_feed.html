@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Провокационные Новости | Trendoscope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* Header with category filters */
+        .header {
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #333;
+            z-index: 100;
+            padding: 15px 20px;
+        }
+
+        .categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .categories::-webkit-scrollbar {
+            display: none;
+        }
+
+        .category-btn {
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-btn:hover {
+            background: #2a2a2a;
+            border-color: #555;
+        }
+
+        .category-btn.active {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+        }
+
+        /* News feed container */
+        .feed {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* News card - Twitter-style */
+        .news-card {
+            background: #000;
+            border: 1px solid #2f3336;
+            border-radius: 0;
+            padding: 16px;
+            margin-bottom: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .news-card:hover {
+            background: #080808;
+        }
+
+        .news-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .news-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .news-meta {
+            flex: 1;
+        }
+
+        .news-source {
+            font-weight: 700;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .news-time {
+            font-size: 13px;
+            color: #71767b;
+        }
+
+        .news-category {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #1d9bf0;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .news-title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            color: #fff;
+        }
+
+        .news-summary {
+            font-size: 15px;
+            color: #e7e9ea;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .news-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .news-tag {
+            color: #1d9bf0;
+            font-size: 14px;
+        }
+
+        .news-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2f3336;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #71767b;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+
+        .action-btn:hover {
+            background: #1a1a1a;
+            color: #1d9bf0;
+        }
+
+        .action-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Hot take indicator */
+        .hot-take {
+            background: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Controversy meter */
+        .controversy-meter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #71767b;
+            margin-top: 8px;
+        }
+
+        .meter-bar {
+            flex: 1;
+            height: 4px;
+            background: #2f3336;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .meter-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+            transition: width 0.3s;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #71767b;
+        }
+
+        .spinner {
+            border: 3px solid #2f3336;
+            border-top: 3px solid #1d9bf0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Floating action button */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .fab svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .feed {
+                padding: 10px;
+            }
+            
+            .news-card {
+                padding: 12px;
+            }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #71767b;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* Category icons */
+        .category-icon {
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with categories -->
+    <div class="header">
+        <div class="categories">
+            <button class="category-btn active" data-category="all">
+                <span class="category-icon">🌍</span> Все
+            </button>
+            <button class="category-btn" data-category="ai">
+                <span class="category-icon">🤖</span> ИИ & ML
+            </button>
+            <button class="category-btn" data-category="politics">
+                <span class="category-icon">🏛️</span> Политика
+            </button>
+            <button class="category-btn" data-category="us">
+                <span class="category-icon">🇺🇸</span> США
+            </button>
+            <button class="category-btn" data-category="eu">
+                <span class="category-icon">🇪🇺</span> ЕС
+            </button>
+            <button class="category-btn" data-category="russia">
+                <span class="category-icon">🇷🇺</span> Россия
+            </button>
+            <button class="category-btn" data-category="hot">
+                <span class="category-icon">🔥</span> Горячее
+            </button>
+        </div>
+    </div>
+
+    <!-- News feed -->
+    <div class="feed" id="newsFeed">
+        <!-- Loading state -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Загрузка провокационных новостей...</p>
+        </div>
+    </div>
+
+    <!-- Floating action button -->
+    <div class="fab" onclick="generateMoreNews()" title="Сгенерировать новые новости">
+        <svg viewBox="0 0 24 24">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+        </svg>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8003';
+        let allNews = [];
+        let currentCategory = 'all';
+
+        // Category mapping
+        const categoryIcons = {
+            'ai': '🤖',
+            'politics': '🏛️',
+            'us': '🇺🇸',
+            'eu': '🇪🇺',
+            'russia': '🇷🇺'
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNews();
+            setupCategoryFilters();
+        });
+
+        // Setup category filters
+        function setupCategoryFilters() {
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentCategory = btn.dataset.category;
+                    filterNews();
+                });
+            });
+        }
+
+        // Load news
+        async function loadNews() {
+            const loading = document.getElementById('loading');
+            const feed = document.getElementById('newsFeed');
+            
+            loading.style.display = 'block';
+
+            try {
+                // Fetch trending news
+                const response = await fetch(`${API_URL}/api/post/generate?style=provocative&topic=any&provider=demo`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) throw new Error('Failed to load news');
+
+                const post = await response.json();
+                
+                // Convert post to news items (simulate multiple short items)
+                const newsItems = createNewsItems(post);
+                allNews = newsItems;
+                
+                displayNews(newsItems);
+            } catch (error) {
+                console.error('Error:', error);
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        <h2>❌ Ошибка загрузки</h2>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px; font-size: 14px;">Убедитесь, что сервер запущен</p>
+                    </div>
+                `;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Create news items from post
+        function createNewsItems(post) {
+            const categories = ['ai', 'politics', 'us', 'eu', 'russia'];
+            const sources = ['OpenAI Blog', 'Politico', 'BBC', 'The Verge', 'Foreign Policy', 'Meduza'];
+            
+            // Split post text into paragraphs and create news items
+            const paragraphs = post.text.split('\n\n').filter(p => p.trim().length > 50);
+            
+            return paragraphs.slice(0, 8).map((paragraph, i) => ({
+                id: i,
+                source: sources[i % sources.length],
+                category: categories[i % categories.length],
+                title: generateShortTitle(paragraph),
+                summary: paragraph.substring(0, 200) + '...',
+                time: `${Math.floor(Math.random() * 60)} мин назад`,
+                tags: post.tags.slice(0, 3),
+                controversy: Math.floor(Math.random() * 100),
+                isHot: Math.random() > 0.7,
+                icon: categoryIcons[categories[i % categories.length]]
+            }));
+        }
+
+        // Generate short provocative title
+        function generateShortTitle(text) {
+            const sentences = text.split(/[.!?]+/);
+            const firstSentence = sentences[0].trim();
+            if (firstSentence.length < 80) return firstSentence;
+            return firstSentence.substring(0, 77) + '...';
+        }
+
+        // Display news
+        function displayNews(newsItems) {
+            const feed = document.getElementById('newsFeed');
+            
+            if (newsItems.length === 0) {
+                feed.innerHTML = `
+                    <div class="empty-state">
+                        <h2>🔍 Нет новостей</h2>
+                        <p>Попробуйте другую категорию</p>
+                    </div>
+                `;
+                return;
+            }
+
+            feed.innerHTML = newsItems.map(item => `
+                <div class="news-card" onclick="expandNews(${item.id})">
+                    ${item.isHot ? '<div class="hot-take">🔥 HOT TAKE</div>' : ''}
+                    
+                    <div class="news-header">
+                        <div class="news-icon">${item.icon}</div>
+                        <div class="news-meta">
+                            <div>
+                                <span class="news-source">${item.source}</span>
+                                <span class="news-category">${item.category.toUpperCase()}</span>
+                            </div>
+                            <div class="news-time">${item.time}</div>
+                        </div>
+                    </div>
+
+                    <div class="news-title">${item.title}</div>
+                    <div class="news-summary">${item.summary}</div>
+
+                    <div class="news-tags">
+                        ${item.tags.map(tag => `<span class="news-tag">#${tag}</span>`).join(' ')}
+                    </div>
+
+                    ${item.controversy > 60 ? `
+                        <div class="controversy-meter">
+                            <span>Провокационность:</span>
+                            <div class="meter-bar">
+                                <div class="meter-fill" style="width: ${item.controversy}%"></div>
+                            </div>
+                            <span>${item.controversy}%</span>
+                        </div>
+                    ` : ''}
+
+                    <div class="news-actions">
+                        <button class="action-btn" onclick="event.stopPropagation(); shareNews(${item.id})">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
+                            </svg>
+                            <span>Поделиться</span>
+                        </button>
+                        
+                        <button class="action-btn" onclick="event.stopPropagation(); saveNews(${item.id})">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                            </svg>
+                            <span>Сохранить</span>
+                        </button>
+
+                        <button class="action-btn" onclick="event.stopPropagation(); reportNews(${item.id})">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            </svg>
+                            <span>Подробнее</span>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Filter news by category
+        function filterNews() {
+            if (currentCategory === 'all') {
+                displayNews(allNews);
+            } else if (currentCategory === 'hot') {
+                displayNews(allNews.filter(item => item.isHot));
+            } else {
+                displayNews(allNews.filter(item => item.category === currentCategory));
+            }
+        }
+
+        // Generate more news
+        async function generateMoreNews() {
+            await loadNews();
+        }
+
+        // Expand news (placeholder)
+        function expandNews(id) {
+            alert(`Открыть новость #${id}\n\n(В полной версии здесь будет модальное окно с полным текстом)`);
+        }
+
+        // Share news (placeholder)
+        function shareNews(id) {
+            alert(`Поделиться новостью #${id}`);
+        }
+
+        // Save news (placeholder)
+        function saveNews(id) {
+            alert(`Сохранить новость #${id}`);
+        }
+
+        // Report/details (placeholder)
+        function reportNews(id) {
+            alert(`Подробности о новости #${id}`);
+        }
+    </script>
+</body>
+</html>
+

@@ -5,12 +5,15 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import os
 
 from ..gen.generate import generate_summary
 from ..pipeline.orchestrator import run_pipeline
 from ..gen.post_generator import generate_post_from_storage, get_available_styles
+from ..ingest.news_sources import NewsAggregator
+from ..nlp.controversy_scorer import ControversyScorer
+from ..nlp.translator import translate_and_summarize_news
 
 app = FastAPI(
     title="Trendoscope API",
@@ -195,6 +198,160 @@ async def get_style_status():
         "saved_at": style_data.get("saved_at") if style_data else None,
         "post_count": len(style_data.get("style", {}).get("common_phrases", [])) if style_data else 0
     }
+
+
+@app.get("/api/news/feed")
+async def get_news_feed(
+    category: str = Query(
+        default="all",
+        description="Category filter (all, ai, politics, us, eu, russia)"
+    ),
+    limit: int = Query(
+        default=20,
+        ge=5,
+        le=100,
+        description="Maximum news items to return"
+    ),
+    translate: bool = Query(
+        default=True,
+        description="Translate English news to Russian"
+    )
+):
+    """
+    Get news feed with controversy scoring.
+    
+    Args:
+        category: Filter by category
+        limit: Maximum items
+        translate: Translate English to Russian
+    
+    Returns:
+        List of scored news items
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        logger.info(f"Fetching news: category={category}, limit={limit}")
+        
+        # Determine which sources to include
+        include_ai = category in ['all', 'ai']
+        include_politics = category in ['all', 'politics']
+        include_us = category in ['all', 'us']
+        include_eu = category in ['all', 'eu']
+        include_russia = category in ['all', 'russia']
+        
+        # Fetch news
+        aggregator = NewsAggregator()
+        news_items = aggregator.fetch_trending_topics(
+            include_ai=include_ai,
+            include_politics=include_politics,
+            include_us=include_us,
+            include_eu=include_eu,
+            include_russian=include_russia,
+            max_per_source=3
+        )
+        
+        logger.info(f"Fetched {len(news_items)} news items")
+        
+        # Translate if requested
+        if translate and news_items:
+            try:
+                news_items = translate_and_summarize_news(
+                    news_items,
+                    provider="openai"
+                )
+            except Exception as e:
+                logger.warning(f"Translation failed: {e}, continuing without translation")
+        
+        # Categorize news
+        for item in news_items:
+            item['category'] = _categorize_news(item)
+        
+        # Filter by category if not 'all'
+        if category != 'all':
+            news_items = [
+                item for item in news_items
+                if item['category'] == category
+            ]
+        
+        # Score for controversy
+        scorer = ControversyScorer()
+        scored_items = scorer.score_batch(news_items)
+        
+        # Sort by controversy score (hot first)
+        scored_items.sort(
+            key=lambda x: x['controversy']['score'],
+            reverse=True
+        )
+        
+        # Limit results
+        scored_items = scored_items[:limit]
+        
+        logger.info(f"Returning {len(scored_items)} scored items")
+        
+        return {
+            'success': True,
+            'count': len(scored_items),
+            'category': category,
+            'news': scored_items
+        }
+        
+    except Exception as e:
+        logger.error(f"News feed error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch news: {str(e)}"
+        )
+
+
+def _categorize_news(item: Dict[str, Any]) -> str:
+    """Categorize news item based on content."""
+    text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+    
+    # AI/ML keywords
+    ai_keywords = [
+        'ai', 'artificial intelligence', 'machine learning', 'neural',
+        'gpt', 'chatgpt', 'llm', 'нейросет', 'ии', 'искусственный интеллект'
+    ]
+    
+    # Politics keywords
+    politics_keywords = [
+        'politics', 'government', 'election', 'president', 'minister',
+        'политик', 'правительств', 'выборы', 'президент', 'министр'
+    ]
+    
+    # US keywords
+    us_keywords = [
+        'usa', 'america', 'washington', 'biden', 'trump', 'congress',
+        'сша', 'америк', 'вашингтон'
+    ]
+    
+    # EU keywords
+    eu_keywords = [
+        'europe', 'european union', 'brussels', 'eu',
+        'европ', 'брюссель', 'евросоюз'
+    ]
+    
+    # Russia keywords
+    russia_keywords = [
+        'russia', 'moscow', 'putin', 'kremlin',
+        'россия', 'москва', 'путин', 'кремль'
+    ]
+    
+    # Check categories (order matters - specific to general)
+    if any(kw in text for kw in ai_keywords):
+        return 'ai'
+    elif any(kw in text for kw in us_keywords):
+        return 'us'
+    elif any(kw in text for kw in eu_keywords):
+        return 'eu'
+    elif any(kw in text for kw in russia_keywords):
+        return 'russia'
+    elif any(kw in text for kw in politics_keywords):
+        return 'politics'
+    else:
+        return 'general'
 
 
 @app.post("/api/post/generate")
