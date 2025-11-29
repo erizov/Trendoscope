@@ -515,11 +515,14 @@
                 </a>
             </div>
             <div class="modal-footer">
-                <button class="action-btn" onclick="shareNews()">
-                    📤 Поделиться
+                <button class="action-btn" onclick="shareToTelegram()">
+                    📱 Telegram
                 </button>
-                <button class="action-btn" onclick="saveNews()">
-                    💾 Сохранить
+                <button class="action-btn" onclick="shareToVK()">
+                    📘 VK
+                </button>
+                <button class="action-btn" onclick="copyLink()">
+                    📋 Копировать
                 </button>
             </div>
         </div>
@@ -624,8 +627,11 @@
             if (newsItems.length === 0) {
                 feed.innerHTML = `
                     <div class="empty-state">
-                        <h2>🔍 Нет новостей</h2>
-                        <p>Попробуйте другую категорию</p>
+                        <h2>🔍 Нет новостей в этой категории</h2>
+                        <p>Новости загружаются в фоне. Попробуйте через минуту или выберите другую категорию.</p>
+                        <button class="modal-link" onclick="loadNews(currentCategory)" style="margin-top: 20px;">
+                            🔄 Обновить
+                        </button>
                     </div>
                 `;
                 return;
@@ -667,8 +673,14 @@
                             <button class="action-btn" onclick="event.stopPropagation(); openModal(${index})">
                                 📖 Читать
                             </button>
-                            <button class="action-btn" onclick="event.stopPropagation(); shareNews(${index})">
-                                📤 Поделиться
+                            <button class="action-btn" onclick="event.stopPropagation(); shareToTelegram(${index})">
+                                📱 Telegram
+                            </button>
+                            <button class="action-btn" onclick="event.stopPropagation(); shareToVK(${index})">
+                                📘 VK
+                            </button>
+                            <button class="action-btn" onclick="event.stopPropagation(); copyLink(${index})">
+                                📋 Копировать
                             </button>
                             <button class="action-btn" onclick="event.stopPropagation(); window.open('${item.link}', '_blank')">
                                 🔗 Источник
@@ -738,7 +750,48 @@
             }
         }
 
-        // Share news
+        // Share to Telegram
+        function shareToTelegram(index) {
+            const item = index !== undefined ? allNews[index] : currentNewsItem;
+            if (!item) return;
+            
+            const text = encodeURIComponent(`${item.title}\n\n${item.link}\n\n🔥 via @TrendscopeBot`);
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(item.link)}&text=${text}`, '_blank');
+        }
+        
+        // Share to VK
+        function shareToVK(index) {
+            const item = index !== undefined ? allNews[index] : currentNewsItem;
+            if (!item) return;
+            
+            const url = encodeURIComponent(item.link);
+            const title = encodeURIComponent(item.title);
+            window.open(`https://vk.com/share.php?url=${url}&title=${title}`, '_blank');
+        }
+        
+        // Copy link
+        function copyLink(index) {
+            const item = index !== undefined ? allNews[index] : currentNewsItem;
+            if (!item) return;
+            
+            const text = `${item.title}\n\n${item.link}\n\n🔥 Найдено на Trendoscope`;
+            
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    // Show success message
+                    const btn = event.target;
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ Скопировано!';
+                    btn.style.background = '#10b981';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.background = '';
+                    }, 2000);
+                })
+                .catch(err => alert('Ошибка копирования'));
+        }
+        
+        // Generic share (fallback)
         function shareNews(index) {
             const item = index !== undefined ? allNews[index] : currentNewsItem;
             if (!item) return;
@@ -749,9 +802,7 @@
                 navigator.share({ title: item.title, url: item.link })
                     .catch(err => console.log('Share cancelled'));
             } else {
-                navigator.clipboard.writeText(text)
-                    .then(() => alert('Скопировано в буфер обмена!'))
-                    .catch(err => alert('Ошибка копирования'));
+                copyLink(index);
             }
         }
 
