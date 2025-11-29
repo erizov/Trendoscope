@@ -3,8 +3,12 @@ News sources aggregator.
 Collects trending topics from Russian and international sources.
 """
 import re
+import logging
 from typing import List, Dict, Any
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+logger = logging.getLogger(__name__)
 
 try:
     import httpx
@@ -90,12 +94,12 @@ class NewsAggregator:
         "https://feeds.npr.org/1001/rss.xml",
     ]
 
-    def __init__(self, timeout: int = 30):
+    def __init__(self, timeout: int = 10):
         """
         Initialize news aggregator.
 
         Args:
-            timeout: HTTP request timeout
+            timeout: HTTP request timeout (reduced to 10s for faster response)
         """
         self.timeout = timeout
         if httpx:
@@ -105,7 +109,7 @@ class NewsAggregator:
 
     def fetch_rss_feed(self, url: str, max_items: int = 10) -> List[Dict[str, Any]]:
         """
-        Fetch RSS feed.
+        Fetch RSS feed with timeout and error handling.
 
         Args:
             url: RSS feed URL
@@ -118,6 +122,7 @@ class NewsAggregator:
             return []
 
         try:
+            logger.debug(f"Fetching RSS: {url}")
             response = self.client.get(url)
             feed = feedparser.parse(response.text)
 
@@ -125,7 +130,7 @@ class NewsAggregator:
             for entry in feed.entries[:max_items]:
                 item = {
                     "title": entry.get("title", ""),
-                    "summary": entry.get("summary", ""),
+                    "summary": entry.get("summary", entry.get("description", "")),
                     "link": entry.get("link", ""),
                     "published": entry.get("published", ""),
                     "source": self._extract_source(url),
@@ -133,14 +138,22 @@ class NewsAggregator:
 
                 # Clean HTML from summary
                 if item["summary"] and BeautifulSoup:
-                    soup = BeautifulSoup(item["summary"], 'lxml')
-                    item["summary"] = soup.get_text(strip=True)
+                    try:
+                        soup = BeautifulSoup(item["summary"], 'lxml')
+                        item["summary"] = soup.get_text(strip=True)
+                    except:
+                        # If lxml fails, keep original
+                        pass
 
-                items.append(item)
+                # Only add if has title
+                if item["title"]:
+                    items.append(item)
 
+            logger.debug(f"Fetched {len(items)} items from {url}")
             return items
 
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Failed to fetch {url}: {e}")
             return []
 
     def _extract_source(self, url: str) -> str:
@@ -194,10 +207,12 @@ class NewsAggregator:
         include_politics: bool = True,
         include_us: bool = True,
         include_eu: bool = True,
-        max_per_source: int = 5
+        max_per_source: int = 5,
+        parallel: bool = True,
+        max_workers: int = 10
     ) -> List[Dict[str, Any]]:
         """
-        Fetch trending topics from all sources.
+        Fetch trending topics from all sources with parallel fetching.
 
         Args:
             include_russian: Include Russian general sources
@@ -207,12 +222,12 @@ class NewsAggregator:
             include_us: Include US-specific sources
             include_eu: Include European sources
             max_per_source: Max items per source
+            parallel: Use parallel fetching (faster)
+            max_workers: Max parallel threads
 
         Returns:
             List of all news items
         """
-        all_items = []
-
         sources = []
         if include_russian:
             sources.extend(self.RUSSIAN_SOURCES)
@@ -229,11 +244,36 @@ class NewsAggregator:
         if include_eu:
             sources.extend(self.EUROPEAN_SOURCES)
 
-        for source_url in sources:
-            items = self.fetch_rss_feed(source_url, max_per_source)
-            all_items.extend(items)
+        logger.info(f"Fetching from {len(sources)} sources...")
 
-        return all_items
+        if parallel and len(sources) > 1:
+            # Parallel fetching for speed
+            all_items = []
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                future_to_url = {
+                    executor.submit(self.fetch_rss_feed, url, max_per_source): url
+                    for url in sources
+                }
+                
+                for future in as_completed(future_to_url):
+                    url = future_to_url[future]
+                    try:
+                        items = future.result()
+                        all_items.extend(items)
+                    except Exception as e:
+                        logger.warning(f"Failed to fetch {url}: {e}")
+            
+            logger.info(f"Fetched {len(all_items)} items total")
+            return all_items
+        else:
+            # Sequential fetching (fallback)
+            all_items = []
+            for source_url in sources:
+                items = self.fetch_rss_feed(source_url, max_per_source)
+                all_items.extend(items)
+            
+            logger.info(f"Fetched {len(all_items)} items total")
+            return all_items
 
     def extract_key_topics(
         self,

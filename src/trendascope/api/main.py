@@ -241,15 +241,18 @@ async def get_news_feed(
         include_eu = category in ['all', 'eu']
         include_russia = category in ['all', 'russia']
         
-        # Fetch news
-        aggregator = NewsAggregator()
+        # Fetch news with parallel fetching (fast!)
+        aggregator = NewsAggregator(timeout=5)  # 5 second timeout per source
         news_items = aggregator.fetch_trending_topics(
             include_ai=include_ai,
             include_politics=include_politics,
             include_us=include_us,
             include_eu=include_eu,
             include_russian=include_russia,
-            max_per_source=3
+            include_international=category == 'all',  # Only for 'all' category
+            max_per_source=2,  # Reduced for speed
+            parallel=True,  # Enable parallel fetching
+            max_workers=10  # 10 parallel requests
         )
         
         logger.info(f"Fetched {len(news_items)} news items")
