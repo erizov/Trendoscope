@@ -234,22 +234,30 @@ async def get_news_feed(
     try:
         logger.info(f"Fetching news: category={category}, limit={limit}")
         
-        # Determine which sources to include
-        include_ai = category in ['all', 'ai']
-        include_politics = category in ['all', 'politics']
-        include_us = category in ['all', 'us']
-        include_eu = category in ['all', 'eu']
-        include_russia = category in ['all', 'russia']
+        # Map new categories to source types
+        category_map = {
+            'tech': {'ai': True, 'russian': True},
+            'business': {'russian': True, 'international': True},
+            'politics': {'politics': True, 'us': True, 'russian': True},
+            'conflict': {'politics': True, 'international': True},
+            'society': {'russian': True, 'international': True},
+            'science': {'ai': True, 'international': True},
+            'all': {'ai': True, 'politics': True, 'us': True, 'eu': True, 
+                   'russian': True, 'international': True}
+        }
+        
+        # Get source flags for category
+        sources = category_map.get(category, category_map['all'])
         
         # Fetch news with parallel fetching (fast!)
         aggregator = NewsAggregator(timeout=5)  # 5 second timeout per source
         news_items = aggregator.fetch_trending_topics(
-            include_ai=include_ai,
-            include_politics=include_politics,
-            include_us=include_us,
-            include_eu=include_eu,
-            include_russian=include_russia,
-            include_international=category == 'all',  # Only for 'all' category
+            include_ai=sources.get('ai', False),
+            include_politics=sources.get('politics', False),
+            include_us=sources.get('us', False),
+            include_eu=sources.get('eu', False),
+            include_russian=sources.get('russian', False),
+            include_international=sources.get('international', False),
             max_per_source=2,  # Reduced for speed
             parallel=True,  # Enable parallel fetching
             max_workers=10  # 10 parallel requests
@@ -309,50 +317,63 @@ async def get_news_feed(
 
 
 def _categorize_news(item: Dict[str, Any]) -> str:
-    """Categorize news item based on content."""
+    """Categorize news item based on content - 7 main categories."""
     text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
     
-    # AI/ML keywords
-    ai_keywords = [
-        'ai', 'artificial intelligence', 'machine learning', 'neural',
-        'gpt', 'chatgpt', 'llm', 'нейросет', 'ии', 'искусственный интеллект'
+    # Tech (AI, ML, technology, platforms, internet)
+    tech_keywords = [
+        'ai', 'artificial', 'intelligence', 'gpt', 'neural', 'machine', 'learning',
+        'tech', 'technology', 'algorithm', 'data', 'digital', 'internet', 'platform',
+        'cloud', 'software', 'app', 'ии', 'нейросет', 'технолог', 'алгоритм', 'данные',
+        'telegram', 'google', 'microsoft', 'apple', 'meta', 'программ', 'код'
     ]
     
-    # Politics keywords
+    # Business & Economy
+    business_keywords = [
+        'market', 'stock', 'economy', 'business', 'company', 'startup',
+        'investment', 'ceo', 'бизнес', 'компани', 'рынок', 'экономик',
+        'стартап', 'инвестиц', 'акци', 'финанс', 'банк', 'валют'
+    ]
+    
+    # War & Conflict
+    conflict_keywords = [
+        'war', 'military', 'army', 'weapon', 'conflict', 'attack', 'defense',
+        'война', 'военн', 'армия', 'оружи', 'конфликт', 'удар', 'атак', 'оборон'
+    ]
+    
+    # Politics (general, any country)
     politics_keywords = [
-        'politics', 'government', 'election', 'president', 'minister',
-        'политик', 'правительств', 'выборы', 'президент', 'министр'
+        'politics', 'government', 'election', 'president', 'minister', 'congress',
+        'политик', 'правительств', 'выборы', 'президент', 'министр', 'партия',
+        'biden', 'trump', 'putin', 'путин', 'parliament', 'senate', 'закон', 'law'
     ]
     
-    # US keywords
-    us_keywords = [
-        'usa', 'america', 'washington', 'biden', 'trump', 'congress',
-        'сша', 'америк', 'вашингтон'
+    # Society (social issues, people, rights)
+    society_keywords = [
+        'social', 'people', 'society', 'protest', 'rights', 'law', 'court', 'justice',
+        'социальн', 'общество', 'люди', 'права', 'закон', 'суд', 'справедлив'
     ]
     
-    # EU keywords
-    eu_keywords = [
-        'europe', 'european union', 'brussels', 'eu',
-        'европ', 'брюссель', 'евросоюз'
+    # Science & Research
+    science_keywords = [
+        'science', 'research', 'study', 'university', 'scientist', 'discovery',
+        'наука', 'исследован', 'ученые', 'университет', 'открыти', 'experiment',
+        'climate', 'energy', 'environment', 'климат', 'энергия', 'экология'
     ]
     
-    # Russia keywords
-    russia_keywords = [
-        'russia', 'moscow', 'putin', 'kremlin',
-        'россия', 'москва', 'путин', 'кремль'
-    ]
-    
-    # Check categories (order matters - specific to general)
-    if any(kw in text for kw in ai_keywords):
-        return 'ai'
-    elif any(kw in text for kw in us_keywords):
-        return 'us'
-    elif any(kw in text for kw in eu_keywords):
-        return 'eu'
-    elif any(kw in text for kw in russia_keywords):
-        return 'russia'
+    # Check categories (order matters - most specific first)
+    if any(kw in text for kw in conflict_keywords):
+        return 'conflict'
+    elif any(kw in text for kw in tech_keywords):
+        return 'tech'
+    elif any(kw in text for kw in business_keywords):
+        return 'business'
     elif any(kw in text for kw in politics_keywords):
         return 'politics'
+    elif any(kw in text for kw in science_keywords):
+        return 'science'
+    elif any(kw in text for kw in society_keywords):
+        return 'society'
     else:
         return 'general'
 

@@ -460,20 +460,23 @@
             <button class="category-btn active" data-category="all">
                 <span>🌍</span> Все
             </button>
-            <button class="category-btn" data-category="ai">
-                <span>🤖</span> ИИ & ML
+            <button class="category-btn" data-category="tech">
+                <span>🤖</span> Технологии
             </button>
             <button class="category-btn" data-category="politics">
                 <span>🏛️</span> Политика
             </button>
-            <button class="category-btn" data-category="us">
-                <span>🇺🇸</span> США
+            <button class="category-btn" data-category="business">
+                <span>💼</span> Экономика
             </button>
-            <button class="category-btn" data-category="eu">
-                <span>🇪🇺</span> ЕС
+            <button class="category-btn" data-category="conflict">
+                <span>⚔️</span> Конфликты
             </button>
-            <button class="category-btn" data-category="russia">
-                <span>🇷🇺</span> Россия
+            <button class="category-btn" data-category="society">
+                <span>👥</span> Общество
+            </button>
+            <button class="category-btn" data-category="science">
+                <span>🔬</span> Наука
             </button>
         </div>
     </div>
@@ -533,11 +536,16 @@
 
         // Category icons
         const categoryIcons = {
-            'ai': '🤖',
+            'tech': '🤖',
+            'ai': '🤖',  // legacy support
             'politics': '🏛️',
-            'us': '🇺🇸',
-            'eu': '🇪🇺',
-            'russia': '🇷🇺',
+            'business': '💼',
+            'conflict': '⚔️',
+            'society': '👥',
+            'science': '🔬',
+            'us': '🇺🇸',  // legacy support
+            'eu': '🇪🇺',  // legacy support
+            'russia': '🇷🇺',  // legacy support
             'general': '📰'
         };
 
@@ -692,26 +700,36 @@
             }
             
             // Handle summary - show full text or message if empty
-            const summary = item.summary || item.description || '';
-            if (summary && summary.trim().length > 0) {
-                document.getElementById('modalText').textContent = summary;
+            const summary = item.summary || item.description || item.text || '';
+            const summaryText = String(summary).trim();
+            
+            console.log('Modal debug:', {
+                title: item.title,
+                hasSummary: !!item.summary,
+                hasDescription: !!item.description,
+                hasText: !!item.text,
+                summaryLength: summaryText.length,
+                summaryPreview: summaryText.substring(0, 200),
+                source: item.source,
+                fullItem: item
+            });
+            
+            if (summaryText.length > 10) {
+                // Has actual content
+                document.getElementById('modalText').textContent = summaryText;
+                document.getElementById('modalText').style.fontStyle = 'normal';
+                document.getElementById('modalText').style.color = '#e7e9ea';
             } else {
+                // No content available
                 document.getElementById('modalText').innerHTML = 
-                    '<p style="color: #71767b; font-style: italic;">Полный текст недоступен. Нажмите "Читать на источнике" ниже.</p>';
+                    '<p style="color: #71767b; font-style: italic;">⚠️ Полный текст недоступен в RSS-ленте.</p>' +
+                    '<p style="color: #71767b; font-style: italic; margin-top: 10px;">Нажмите "Читать на источнике" ниже для просмотра полной статьи.</p>';
             }
             
             document.getElementById('modalLink').href = item.link || '#';
             
             document.getElementById('modal').classList.add('active');
             document.body.style.overflow = 'hidden';
-            
-            // Log for debugging
-            console.log('Modal opened for:', {
-                title: item.title,
-                summary: summary.substring(0, 100) + '...',
-                summaryLength: summary.length,
-                source: item.source
-            });
         }
 
         // Close modal
