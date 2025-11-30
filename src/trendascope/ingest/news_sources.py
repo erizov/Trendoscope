@@ -93,6 +93,13 @@ class NewsAggregator:
         "https://www.washingtonpost.com/rss/politics",
         "https://feeds.npr.org/1001/rss.xml",
     ]
+    
+    # Legal & Criminal news sources
+    LEGAL_SOURCES = [
+        "https://www.theverge.com/rss/index.xml",  # Tech law & policy
+        "https://www.law.com/dailyreport/rss/",
+        "https://feeds.feedburner.com/scl/scl",  # Supreme Court
+    ]
 
     def __init__(self, timeout: int = 10):
         """
@@ -224,6 +231,7 @@ class NewsAggregator:
         include_politics: bool = True,
         include_us: bool = True,
         include_eu: bool = True,
+        include_legal: bool = False,
         max_per_source: int = 5,
         parallel: bool = True,
         max_workers: int = 10
@@ -238,6 +246,7 @@ class NewsAggregator:
             include_politics: Include politics-specialized sources
             include_us: Include US-specific sources
             include_eu: Include European sources
+            include_legal: Include legal/criminal news sources
             max_per_source: Max items per source
             parallel: Use parallel fetching (faster)
             max_workers: Max parallel threads
@@ -260,6 +269,8 @@ class NewsAggregator:
             sources.extend(self.US_SOURCES)
         if include_eu:
             sources.extend(self.EUROPEAN_SOURCES)
+        if include_legal:
+            sources.extend(self.LEGAL_SOURCES)
 
         logger.info(f"Fetching from {len(sources)} sources...")
 

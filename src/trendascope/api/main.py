@@ -240,10 +240,11 @@ async def get_news_feed(
             'business': {'russian': True, 'international': True},
             'politics': {'politics': True, 'us': True, 'russian': True},
             'conflict': {'politics': True, 'international': True},
+            'legal': {'legal': True, 'international': True, 'russian': True},
             'society': {'russian': True, 'international': True},
             'science': {'ai': True, 'international': True},
             'all': {'ai': True, 'politics': True, 'us': True, 'eu': True, 
-                   'russian': True, 'international': True}
+                   'russian': True, 'international': True, 'legal': True}
         }
         
         # Get source flags for category
@@ -258,6 +259,7 @@ async def get_news_feed(
             include_eu=sources.get('eu', False),
             include_russian=sources.get('russian', False),
             include_international=sources.get('international', False),
+            include_legal=sources.get('legal', False),
             max_per_source=2,  # Reduced for speed
             parallel=True,  # Enable parallel fetching
             max_workers=10  # 10 parallel requests
@@ -317,8 +319,18 @@ async def get_news_feed(
 
 
 def _categorize_news(item: Dict[str, Any]) -> str:
-    """Categorize news item based on content - 7 main categories."""
+    """Categorize news item based on content - 8 main categories."""
     text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+    
+    # Legal & Criminal (courts, law, crime, justice)
+    legal_keywords = [
+        'court', 'judge', 'lawyer', 'attorney', 'trial', 'verdict', 'sentenced', 'conviction',
+        'criminal', 'crime', 'arrest', 'police', 'investigation', 'lawsuit', 'legal',
+        'justice', 'prison', 'jail', 'prosecutor', 'defendant', 'case', 'ruling',
+        'суд', 'судья', 'адвокат', 'прокурор', 'приговор', 'уголовн', 'преступ',
+        'полиц', 'следств', 'дело', 'обвинение', 'оправдан', 'тюрьма', 'арест',
+        'юрист', 'право', 'закон', 'нарушение', 'расследование', 'обыск'
+    ]
     
     # Tech (AI, ML, technology, platforms, internet)
     tech_keywords = [
@@ -345,13 +357,13 @@ def _categorize_news(item: Dict[str, Any]) -> str:
     politics_keywords = [
         'politics', 'government', 'election', 'president', 'minister', 'congress',
         'политик', 'правительств', 'выборы', 'президент', 'министр', 'партия',
-        'biden', 'trump', 'putin', 'путин', 'parliament', 'senate', 'закон', 'law'
+        'biden', 'trump', 'putin', 'путин', 'parliament', 'senate'
     ]
     
     # Society (social issues, people, rights)
     society_keywords = [
-        'social', 'people', 'society', 'protest', 'rights', 'law', 'court', 'justice',
-        'социальн', 'общество', 'люди', 'права', 'закон', 'суд', 'справедлив'
+        'social', 'people', 'society', 'protest', 'rights',
+        'социальн', 'общество', 'люди', 'права', 'справедлив'
     ]
     
     # Science & Research
@@ -362,7 +374,9 @@ def _categorize_news(item: Dict[str, Any]) -> str:
     ]
     
     # Check categories (order matters - most specific first)
-    if any(kw in text for kw in conflict_keywords):
+    if any(kw in text for kw in legal_keywords):
+        return 'legal'
+    elif any(kw in text for kw in conflict_keywords):
         return 'conflict'
     elif any(kw in text for kw in tech_keywords):
         return 'tech'
