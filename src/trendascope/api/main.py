@@ -14,6 +14,7 @@ from ..gen.post_generator import generate_post_from_storage, get_available_style
 from ..ingest.news_sources import NewsAggregator
 from ..nlp.controversy_scorer import ControversyScorer
 from ..nlp.translator import translate_and_summarize_news
+from ..storage.news_db import NewsDatabase
 
 app = FastAPI(
     title="Trendoscope API",
@@ -453,4 +454,246 @@ async def generate_post_endpoint(
         raise HTTPException(
             status_code=500,
             detail=f"Post generation failed: {str(e)}"
+        )
+
+
+@app.get("/api/news/search")
+async def search_news_in_db(
+    query: str = Query(..., description="Search phrase in Russian or English"),
+    category: str = Query(default="all", description="Filter by category"),
+    limit: int = Query(default=20, le=100, description="Max results"),
+    min_controversy: Optional[int] = Query(
+        default=None,
+        description="Minimum controversy score (0-100)"
+    )
+):
+    """
+    Full-text search in news database.
+    
+    Supports:
+    - Russian and English keywords
+    - Phrase search (use quotes)
+    - Category filtering
+    - Controversy filtering
+    
+    Example queries:
+    - "программист AI"
+    - "truck driver conviction"
+    - "суд приговор"
+    """
+    try:
+        with NewsDatabase() as db:
+            results = db.search(
+                query,
+                category=category if category != 'all' else None,
+                limit=limit,
+                min_controversy=min_controversy
+            )
+        
+        return {
+            'success': True,
+            'query': query,
+            'count': len(results),
+            'results': results
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Search failed: {str(e)}"
+        )
+
+
+@app.get("/api/news/db/stats")
+async def get_database_stats():
+    """
+    Get news database statistics.
+    
+    Returns:
+    - Total items count
+    - Items per category
+    - Top sources
+    - Controversy distribution
+    """
+    try:
+        with NewsDatabase() as db:
+            stats = db.get_statistics()
+        
+        return {
+            'success': True,
+            'stats': stats
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Stats retrieval failed: {str(e)}"
+        )
+
+
+@app.get("/api/news/trending/keywords")
+async def get_trending_keywords(
+    limit: int = Query(default=20, le=50, description="Max keywords")
+):
+    """
+    Get trending keywords from stored news.
+    
+    Useful for:
+    - Tag clouds
+    - Trending topics
+    - Popular themes
+    """
+    try:
+        with NewsDatabase() as db:
+            keywords = db.get_trending_keywords(limit=limit)
+        
+        return {
+            'success': True,
+            'count': len(keywords),
+            'keywords': keywords
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Trending keywords failed: {str(e)}"
+        )
+
+
+@app.get("/api/news/db/recent")
+async def get_recent_news_from_db(
+    category: str = Query(default="all", description="Filter by category"),
+    limit: int = Query(default=20, le=100, description="Max results"),
+    min_controversy: Optional[int] = Query(
+        default=None,
+        description="Minimum controversy score"
+    )
+):
+    """
+    Get recent news from database.
+    
+    Much faster than fetching from RSS feeds.
+    """
+    try:
+        with NewsDatabase() as db:
+            results = db.get_recent(
+                category=category if category != 'all' else None,
+                limit=limit,
+                min_controversy=min_controversy
+            )
+        
+        return {
+            'success': True,
+            'count': len(results),
+            'results': results
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Recent news retrieval failed: {str(e)}"
+        )
+
+
+@app.get("/api/news/db/controversial")
+async def get_controversial_news_from_db(
+    category: str = Query(default="all", description="Filter by category"),
+    limit: int = Query(default=10, le=50, description="Max results"),
+    days: Optional[int] = Query(
+        default=None,
+        description="Only from last N days"
+    )
+):
+    """
+    Get most controversial news from database.
+    """
+    try:
+        with NewsDatabase() as db:
+            results = db.get_top_controversial(
+                category=category if category != 'all' else None,
+                limit=limit,
+                days=days
+            )
+        
+        return {
+            'success': True,
+            'count': len(results),
+            'results': results
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Controversial news retrieval failed: {str(e)}"
+        )
+
+
+@app.post("/api/news/db/store")
+async def store_news_batch(
+    fetch_fresh: bool = Query(
+        default=True,
+        description="Fetch fresh news or use dummy data"
+    )
+):
+    """
+    Fetch and store news in database.
+    
+    This endpoint:
+    1. Fetches news from RSS feeds
+    2. Scores controversy
+    3. Translates to Russian
+    4. Stores in database
+    
+    Run this periodically to keep database updated.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        if fetch_fresh:
+            logger.info("Fetching fresh news from RSS feeds...")
+            
+            # Fetch news
+            aggregator = NewsAggregator(timeout=5)
+            news_items = aggregator.fetch_trending_topics(
+                include_russian=True,
+                include_ai=True,
+                max_per_source=2,
+                parallel=True
+            )
+            
+            logger.info(f"Fetched {len(news_items)} items")
+            
+            # Score controversy
+            scorer = ControversyScorer()
+            scored_items = scorer.score_batch(news_items)
+            
+            # Store in database
+            with NewsDatabase() as db:
+                inserted = db.bulk_insert(scored_items)
+                stats = db.get_statistics()
+            
+            return {
+                'success': True,
+                'fetched': len(news_items),
+                'inserted': inserted,
+                'total_in_db': stats['total_items']
+            }
+        
+        else:
+            # Just return current stats
+            with NewsDatabase() as db:
+                stats = db.get_statistics()
+            
+            return {
+                'success': True,
+                'message': 'No fetch requested',
+                'total_in_db': stats['total_items']
+            }
+    
+    except Exception as e:
+        logger.error(f"Store news failed: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Store news failed: {str(e)}"
         )
