@@ -110,7 +110,20 @@ class NewsAggregator:
         """
         self.timeout = timeout
         if httpx:
-            self.client = httpx.Client(timeout=timeout, follow_redirects=True)
+            # Configure timeout with separate connect and read timeouts
+            # SSL handshake is part of connect timeout
+            timeout_config = httpx.Timeout(
+                connect=5.0,  # 5s for connection + SSL handshake
+                read=timeout,  # Read timeout
+                write=5.0,     # Write timeout
+                pool=10.0      # Pool timeout
+            )
+            self.client = httpx.Client(
+                timeout=timeout_config,
+                follow_redirects=True,
+                verify=True,  # SSL verification
+                limits=httpx.Limits(max_keepalive_connections=20)
+            )
         else:
             self.client = None
 
@@ -130,7 +143,35 @@ class NewsAggregator:
 
         try:
             logger.debug(f"Fetching RSS: {url}")
-            response = self.client.get(url)
+            # Suppress SSL warnings for timeout errors
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning)
+                try:
+                    response = self.client.get(url)
+                except Exception as e:
+                    # Handle various timeout and connection errors
+                    error_type = type(e).__name__
+                    error_msg = str(e)
+                    
+                    # Check for timeout/connection errors
+                    if any(keyword in error_msg.lower() for keyword in 
+                           ['timeout', 'timed out', 'connection', 'ssl', 
+                            'handshake', 'network']):
+                        # Log at debug level to avoid cluttering output
+                        logger.debug(
+                            f"Connection/timeout error for {url}: "
+                            f"{error_type} - {error_msg[:100]}"
+                        )
+                        return []
+                    else:
+                        # Re-raise unexpected errors
+                        logger.warning(
+                            f"Unexpected error fetching {url}: "
+                            f"{error_type} - {error_msg}"
+                        )
+                        raise
+            
             feed = feedparser.parse(response.text)
 
             items = []
@@ -289,7 +330,13 @@ class NewsAggregator:
                         items = future.result()
                         all_items.extend(items)
                     except Exception as e:
-                        logger.warning(f"Failed to fetch {url}: {e}")
+                        # Log at debug level for timeout/connection errors
+                        error_msg = str(e)
+                        if any(keyword in error_msg.lower() for keyword in 
+                               ['timeout', 'timed out', 'connection', 'ssl']):
+                            logger.debug(f"Timeout/connection error for {url}")
+                        else:
+                            logger.warning(f"Failed to fetch {url}: {type(e).__name__}")
             
             logger.info(f"Fetched {len(all_items)} items total")
             return all_items
