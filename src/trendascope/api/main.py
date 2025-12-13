@@ -293,11 +293,28 @@ async def get_news_feed(
         scorer = ControversyScorer()
         scored_items = scorer.score_batch(news_items)
         
-        # Sort by controversy score (hot first)
-        scored_items.sort(
-            key=lambda x: x['controversy']['score'],
-            reverse=True
-        )
+        # Add fetch timestamp to each item (for sorting by recency)
+        from datetime import datetime
+        fetch_time = datetime.now().isoformat()
+        for item in scored_items:
+            # Add fetched_at timestamp (when we fetched/generated this news)
+            if 'fetched_at' not in item:
+                item['fetched_at'] = fetch_time
+            # Ensure published field exists for sorting
+            if 'published' not in item or not item['published']:
+                item['published'] = item.get('published_at', fetch_time)
+        
+        # Sort by most recent first (fetched_at, then published date)
+        # This ensures last generated news appears on top
+        def sort_key(item):
+            # Primary: fetched_at (when we generated it)
+            fetched = item.get('fetched_at', '')
+            # Secondary: published date (from RSS feed)
+            published = item.get('published', '') or item.get('published_at', '')
+            # Use fetched_at first, then published
+            return (fetched, published)
+        
+        scored_items.sort(key=sort_key, reverse=True)  # Most recent first
         
         # Limit results
         scored_items = scored_items[:limit]

@@ -310,7 +310,8 @@ class NewsDatabase:
             sql += " AND controversy_score >= ?"
             params.append(min_controversy)
         
-        sql += " ORDER BY published_at DESC LIMIT ?"
+        # Sort by fetched_at (when generated) first, then published_at
+        sql += " ORDER BY fetched_at DESC, published_at DESC LIMIT ?"
         params.append(limit)
         
         cursor.execute(sql, params)
@@ -339,7 +340,7 @@ class NewsDatabase:
             FROM news
             JOIN keywords ON news.id = keywords.news_id
             WHERE keywords.keyword = ?
-            ORDER BY news.published_at DESC
+            ORDER BY news.fetched_at DESC, news.published_at DESC
             LIMIT ?
         """, (keyword.lower(), limit))
         
