@@ -107,7 +107,8 @@ async def root():
 
 
 @app.post("/api/generate/summary")
-def generate(
+async def generate(
+    request: Request,
     items: List[Dict],
     mode: str = "logospheric",
     provider: str = "demo",
@@ -125,6 +126,12 @@ def generate(
     Returns:
         Generated summary with titles, ideas, and viral potential
     """
+    # Rate limiting
+    try:
+        limiter.check(f"20/minute", request)
+    except RateLimitExceeded:
+        return APIResponse.error_response("Rate limit exceeded: 20 requests per minute")
+    
     try:
         return generate_summary(
             items,
@@ -174,6 +181,12 @@ async def run_full_pipeline(
     Returns:
         Complete pipeline results including posts, trends, and generated content
     """
+    # Rate limiting
+    try:
+        limiter.check(f"5/minute", request)
+    except RateLimitExceeded:
+        return APIResponse.error_response("Rate limit exceeded: 5 requests per minute")
+    
     try:
         result = run_pipeline(
             blog_url=blog_url,
@@ -250,8 +263,8 @@ async def get_style_status():
 
 
 @app.get("/api/news/feed")
-@limiter.limit("30/minute")
 async def get_news_feed(
+    request: Request,
     category: str = Query(
         default="all",
         description="Category filter (all, ai, politics, us, eu, russia)"
@@ -278,8 +291,11 @@ async def get_news_feed(
     Returns:
         List of scored news items
     """
-    import logging
-    logger = logging.getLogger(__name__)
+    # Rate limiting
+    try:
+        limiter.check(f"30/minute", request)
+    except RateLimitExceeded:
+        return APIResponse.error_response("Rate limit exceeded: 30 requests per minute")
     
     try:
         logger.info(f"Fetching news: category={category}, limit={limit}")
@@ -481,8 +497,8 @@ def _categorize_news(item: Dict[str, Any]) -> str:
 
 
 @app.post("/api/post/generate")
-@limiter.limit("10/minute")
 async def generate_post_endpoint(
+    request: Request,
     style: str = Query(
         default="philosophical",
         description="Post style"
@@ -525,8 +541,11 @@ async def generate_post_endpoint(
     Returns:
         Generated post with title, text, and tags
     """
-    import logging
-    logger = logging.getLogger(__name__)
+    # Rate limiting
+    try:
+        limiter.check(f"10/minute", request)
+    except RateLimitExceeded:
+        return APIResponse.error_response("Rate limit exceeded: 10 requests per minute")
     
     try:
         from ..gen.post_generator import generate_post_from_storage
@@ -754,8 +773,8 @@ async def get_controversial_news_from_db(
 
 
 @app.post("/api/news/db/store")
-@limiter.limit("5/minute")
 async def store_news_batch(
+    request: Request,
     fetch_fresh: bool = Query(
         default=True,
         description="Fetch fresh news or use dummy data"
