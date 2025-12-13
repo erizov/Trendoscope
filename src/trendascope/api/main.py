@@ -41,6 +41,9 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Include routers
+app.include_router(posts_router)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
