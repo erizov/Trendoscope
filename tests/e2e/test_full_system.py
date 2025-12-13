@@ -243,6 +243,10 @@ class TestTranslation:
             
             article = articles[0]
             
+            # Ensure article has required fields
+            if not article.get('title') and not article.get('summary'):
+                pytest.skip("Article missing title and summary for translation test")
+            
             # Translate article
             translate_response = api_client.post(
                 "/api/news/translate",

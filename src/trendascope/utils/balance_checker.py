@@ -24,7 +24,7 @@ def check_openai_balance() -> Tuple[bool, Optional[str]]:
             OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         
         if not OPENAI_API_KEY:
-            logger.warning("openai_no_api_key")
+            logger.warning("openai_no_api_key", extra={})
             return False, "No OpenAI API key configured"
         
         # If API key exists, assume balance exists
@@ -54,7 +54,7 @@ def check_anthropic_balance() -> Tuple[bool, Optional[str]]:
             ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
         
         if not ANTHROPIC_API_KEY:
-            logger.warning("anthropic_no_api_key")
+            logger.warning("anthropic_no_api_key", extra={})
             return False, "No Anthropic API key configured"
         
         # If API key exists, assume balance exists
