@@ -741,13 +741,25 @@ async def generate_post_endpoint(
         else:
             os.environ.pop("SKIP_TRANSLATION", None)
 
-        result = generate_post_from_storage(
-            style=style,
-            topic=topic,
-            provider=provider,
-            model=model,
-            temperature=temperature
-        )
+        # Use author style if provided
+        if author_style:
+            from ..gen.author_post_generator import generate_post_with_author_style
+            result = generate_post_with_author_style(
+                author_id=author_style,
+                topic=topic,
+                provider=provider,
+                model=model,
+                temperature=temperature,
+                translate=translate
+            )
+        else:
+            result = generate_post_from_storage(
+                style=style,
+                topic=topic,
+                provider=provider,
+                model=model,
+                temperature=temperature
+            )
         
         # Track cost if using AI provider
         if provider in ["openai", "anthropic"]:
