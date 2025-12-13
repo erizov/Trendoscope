@@ -310,8 +310,12 @@ async def get_news_feed(
         le=100,
         description="Maximum news items to return"
     ),
+    language: str = Query(
+        default="all",
+        description="Language filter (all, ru, en)"
+    ),
     translate: bool = Query(
-        default=True,
+        default=False,
         description="Translate English news to Russian"
     )
 ):
@@ -362,6 +366,30 @@ async def get_news_feed(
         )
         
         logger.info(f"Fetched {len(news_items)} news items")
+        
+        # Detect and set language for each item
+        for item in news_items:
+            # Detect language (simple heuristic)
+            title = item.get('title', '').lower()
+            summary = item.get('summary', '').lower()
+            text = f"{title} {summary}"
+            
+            # Simple language detection
+            cyrillic_chars = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+            total_chars = len([c for c in text if c.isalpha()])
+            
+            if total_chars > 0 and cyrillic_chars / total_chars > 0.3:
+                item['language'] = 'ru'
+            else:
+                item['language'] = 'en'
+        
+        # Filter by language if specified
+        if language != 'all':
+            news_items = [
+                item for item in news_items
+                if item.get('language') == language
+            ]
+            logger.info(f"Filtered to {len(news_items)} items for language={language}")
         
         # Translate if requested
         if translate and news_items:

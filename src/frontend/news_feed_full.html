@@ -46,6 +46,54 @@
             color: #71767b;
         }
 
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            color: #71767b;
+            white-space: nowrap;
+        }
+
+        .control-group select,
+        .control-group button {
+            padding: 6px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-group select:hover,
+        .control-group button:hover {
+            background: #2a2a2a;
+            border-color: #555;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: #1d9bf0;
+        }
+
+        .control-group button.active {
+            background: #1d9bf0;
+            border-color: #1d9bf0;
+        }
+
         .categories {
             display: flex;
             gap: 10px;
@@ -456,6 +504,21 @@
             <div class="logo">🔥 Провокационные Новости</div>
             <div class="stats" id="stats">Загрузка...</div>
         </div>
+        <div class="controls-row">
+            <div class="control-group">
+                <label>🌐 Язык:</label>
+                <select id="languageFilter">
+                    <option value="all">Все языки</option>
+                    <option value="ru">Русский</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <button id="translateToggle" class="active" onclick="toggleTranslate()">
+                    🔄 Перевод: Вкл
+                </button>
+            </div>
+        </div>
         <div class="categories">
             <button class="category-btn active" data-category="all">
                 <span>🌍</span> Все
@@ -556,8 +619,27 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             setupCategoryFilters();
+            setupLanguageFilter();
             loadNews('all');
         });
+
+        // Setup language filter
+        function setupLanguageFilter() {
+            const languageSelect = document.getElementById('languageFilter');
+            languageSelect.addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                loadNews(currentCategory);
+            });
+        }
+
+        // Toggle translation
+        function toggleTranslate() {
+            translateEnabled = !translateEnabled;
+            const btn = document.getElementById('translateToggle');
+            btn.textContent = translateEnabled ? '🔄 Перевод: Вкл' : '🔄 Перевод: Выкл';
+            btn.classList.toggle('active', translateEnabled);
+            loadNews(currentCategory);
+        }
 
         // Setup filters
         function setupCategoryFilters() {
@@ -588,8 +670,10 @@
             try {
                 console.log(`Loading news for category: ${category}`);
                 
+                const languageParam = currentLanguage !== 'all' ? `&language=${currentLanguage}` : '';
+                const translateParam = `&translate=${translateEnabled}`;
                 const response = await fetch(
-                    `${API_URL}/api/news/feed?category=${category}&limit=30&translate=false`
+                    `${API_URL}/api/news/feed?category=${category}&limit=30${languageParam}${translateParam}`
                 );
 
                 if (!response.ok) {
