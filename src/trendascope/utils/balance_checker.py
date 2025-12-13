@@ -3,9 +3,9 @@ Check AI provider balance and auto-fallback to demo mode.
 """
 import os
 from typing import Optional, Tuple
-from ..utils.logger import get_logger
+import logging
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def check_openai_balance() -> Tuple[bool, Optional[str]]:
