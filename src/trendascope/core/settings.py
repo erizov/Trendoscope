@@ -28,6 +28,7 @@ class DatabaseSettings(BaseSettings):
     
     class Config:
         env_prefix = "DB_"
+        extra = "ignore"  # Ignore extra fields
 
 
 class LLMSettings(BaseSettings):
@@ -92,6 +93,7 @@ class CacheSettings(BaseSettings):
     
     class Config:
         env_prefix = "CACHE_"
+        extra = "ignore"  # Ignore extra fields
 
 
 class NewsSettings(BaseSettings):
@@ -130,6 +132,7 @@ class NewsSettings(BaseSettings):
     
     class Config:
         env_prefix = "NEWS_"
+        extra = "ignore"  # Ignore extra fields
 
 
 class AppSettings(BaseSettings):
@@ -169,6 +172,7 @@ class AppSettings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"  # Ignore extra fields from environment
 
 
 # Global settings instance
