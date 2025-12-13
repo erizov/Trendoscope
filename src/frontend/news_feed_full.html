@@ -513,14 +513,6 @@
                     <option value="en">English</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label>🔄 Перевод:</label>
-                <select id="translateTo">
-                    <option value="none">Нет</option>
-                    <option value="ru">На русский</option>
-                    <option value="en">To English</option>
-                </select>
-            </div>
         </div>
         <div class="categories">
             <button class="category-btn active" data-category="all">
@@ -602,7 +594,6 @@
         let allNews = [];
         let currentCategory = 'all';
         let currentLanguage = 'all';
-        let translateTo = 'none';  // Default: no translation
         let currentNewsItem = null;
 
         // Category icons
@@ -625,7 +616,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupCategoryFilters();
             setupLanguageFilter();
-            setupTranslateTo();
             loadNews('all');
         });
 
@@ -638,14 +628,6 @@
             });
         }
 
-        // Setup translate to dropdown
-        function setupTranslateTo() {
-            const translateSelect = document.getElementById('translateTo');
-            translateSelect.addEventListener('change', (e) => {
-                translateTo = e.target.value;
-                loadNews(currentCategory);
-            });
-        }
 
         // Setup filters
         function setupCategoryFilters() {
@@ -677,9 +659,8 @@
                 console.log(`Loading news for category: ${category}`);
                 
                 const languageParam = currentLanguage !== 'all' ? `&language=${currentLanguage}` : '';
-                const translateParam = translateTo !== 'none' ? `&translate_to=${translateTo}` : '';
                 const response = await fetch(
-                    `${API_URL}/api/news/feed?category=${category}&limit=30${languageParam}${translateParam}`
+                    `${API_URL}/api/news/feed?category=${category}&limit=30${languageParam}`
                 );
 
                 if (!response.ok) {
@@ -734,9 +715,12 @@
             feed.innerHTML = newsItems.map((item, index) => {
                 const controversy = item.controversy || {};
                 const isHot = controversy.score >= 60;
+                const itemLanguage = item.language || 'en';
+                const targetLanguage = itemLanguage === 'ru' ? 'en' : 'ru';
+                const translateButtonText = itemLanguage === 'ru' ? '🌐 To English' : '🌐 На русский';
                 
                 return `
-                    <div class="news-card" onclick="openModal(${index})">
+                    <div class="news-card" onclick="openModal(${index})" data-index="${index}">
                         ${isHot ? `<div class="hot-take">${controversy.emoji} ${controversy.label.toUpperCase()}</div>` : ''}
                         
                         <div class="news-header">
@@ -750,8 +734,8 @@
                             </div>
                         </div>
 
-                        <div class="news-title">${escapeHtml(item.title)}</div>
-                        <div class="news-summary">${escapeHtml(item.summary).substring(0, 200)}...</div>
+                        <div class="news-title" id="title-${index}">${escapeHtml(item.title)}</div>
+                        <div class="news-summary" id="summary-${index}">${escapeHtml(item.summary).substring(0, 200)}...</div>
 
                         ${controversy.score >= 40 ? `
                             <div class="controversy-meter">
@@ -766,6 +750,9 @@
                         <div class="news-actions">
                             <button class="action-btn" onclick="event.stopPropagation(); openModal(${index})">
                                 📖 Читать
+                            </button>
+                            <button class="action-btn translate-btn" onclick="event.stopPropagation(); translateArticle(${index}, '${targetLanguage}')" id="translate-btn-${index}">
+                                ${translateButtonText}
                             </button>
                             <button class="action-btn" onclick="event.stopPropagation(); shareToTelegram(${index})">
                                 📱 Telegram

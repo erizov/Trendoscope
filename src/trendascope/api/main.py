@@ -798,6 +798,83 @@ async def search_news_in_db(
         )
 
 
+@app.post("/api/news/translate")
+@limiter.limit("20/minute")
+async def translate_article(
+    request: Request,
+    article: Dict[str, Any] = Body(...)
+):
+    """
+    Translate a single article.
+    
+    Request body:
+    {
+        "title": "Article title",
+        "summary": "Article summary",
+        "source_language": "en",
+        "target_language": "ru"
+    }
+    
+    Returns:
+    {
+        "success": true,
+        "translated": {
+            "title": "Translated title",
+            "summary": "Translated summary"
+        }
+    }
+    """
+    try:
+        title = article.get('title', '')
+        summary = article.get('summary', '')
+        source_lang = article.get('source_language', 'en')
+        target_lang = article.get('target_language', 'ru')
+        
+        if not title and not summary:
+            raise HTTPException(
+                status_code=400,
+                detail="Title or summary required"
+            )
+        
+        # Create a single-item list for translation
+        news_item = {
+            'title': title,
+            'summary': summary,
+            'language': source_lang
+        }
+        
+        # Translate using free translator (limit to 1 item)
+        translated_items = translate_and_summarize_news(
+            [news_item],
+            target_language=target_lang,
+            provider="free",
+            max_items=1
+        )
+        
+        if not translated_items or len(translated_items) == 0:
+            raise HTTPException(
+                status_code=500,
+                detail="Translation failed"
+            )
+        
+        translated = translated_items[0]
+        
+        return {
+            "success": True,
+            "translated": {
+                "title": translated.get('title', title),
+                "summary": translated.get('summary', summary)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Translation error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Translation failed: {str(e)}"
+        )
+
+
 @app.get("/api/news/db/stats")
 async def get_database_stats():
     """
