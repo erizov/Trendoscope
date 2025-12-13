@@ -514,9 +514,12 @@
                 </select>
             </div>
             <div class="control-group">
-                <button id="translateToggle" class="active" onclick="toggleTranslate()">
-                    🔄 Перевод: Вкл
-                </button>
+                <label>🔄 Перевод:</label>
+                <select id="translateTo">
+                    <option value="none">Нет</option>
+                    <option value="ru">На русский</option>
+                    <option value="en">To English</option>
+                </select>
             </div>
         </div>
         <div class="categories">
@@ -599,7 +602,7 @@
         let allNews = [];
         let currentCategory = 'all';
         let currentLanguage = 'all';
-        let translateEnabled = false;  // Default: translation OFF
+        let translateTo = 'none';  // Default: no translation
         let currentNewsItem = null;
 
         // Category icons
@@ -622,6 +625,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             setupCategoryFilters();
             setupLanguageFilter();
+            setupTranslateTo();
             loadNews('all');
         });
 
@@ -634,13 +638,13 @@
             });
         }
 
-        // Toggle translation
-        function toggleTranslate() {
-            translateEnabled = !translateEnabled;
-            const btn = document.getElementById('translateToggle');
-            btn.textContent = translateEnabled ? '🔄 Перевод: Вкл' : '🔄 Перевод: Выкл';
-            btn.classList.toggle('active', translateEnabled);
-            loadNews(currentCategory);
+        // Setup translate to dropdown
+        function setupTranslateTo() {
+            const translateSelect = document.getElementById('translateTo');
+            translateSelect.addEventListener('change', (e) => {
+                translateTo = e.target.value;
+                loadNews(currentCategory);
+            });
         }
 
         // Setup filters

@@ -312,11 +312,11 @@ async def get_news_feed(
     ),
     language: str = Query(
         default="all",
-        description="Language filter (all, ru, en)"
+        description="Language filter - show only articles in this language (all, ru, en)"
     ),
-    translate: bool = Query(
-        default=False,
-        description="Translate English news to Russian"
+    translate_to: str = Query(
+        default="none",
+        description="Translate articles to target language (none, ru, en)"
     )
 ):
     """
