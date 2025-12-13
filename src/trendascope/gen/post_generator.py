@@ -2,6 +2,7 @@
 Post generator using author's style from analyzed blog.
 Generates posts based on trending news in author's voice.
 """
+import os
 from typing import List, Dict, Any, Optional
 
 from ..nlp.style_analyzer import get_style_prompt, get_style_analyzer
