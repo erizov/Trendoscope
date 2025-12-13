@@ -17,8 +17,8 @@ try:
 except ImportError:
     anthropic = None
 
-from ..core.exceptions import LLMProviderError
-from ..core.resilience import CircuitBreaker, retry_with_backoff
+from ...core.exceptions import LLMProviderError
+from ...core.resilience import CircuitBreaker, retry_with_backoff
 
 logger = logging.getLogger(__name__)
 

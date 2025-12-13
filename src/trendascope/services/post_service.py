@@ -8,6 +8,7 @@ from ..gen.post_generator import generate_post_from_storage
 from ..gen.model_selector import select_model_for_task
 from ..gen.cost_tracker import track_call
 from ..utils.logger import get_logger
+from ..utils.balance_checker import auto_fallback_provider
 
 logger = get_logger(__name__)
 
