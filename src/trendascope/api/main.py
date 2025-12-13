@@ -19,6 +19,8 @@ from ..ingest.news_sources import NewsAggregator
 from ..nlp.controversy_scorer import ControversyScorer
 from ..nlp.translator import translate_and_summarize_news
 from ..storage.news_db import NewsDatabase
+from ..services.news_service import NewsService
+from ..services.post_service import PostService
 from ..utils.response import APIResponse
 from ..utils.logger import setup_logging, get_logger
 
