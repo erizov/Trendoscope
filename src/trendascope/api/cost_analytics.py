@@ -32,10 +32,17 @@ async def get_costs(
     try:
         stats = get_cost_stats()
         provider_costs = get_provider_costs()
-        metrics = get_metrics()
+        try:
+            metrics = get_metrics()
+        except Exception as metrics_error:
+            logger.warning(f"Could not get metrics: {metrics_error}")
+            metrics = {}
         
-        # Calculate totals
-        total_cost = sum(provider_costs.values())
+        # Calculate totals (exclude 'total' key from sum)
+        total_cost = sum(
+            cost for key, cost in provider_costs.items() 
+            if key != "total"
+        )
         
         # Get cost breakdown
         breakdown = {}
