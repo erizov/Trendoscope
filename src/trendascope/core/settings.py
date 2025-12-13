@@ -38,6 +38,10 @@ class LLMSettings(BaseSettings):
         default=None,
         description="OpenAI API key"
     )
+    openai_api_base: Optional[str] = Field(
+        default=None,
+        description="OpenAI API base URL (for proxy support)"
+    )
     openai_model: str = Field(
         default="gpt-3.5-turbo",
         description="Default OpenAI model"
