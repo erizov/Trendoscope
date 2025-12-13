@@ -508,3 +508,7 @@ async def handle_message(message: types.Message):
 
 Все файлы закоммичены и запушены в репозиторий.
 
+
+
+
+

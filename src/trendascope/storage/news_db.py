@@ -646,3 +646,7 @@ def search_news(
     with NewsDatabase(db_path) as db:
         return db.search(query, **kwargs)
 
+
+
+
+

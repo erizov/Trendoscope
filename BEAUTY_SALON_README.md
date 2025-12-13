@@ -376,3 +376,6 @@ async def handle_message(message: types.Message):
 
 **17 сообщений → полная запись с контактами → довольный клиент!**
 
+
+
+

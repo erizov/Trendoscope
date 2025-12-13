@@ -537,3 +537,7 @@ For 50k items, **SQLite FTS5 is perfect**! 🎯
 
 Ready to search 50,000 news items in milliseconds! 🚀
 
+
+
+
+

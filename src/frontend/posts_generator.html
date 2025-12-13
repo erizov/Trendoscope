@@ -462,9 +462,15 @@
                 container.innerHTML = '';
             }
             
+            // Add new posts at the beginning (top of list)
             posts.forEach(post => {
                 const postCard = createPostCard(post);
-                container.appendChild(postCard);
+                // Insert at the beginning instead of appending
+                if (container.firstChild) {
+                    container.insertBefore(postCard, container.firstChild);
+                } else {
+                    container.appendChild(postCard);
+                }
             });
         }
 

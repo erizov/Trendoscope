@@ -183,7 +183,7 @@ def call_llm(
     prompt: str,
     model: Optional[str] = None,
     temperature: float = 0.7,
-    max_tokens: int = 4000
+    max_tokens: int = 2000  # Reduced from 4000 to save costs
 ) -> str:
     """
     Call LLM provider.
