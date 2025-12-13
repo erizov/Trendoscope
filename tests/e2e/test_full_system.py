@@ -34,7 +34,7 @@ AUTHORS = [
 TRANSLATION_LANGUAGES = ['en', 'ru']
 
 
-class TestStatistics:
+class E2EStatistics:
     """Track test statistics."""
     
     def __init__(self):
@@ -71,7 +71,7 @@ class TestStatistics:
         self.stats['total_tests'] += 1
         if passed:
             self.stats['passed_tests'] += 1
-            self.log('INFO', f"✅ {test_name} - PASSED")
+            self.log('INFO', f"[PASS] {test_name}")
         else:
             self.stats['failed_tests'] += 1
             self.stats['errors'].append({
@@ -79,7 +79,7 @@ class TestStatistics:
                 'error': error,
                 'timestamp': datetime.now().isoformat()
             })
-            self.log('ERROR', f"❌ {test_name} - FAILED: {error}")
+            self.log('ERROR', f"[FAIL] {test_name}: {error}")
     
     def record_category(self, category: str):
         """Record tested category."""
@@ -136,7 +136,7 @@ class TestStatistics:
 
 
 # Global statistics instance
-stats = TestStatistics()
+stats = E2EStatistics()
 
 
 @pytest.fixture(scope="session")

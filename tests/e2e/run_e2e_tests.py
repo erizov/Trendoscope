@@ -16,16 +16,49 @@ def main():
     
     # Check if server is running
     print("Checking if server is running...")
+    server_running = False
     try:
         import httpx
-        response = httpx.get("http://localhost:8003/api/health", timeout=5)
-        if response.status_code in [200, 503]:
-            print("✅ Server is running")
-        else:
-            print("⚠️  Server responded with unexpected status")
+        # Use longer timeout and try multiple endpoints
+        client = httpx.Client(timeout=10.0)
+        try:
+            response = client.get("http://localhost:8003/api/health", timeout=10.0)
+            if response.status_code in [200, 503]:
+                print("[OK] Server is running")
+                server_running = True
+            else:
+                print("[WARNING] Server responded with unexpected status")
+                server_running = True  # Server is responding, just unexpected status
+        except httpx.TimeoutException:
+            # Try root endpoint as fallback with shorter timeout
+            try:
+                response = client.get("http://localhost:8003/", timeout=3.0)
+                print("[OK] Server is running (root endpoint)")
+                server_running = True
+            except Exception:
+                pass
+        except Exception as e:
+            # Try one more time with root endpoint
+            try:
+                response = client.get("http://localhost:8003/", timeout=3.0)
+                print("[OK] Server is running (root endpoint)")
+                server_running = True
+            except Exception:
+                pass
+        finally:
+            client.close()
     except Exception as e:
-        print(f"❌ Server is not running: {e}")
-        print("Please start the server with: python run.py")
+        pass  # Will check below
+    
+    if not server_running:
+        print("[ERROR] Server is not running or not responding")
+        print()
+        print("To start the server:")
+        print("  1. Open a new terminal")
+        print("  2. cd to trendascope directory")
+        print("  3. Run: python run.py")
+        print()
+        print("Then run this test script again.")
         sys.exit(1)
     
     print()
@@ -38,7 +71,7 @@ def main():
         import pytest_html
         html_available = True
     except ImportError:
-        print("⚠️  pytest-html not installed, HTML report will be skipped")
+        print("[WARNING] pytest-html not installed, HTML report will be skipped")
         print("   Install with: pip install pytest-html")
         print()
     
@@ -73,8 +106,8 @@ def main():
         print("TEST SUMMARY")
         print("=" * 80)
         print(f"Total Tests: {summary['total']}")
-        print(f"Passed: {summary['passed']} ✅")
-        print(f"Failed: {summary['failed']} ❌")
+        print(f"Passed: {summary['passed']} [OK]")
+        print(f"Failed: {summary['failed']} [FAIL]")
         print(f"Success Rate: {summary['success_rate']:.2f}%")
         print(f"Duration: {summary['duration_seconds']:.2f}s")
         print()
@@ -100,8 +133,8 @@ def main():
             print("ERRORS")
             print("=" * 80)
             for error in stats['errors']:
-                print(f"❌ {error['test']}")
-                print(f"   {error['error']}")
+                print(f"[FAIL] {error['test']}")
+                print(f"       {error['error']}")
                 print()
         
         print(f"Full report saved to: {report_path}")

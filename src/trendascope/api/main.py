@@ -278,13 +278,21 @@ async def check_balance(
     provider: str = Query(default="openai", description="Provider to check")
 ):
     """Check AI provider balance."""
-    has_balance, error = check_provider_balance(provider)
-    return {
-        "provider": provider,
-        "has_balance": has_balance,
-        "error": error,
-        "recommended_provider": "demo" if not has_balance else provider
-    }
+    try:
+        from ..utils.balance_checker import check_provider_balance
+        has_balance, error = check_provider_balance(provider)
+        return {
+            "provider": provider,
+            "has_balance": has_balance,
+            "error": error,
+            "recommended_provider": "demo" if not has_balance else provider
+        }
+    except Exception as e:
+        logger.error(f"Balance check error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Balance check failed: {str(e)}"
+        )
 
 
 @app.get("/api/health")
@@ -853,7 +861,8 @@ async def search_news_in_db(
 @limiter.limit("20/minute")
 async def translate_article(
     request: Request,
-    article: Dict[str, Any] = Body(...)
+    article: Dict[str, Any] = Body(...),
+    target_language: str = Query(..., description="Target language (ru, en)")
 ):
     """
     Translate a single article.
@@ -862,9 +871,11 @@ async def translate_article(
     {
         "title": "Article title",
         "summary": "Article summary",
-        "source_language": "en",
-        "target_language": "ru"
+        "source_language": "en"
     }
+    
+    Query parameter:
+    - target_language: Target language (ru, en)
     
     Returns:
     {
@@ -878,8 +889,9 @@ async def translate_article(
     try:
         title = article.get('title', '')
         summary = article.get('summary', '')
-        source_lang = article.get('source_language', 'en')
-        target_lang = article.get('target_language', 'ru')
+        source_lang = article.get('source_language', article.get('language', 'en'))
+        # Use query parameter (required)
+        target_lang = target_language
         
         if not title and not summary:
             raise HTTPException(

@@ -1,26 +1,101 @@
 {
   "statistics": {
-    "total_tests": 1,
-    "passed_tests": 0,
-    "failed_tests": 1,
+    "total_tests": 28,
+    "passed_tests": 15,
+    "failed_tests": 13,
     "errors": [
       {
-        "test": "fetch_news_all",
+        "test": "translate_to_en",
+        "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+        "timestamp": "2025-12-13T19:38:36.248874"
+      },
+      {
+        "test": "translate_to_ru",
+        "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+        "timestamp": "2025-12-13T19:38:36.258560"
+      },
+      {
+        "test": "generate_post_tolstoy",
         "error": "timed out",
-        "timestamp": "2025-12-13T19:30:20.416112"
+        "timestamp": "2025-12-13T19:39:36.273563"
+      },
+      {
+        "test": "generate_post_dostoevsky",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:40:38.350508"
+      },
+      {
+        "test": "generate_post_pushkin",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:41:40.423053"
+      },
+      {
+        "test": "generate_post_lermontov",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:42:42.482825"
+      },
+      {
+        "test": "generate_post_mark_twain",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:45:44.235847"
+      },
+      {
+        "test": "generate_post_faulkner",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:46:46.303305"
+      },
+      {
+        "test": "balance_check",
+        "error": "Balance check returned 500\nassert 500 == 200\n +  where 500 = <Response [500 Internal Server Error]>.status_code",
+        "timestamp": "2025-12-13T19:46:59.662359"
+      },
+      {
+        "test": "analytics_costs",
+        "error": "/api/analytics/costs returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+        "timestamp": "2025-12-13T19:47:01.981206"
+      },
+      {
+        "test": "analytics_usage",
+        "error": "/api/analytics/usage returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+        "timestamp": "2025-12-13T19:47:01.987048"
+      },
+      {
+        "test": "analytics_trends",
+        "error": "/api/analytics/trends returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+        "timestamp": "2025-12-13T19:47:01.994305"
+      },
+      {
+        "test": "invalid_author_style",
+        "error": "timed out",
+        "timestamp": "2025-12-13T19:48:15.422915"
       }
     ],
-    "categories_tested": [],
+    "categories_tested": [
+      "business",
+      "science",
+      "general",
+      "all",
+      "society",
+      "conflict",
+      "tech",
+      "legal",
+      "politics"
+    ],
     "authors_tested": [],
     "translations_tested": 0,
-    "api_endpoints_tested": [],
-    "articles_fetched": 0,
-    "posts_generated": 0,
-    "test_duration": 33.009453773498535
+    "api_endpoints_tested": [
+      "/api/health",
+      "/api/news/feed",
+      "/metrics",
+      "/api/post/generate"
+    ],
+    "articles_fetched": 16,
+    "posts_generated": 2,
+    "test_duration": 697.9759426116943
   },
   "logs": [
     {
-      "timestamp": "2025-12-13T19:29:47.844463",
+      "timestamp": "2025-12-13T19:36:45.689126",
       "level": "INFO",
       "message": "Test session started",
       "data": {
@@ -28,17 +103,179 @@
       }
     },
     {
-      "timestamp": "2025-12-13T19:30:20.416128",
+      "timestamp": "2025-12-13T19:37:02.246793",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_all",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:37:13.500003",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_tech",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:37:25.375130",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_politics",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:37:37.012566",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_business",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:37:48.109620",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_conflict",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:00.220909",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_legal",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:11.769532",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_society",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:22.888939",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_science",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:36.240599",
+      "level": "INFO",
+      "message": "[PASS] fetch_news_general",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:36.248884",
       "level": "ERROR",
-      "message": "❌ fetch_news_all - FAILED: timed out",
+      "message": "[FAIL] translate_to_en: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:38:36.258568",
+      "level": "ERROR",
+      "message": "[FAIL] translate_to_ru: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:39:36.273577",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_tolstoy: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:40:38.350536",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_dostoevsky: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:41:40.423102",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_pushkin: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:42:42.482859",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_lermontov: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:43:44.264981",
+      "level": "INFO",
+      "message": "[PASS] generate_post_turgenev",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:44:44.230330",
+      "level": "INFO",
+      "message": "[PASS] generate_post_leskov",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:45:44.235879",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_mark_twain: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:46:46.303353",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_faulkner: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:46:59.627429",
+      "level": "INFO",
+      "message": "[PASS] health_check",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:46:59.636761",
+      "level": "INFO",
+      "message": "[PASS] metrics_endpoint",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:46:59.662385",
+      "level": "ERROR",
+      "message": "[FAIL] balance_check: Balance check returned 500\nassert 500 == 200\n +  where 500 = <Response [500 Internal Server Error]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:47:01.981219",
+      "level": "ERROR",
+      "message": "[FAIL] analytics_costs: /api/analytics/costs returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:47:01.987080",
+      "level": "ERROR",
+      "message": "[FAIL] analytics_usage: /api/analytics/usage returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:47:01.994333",
+      "level": "ERROR",
+      "message": "[FAIL] analytics_trends: /api/analytics/trends returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:47:15.413749",
+      "level": "INFO",
+      "message": "[PASS] invalid_category",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:48:15.422935",
+      "level": "ERROR",
+      "message": "[FAIL] invalid_author_style: timed out",
+      "data": {}
+    },
+    {
+      "timestamp": "2025-12-13T19:48:23.641545",
+      "level": "INFO",
+      "message": "[PASS] missing_translation_params",
       "data": {}
     }
   ],
   "summary": {
-    "total": 1,
-    "passed": 0,
-    "failed": 1,
-    "success_rate": 0.0,
-    "duration_seconds": 33.009453773498535
+    "total": 28,
+    "passed": 15,
+    "failed": 13,
+    "success_rate": 53.57142857142857,
+    "duration_seconds": 697.9759426116943
   }
 }
