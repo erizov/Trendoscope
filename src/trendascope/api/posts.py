@@ -14,7 +14,8 @@ from ..utils.logger import get_logger
 logger = get_logger(__name__)
 router = APIRouter(prefix="/api/posts", tags=["posts"])
 
-limiter = Limiter(key_func=get_remote_address)
+# Create limiter for posts router
+posts_limiter = Limiter(key_func=get_remote_address)
 post_storage = PostStorage()
 
 
@@ -44,12 +45,6 @@ async def list_posts(
     limit: int = Query(default=50, le=100)
 ):
     """List saved posts."""
-    if limiter:
-        try:
-            limiter.check("30/minute", request)
-        except RateLimitExceeded:
-            return APIResponse.error_response("Rate limit exceeded")
-    
     try:
         posts = post_storage.list_posts(limit=limit)
         return APIResponse.success_response(
