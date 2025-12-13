@@ -295,24 +295,45 @@ async def get_news_feed(
         
         # Add fetch timestamp to each item (for sorting by recency)
         from datetime import datetime
-        fetch_time = datetime.now().isoformat()
+        import time
+        fetch_timestamp = time.time()  # Unix timestamp for accurate sorting
+        
         for item in scored_items:
             # Add fetched_at timestamp (when we fetched/generated this news)
+            # Use Unix timestamp for accurate numeric sorting
             if 'fetched_at' not in item:
-                item['fetched_at'] = fetch_time
+                item['fetched_at'] = fetch_timestamp
+            elif isinstance(item.get('fetched_at'), str):
+                # Convert ISO string to timestamp if needed
+                try:
+                    item['fetched_at'] = datetime.fromisoformat(
+                        item['fetched_at'].replace('Z', '+00:00')
+                    ).timestamp()
+                except:
+                    item['fetched_at'] = fetch_timestamp
             # Ensure published field exists for sorting
             if 'published' not in item or not item['published']:
-                item['published'] = item.get('published_at', fetch_time)
+                item['published'] = item.get('published_at', '')
         
-        # Sort by most recent first (fetched_at, then published date)
+        # Sort by most recent first (fetched_at timestamp, then published date)
         # This ensures last generated news appears on top
         def sort_key(item):
-            # Primary: fetched_at (when we generated it)
-            fetched = item.get('fetched_at', '')
-            # Secondary: published date (from RSS feed)
+            # Primary: fetched_at timestamp (when we generated it) - higher = newer
+            fetched = item.get('fetched_at', 0)
+            if isinstance(fetched, str):
+                try:
+                    fetched = datetime.fromisoformat(
+                        fetched.replace('Z', '+00:00')
+                    ).timestamp()
+                except:
+                    fetched = 0
+            
+            # Secondary: published date (from RSS feed) - for tie-breaking
             published = item.get('published', '') or item.get('published_at', '')
-            # Use fetched_at first, then published
-            return (fetched, published)
+            # Convert published string to comparable value
+            published_sort = published if published else ''
+            
+            return (fetched, published_sort)
         
         scored_items.sort(key=sort_key, reverse=True)  # Most recent first
         
