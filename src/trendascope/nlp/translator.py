@@ -1,61 +1,191 @@
 """
 News translator with context preservation.
 Translates English news to Russian maintaining nuance and style.
+Supports free translation via deep-translator.
 """
 from typing import List, Dict, Any, Optional
 import json
 import re
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Try to import free translator
+try:
+    from deep_translator import GoogleTranslator
+    FREE_TRANSLATOR_AVAILABLE = True
+except ImportError:
+    FREE_TRANSLATOR_AVAILABLE = False
+    GoogleTranslator = None
 
 
 def translate_and_summarize_news(
     news_items: List[Dict[str, Any]],
-    provider: str = "openai",
+    target_language: str = "ru",
+    provider: str = "free",
     model: Optional[str] = None,
     preserve_context: bool = True
 ) -> List[Dict[str, Any]]:
     """
-    Translate English news to Russian with context preservation.
+    Translate news items to target language.
     
     Args:
         news_items: List of news items to translate
-        provider: LLM provider for translation
-        model: Model name
+        target_language: Target language ('ru' or 'en')
+        provider: Translation provider ('free' for free translator, 'openai' for paid)
+        model: Model name (for paid providers)
         preserve_context: Maintain meaning and emotional tone
+    
+    Returns:
+        List of translated news items
+    """
+    if not news_items:
+        return []
+    
+    # Use free translator by default
+    if provider == "free" and FREE_TRANSLATOR_AVAILABLE:
+        return _translate_with_free_service(news_items, target_language)
+    elif provider == "openai":
+        # Fallback to OpenAI for paid translation
+        return _translate_with_llm(news_items, target_language, model)
+    else:
+        # If free translator not available, return original
+        logger.warning("Free translator not available, returning original items")
+        return news_items
+
+
+def _translate_with_free_service(
+    news_items: List[Dict[str, Any]],
+    target_language: str
+) -> List[Dict[str, Any]]:
+    """
+    Translate news using free Google Translate service.
+    
+    Args:
+        news_items: List of news items
+        target_language: Target language ('ru' or 'en')
+    
+    Returns:
+        List of translated news items
+    """
+    if not FREE_TRANSLATOR_AVAILABLE:
+        return news_items
+    
+    # Map language codes
+    lang_map = {
+        'ru': 'ru',
+        'en': 'en',
+        'russian': 'ru',
+        'english': 'en'
+    }
+    target_lang = lang_map.get(target_language.lower(), 'ru')
+    source_lang = 'en' if target_lang == 'ru' else 'ru'
+    
+    translated_items = []
+    
+    for item in news_items:
+        # Detect current language
+        text = f"{item.get('title', '')} {item.get('summary', '')}"
+        current_lang = 'ru' if _is_russian(text) else 'en'
+        
+        # Only translate if needed
+        if current_lang == target_lang:
+            # Already in target language
+            translated_items.append({**item, 'translated': False})
+            continue
+        
+        try:
+            # Translate title
+            title = item.get('title', '')
+            if title:
+                translator = GoogleTranslator(source=source_lang, target=target_lang)
+                translated_title = translator.translate(title)
+            else:
+                translated_title = title
+            
+            # Translate summary
+            summary = item.get('summary', '')
+            if summary:
+                # Split long text into chunks (Google Translate has limits)
+                if len(summary) > 5000:
+                    # Split by sentences
+                    sentences = summary.split('. ')
+                    translated_sentences = []
+                    for sentence in sentences:
+                        if sentence.strip():
+                            try:
+                                translator = GoogleTranslator(source=source_lang, target=target_lang)
+                                translated_sentences.append(translator.translate(sentence))
+                            except Exception as e:
+                                logger.debug(f"Translation error for sentence: {e}")
+                                translated_sentences.append(sentence)
+                    translated_summary = '. '.join(translated_sentences)
+                else:
+                    translator = GoogleTranslator(source=source_lang, target=target_lang)
+                    translated_summary = translator.translate(summary)
+            else:
+                translated_summary = summary
+            
+            # Create translated item
+            translated_item = {
+                **item,
+                'title': translated_title,
+                'summary': translated_summary,
+                'language': target_lang,
+                'translated': True
+            }
+            translated_items.append(translated_item)
+            
+        except Exception as e:
+            logger.warning(f"Translation failed for item: {e}")
+            # Return original item if translation fails
+            translated_items.append({**item, 'translated': False})
+    
+    return translated_items
+
+
+def _translate_with_llm(
+    news_items: List[Dict[str, Any]],
+    target_language: str,
+    model: Optional[str]
+) -> List[Dict[str, Any]]:
+    """
+    Translate using LLM (OpenAI) - paid option.
+    
+    Args:
+        news_items: List of news items
+        target_language: Target language ('ru' or 'en')
+        model: Model name
     
     Returns:
         List of translated news items
     """
     from ..gen.llm.providers import call_llm
     
-    if not news_items:
-        return []
-    
-    # Separate Russian and English news
-    russian_news = []
-    english_news = []
+    # Separate by current language
+    items_to_translate = []
+    items_already_correct = []
     
     for item in news_items:
         text = f"{item.get('title', '')} {item.get('summary', '')}"
-        if _is_russian(text):
-            russian_news.append(item)
+        current_lang = 'ru' if _is_russian(text) else 'en'
+        
+        if current_lang == target_language:
+            items_already_correct.append({**item, 'translated': False})
         else:
-            english_news.append(item)
+            items_to_translate.append(item)
     
-    # Russian news doesn't need translation
-    translated = russian_news.copy()
+    if not items_to_translate:
+        return items_already_correct
     
-    # Translate English news in batches
-    if english_news:
-        batch_size = 5
-        for i in range(0, len(english_news), batch_size):
-            batch = english_news[i:i + batch_size]
-            translated_batch = _translate_batch(
-                batch,
-                provider,
-                model,
-                preserve_context
-            )
-            translated.extend(translated_batch)
+    # Translate in batches
+    translated = items_already_correct.copy()
+    batch_size = 5
+    
+    for i in range(0, len(items_to_translate), batch_size):
+        batch = items_to_translate[i:i + batch_size]
+        translated_batch = _translate_batch_llm(batch, target_language, model)
+        translated.extend(translated_batch)
     
     return translated
 
@@ -83,14 +213,17 @@ def _is_russian(text: str) -> bool:
     return (cyrillic_count / total_letters) > 0.3
 
 
-def _translate_batch(
+def _translate_batch_llm(
     batch: List[Dict[str, Any]],
-    provider: str,
-    model: Optional[str],
-    preserve_context: bool
+    target_language: str,
+    model: Optional[str]
 ) -> List[Dict[str, Any]]:
-    """Translate a batch of news items."""
+    """Translate a batch of news items using LLM."""
     from ..gen.llm.providers import call_llm
+    
+    # Determine source and target
+    target_lang_name = "русский" if target_language == "ru" else "English"
+    source_lang_name = "английского" if target_language == "ru" else "русского"
     
     # Format news for translation
     news_list = []

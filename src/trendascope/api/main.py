@@ -411,10 +411,12 @@ async def get_news_feed(
                 ]
                 
                 if items_to_translate:
-                    logger.info(f"Translating {len(items_to_translate)} items to {translate_to}")
+                    logger.info(f"Translating {len(items_to_translate)} items to {translate_to} using free translator")
+                    # Use free translator by default
                     translated = translate_and_summarize_news(
                         items_to_translate,
-                        provider="openai"
+                        target_language=translate_to,
+                        provider="free"  # Use free translator
                     )
                     
                     # Update translated items in the list
