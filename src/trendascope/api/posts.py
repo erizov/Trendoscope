@@ -21,7 +21,7 @@ post_storage = PostStorage()
 @router.post("/save")
 async def save_post(
     request: Request,
-    post: Dict
+    post: PostSaveRequest
 ):
     """Save a generated post."""
     try:
@@ -30,7 +30,7 @@ async def save_post(
         return APIResponse.error_response("Rate limit exceeded")
     
     try:
-        post_id = post_storage.save_post(post)
+        post_id = post_storage.save_post(post.dict())
         return APIResponse.success_response(
             data={"post_id": post_id},
             metadata={"request_id": getattr(request.state, "request_id", None)}
@@ -91,7 +91,7 @@ async def get_post(
 async def update_post(
     request: Request,
     post_id: str,
-    updates: Dict
+    updates: PostUpdateRequest
 ):
     """Update a post."""
     try:
@@ -100,7 +100,9 @@ async def update_post(
         return APIResponse.error_response("Rate limit exceeded")
     
     try:
-        success = post_storage.update_post(post_id, updates)
+        # Only include non-None fields
+        update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+        success = post_storage.update_post(post_id, update_dict)
         if not success:
             return APIResponse.error_response("Post not found")
         
