@@ -122,7 +122,8 @@ class NewsAggregator:
                 timeout=timeout_config,
                 follow_redirects=True,
                 verify=True,  # SSL verification
-                limits=httpx.Limits(max_keepalive_connections=20)
+                limits=httpx.Limits(max_keepalive_connections=20),
+                headers={"Accept-Charset": "utf-8"}  # Request UTF-8
             )
         else:
             self.client = None
@@ -172,7 +173,13 @@ class NewsAggregator:
                         )
                         raise
             
-            feed = feedparser.parse(response.text)
+            # Ensure UTF-8 encoding for proper Russian character handling
+            if response.encoding is None or response.encoding.lower() not in ['utf-8', 'utf8']:
+                response.encoding = 'utf-8'
+            
+            # Parse feed with explicit encoding handling
+            feed_content = response.text
+            feed = feedparser.parse(feed_content)
 
             items = []
             for entry in feed.entries[:max_items]:
@@ -188,9 +195,36 @@ class NewsAggregator:
                     # Fallback to summary or description
                     content = entry.get("summary", entry.get("description", ""))
                 
+                # Fix encoding issues (mojibake - double-encoded UTF-8)
+                def fix_encoding(text):
+                    """Fix double-encoded UTF-8 text (mojibake)."""
+                    if not text:
+                        return ""
+                    if isinstance(text, bytes):
+                        try:
+                            return text.decode('utf-8')
+                        except UnicodeDecodeError:
+                            return text.decode('utf-8', errors='replace')
+                    if isinstance(text, str):
+                        # Check if it looks like mojibake (common Russian chars)
+                        # If text contains patterns like "Р"Рё" instead of "Ди", it's double-encoded
+                        try:
+                            # Try to detect and fix double encoding
+                            # Common pattern: UTF-8 bytes interpreted as Latin-1
+                            if any(ord(c) > 127 for c in text[:100] if text):
+                                # Try to fix: encode as latin1 then decode as utf8
+                                fixed = text.encode('latin1', errors='ignore').decode('utf-8', errors='replace')
+                                # Only use if it looks better (has fewer replacement chars)
+                                if fixed and '\ufffd' not in fixed[:50]:
+                                    return fixed
+                        except (UnicodeEncodeError, UnicodeDecodeError):
+                            pass
+                        return text
+                    return str(text)
+                
                 item = {
-                    "title": entry.get("title", ""),
-                    "summary": content,
+                    "title": fix_encoding(entry.get("title", "")),
+                    "summary": fix_encoding(content),
                     "link": entry.get("link", ""),
                     "published": entry.get("published", ""),
                     "source": self._extract_source(url),

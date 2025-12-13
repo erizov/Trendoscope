@@ -5,12 +5,19 @@ Shows how to store, search, and retrieve news.
 """
 import sys
 import os
+from pathlib import Path
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+# Add src directory to Python path (for both runtime and IDE)
+project_root = Path(__file__).parent.absolute()
+src_path = project_root / 'src'
+if str(src_path) not in sys.path:
+    sys.path.insert(0, str(src_path))
 
-from trendascope.storage.news_db import NewsDatabase
-from trendascope.ingest.news_sources import NewsAggregator
-from trendascope.nlp.controversy_scorer import ControversyScorer
+# Imports (path is set above, so these work at runtime)
+# For IDE: ensure Python interpreter is set to project root or src/trendascope
+from trendascope.storage.news_db import NewsDatabase  # noqa: E402
+from trendascope.ingest.news_sources import NewsAggregator  # noqa: E402
+from trendascope.nlp.controversy_scorer import ControversyScorer  # noqa: E402
 
 
 def demo_basic_operations():

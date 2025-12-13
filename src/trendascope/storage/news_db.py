@@ -39,6 +39,9 @@ class NewsDatabase:
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row  # Return dict-like rows
         
+        # Ensure UTF-8 encoding for text handling
+        self.conn.execute("PRAGMA encoding = 'UTF-8'")
+        
         self._init_database()
     
     def _init_database(self):

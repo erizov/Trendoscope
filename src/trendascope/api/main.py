@@ -34,8 +34,22 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(
     title="Trendoscope API",
     description="Analyze LiveJournal posts and generate viral content",
-    version="2.2.0"
+    version="2.2.0",
+    default_response_class=JSONResponse
 )
+
+# Ensure UTF-8 encoding for all responses
+@app.middleware("http")
+async def add_utf8_header(request: Request, call_next):
+    """Add UTF-8 charset to all responses."""
+    response = await call_next(request)
+    if "content-type" in response.headers:
+        content_type = response.headers["content-type"]
+        if "charset" not in content_type.lower():
+            response.headers["content-type"] = f"{content_type}; charset=utf-8"
+    else:
+        response.headers["content-type"] = "application/json; charset=utf-8"
+    return response
 
 # Add rate limiter to app
 app.state.limiter = limiter
