@@ -1,79 +1,59 @@
 {
   "statistics": {
     "total_tests": 28,
-    "passed_tests": 21,
-    "failed_tests": 7,
+    "passed_tests": 26,
+    "failed_tests": 2,
     "errors": [
       {
         "test": "translate_to_en",
         "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-13T23:10:50.113339"
+        "timestamp": "2025-12-14T00:36:16.606839"
       },
       {
         "test": "translate_to_ru",
         "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-13T23:10:50.120657"
-      },
-      {
-        "test": "generate_post_tolstoy",
-        "error": "timed out",
-        "timestamp": "2025-12-13T23:11:50.141605"
-      },
-      {
-        "test": "generate_post_dostoevsky",
-        "error": "timed out",
-        "timestamp": "2025-12-13T23:12:52.223932"
-      },
-      {
-        "test": "generate_post_lermontov",
-        "error": "timed out",
-        "timestamp": "2025-12-13T23:14:48.009128"
-      },
-      {
-        "test": "generate_post_turgenev",
-        "error": "timed out",
-        "timestamp": "2025-12-13T23:15:50.075725"
-      },
-      {
-        "test": "generate_post_leskov",
-        "error": "timed out",
-        "timestamp": "2025-12-13T23:16:52.154613"
+        "timestamp": "2025-12-14T00:36:16.614249"
       }
     ],
     "categories_tested": [
-      "business",
       "all",
-      "politics",
+      "business",
       "legal",
-      "general",
-      "tech",
-      "science",
+      "politics",
       "conflict",
-      "society"
+      "general",
+      "society",
+      "tech",
+      "science"
     ],
     "authors_tested": [
-      "mark_twain",
       "faulkner",
-      "pushkin"
+      "tolstoy",
+      "mark_twain",
+      "pushkin",
+      "leskov",
+      "lermontov",
+      "turgenev",
+      "dostoevsky"
     ],
     "translations_tested": 0,
     "api_endpoints_tested": [
-      "/api/health",
       "/api/analytics/usage",
-      "/api/news/feed",
-      "/metrics",
-      "/api/balance/check",
       "/api/analytics/costs",
+      "/api/health",
       "/api/post/generate",
-      "/api/analytics/trends"
+      "/metrics",
+      "/api/analytics/trends",
+      "/api/news/feed",
+      "/api/balance/check"
     ],
-    "articles_fetched": 17,
-    "posts_generated": 3,
-    "test_duration": 589.7512395381927
+    "articles_fetched": 16,
+    "posts_generated": 8,
+    "test_duration": 297.3457462787628
   },
   "logs": [
     {
-      "timestamp": "2025-12-13T23:09:02.787824",
+      "timestamp": "2025-12-14T00:34:29.593804",
       "level": "INFO",
       "message": "Test session started",
       "data": {
@@ -81,169 +61,169 @@
       }
     },
     {
-      "timestamp": "2025-12-13T23:09:18.046227",
+      "timestamp": "2025-12-14T00:34:44.976799",
       "level": "INFO",
       "message": "[PASS] fetch_news_all",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:09:29.180876",
+      "timestamp": "2025-12-14T00:34:56.033243",
       "level": "INFO",
       "message": "[PASS] fetch_news_tech",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:09:40.875655",
+      "timestamp": "2025-12-14T00:35:07.589246",
       "level": "INFO",
       "message": "[PASS] fetch_news_politics",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:09:52.175512",
+      "timestamp": "2025-12-14T00:35:18.880941",
       "level": "INFO",
       "message": "[PASS] fetch_news_business",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:03.296141",
+      "timestamp": "2025-12-14T00:35:29.847997",
       "level": "INFO",
       "message": "[PASS] fetch_news_conflict",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:15.008565",
+      "timestamp": "2025-12-14T00:35:41.464215",
       "level": "INFO",
       "message": "[PASS] fetch_news_legal",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:26.346738",
+      "timestamp": "2025-12-14T00:35:53.104237",
       "level": "INFO",
       "message": "[PASS] fetch_news_society",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:37.375998",
+      "timestamp": "2025-12-14T00:36:04.127967",
       "level": "INFO",
       "message": "[PASS] fetch_news_science",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:50.104783",
+      "timestamp": "2025-12-14T00:36:16.600724",
       "level": "INFO",
       "message": "[PASS] fetch_news_general",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:50.113346",
+      "timestamp": "2025-12-14T00:36:16.606847",
       "level": "ERROR",
       "message": "[FAIL] translate_to_en: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:10:50.120673",
+      "timestamp": "2025-12-14T00:36:16.614258",
       "level": "ERROR",
       "message": "[FAIL] translate_to_ru: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:11:50.141623",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_tolstoy: timed out",
+      "timestamp": "2025-12-14T00:36:38.786722",
+      "level": "INFO",
+      "message": "[PASS] generate_post_tolstoy",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:12:52.223950",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_dostoevsky: timed out",
+      "timestamp": "2025-12-14T00:37:01.108681",
+      "level": "INFO",
+      "message": "[PASS] generate_post_dostoevsky",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:13:47.991193",
+      "timestamp": "2025-12-14T00:37:23.317316",
       "level": "INFO",
       "message": "[PASS] generate_post_pushkin",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:14:48.009149",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_lermontov: timed out",
+      "timestamp": "2025-12-14T00:37:45.560748",
+      "level": "INFO",
+      "message": "[PASS] generate_post_lermontov",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:15:50.075737",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_turgenev: timed out",
+      "timestamp": "2025-12-14T00:38:07.675871",
+      "level": "INFO",
+      "message": "[PASS] generate_post_turgenev",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:16:52.154626",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_leskov: timed out",
+      "timestamp": "2025-12-14T00:38:29.859606",
+      "level": "INFO",
+      "message": "[PASS] generate_post_leskov",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:17:47.351016",
+      "timestamp": "2025-12-14T00:38:52.126206",
       "level": "INFO",
       "message": "[PASS] generate_post_mark_twain",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.706363",
+      "timestamp": "2025-12-14T00:39:14.319841",
       "level": "INFO",
       "message": "[PASS] generate_post_faulkner",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.713313",
+      "timestamp": "2025-12-14T00:39:14.329971",
       "level": "INFO",
       "message": "[PASS] health_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.725078",
+      "timestamp": "2025-12-14T00:39:14.338155",
       "level": "INFO",
       "message": "[PASS] metrics_endpoint",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.730833",
+      "timestamp": "2025-12-14T00:39:14.346325",
       "level": "INFO",
       "message": "[PASS] balance_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.738431",
+      "timestamp": "2025-12-14T00:39:14.352873",
       "level": "INFO",
       "message": "[PASS] analytics_costs",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.740818",
+      "timestamp": "2025-12-14T00:39:14.359637",
       "level": "INFO",
       "message": "[PASS] analytics_usage",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:39.743147",
+      "timestamp": "2025-12-14T00:39:14.363095",
       "level": "INFO",
       "message": "[PASS] analytics_trends",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:52.509475",
+      "timestamp": "2025-12-14T00:39:26.911805",
       "level": "INFO",
       "message": "[PASS] invalid_category",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:52.515370",
+      "timestamp": "2025-12-14T00:39:26.917464",
       "level": "INFO",
       "message": "[PASS] invalid_author_style",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T23:18:52.528693",
+      "timestamp": "2025-12-14T00:39:26.923175",
       "level": "INFO",
       "message": "[PASS] missing_translation_params",
       "data": {}
@@ -251,9 +231,9 @@
   ],
   "summary": {
     "total": 28,
-    "passed": 21,
-    "failed": 7,
-    "success_rate": 75.0,
-    "duration_seconds": 589.7512395381927
+    "passed": 26,
+    "failed": 2,
+    "success_rate": 92.85714285714286,
+    "duration_seconds": 297.3457462787628
   }
 }

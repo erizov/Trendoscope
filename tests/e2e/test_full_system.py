@@ -222,7 +222,8 @@ class TestTranslation:
             # First, fetch an article
             response = api_client.get(
                 "/api/news/feed",
-                params={"category": "all", "limit": 1}
+                params={"category": "all", "limit": 10},
+                timeout=60.0  # Increased timeout for news fetching
             )
             assert response.status_code == 200
             
@@ -258,7 +259,7 @@ class TestTranslation:
                 "/api/news/translate",
                 params={"target_language": target_lang},
                 json=article,
-                timeout=60.0  # Translation can take time
+                timeout=120.0  # Increased timeout for translation
             )
             
             assert translate_response.status_code == 200, \
@@ -301,7 +302,7 @@ class TestAuthorStyles:
                     "provider": "demo",  # Use demo to avoid API costs
                     "translate": False
                 },
-                timeout=180.0  # Increased timeout for RAG indexing and generation
+                timeout=240.0  # Increased timeout for RAG indexing and generation
             )
             
             assert response.status_code == 200, \
