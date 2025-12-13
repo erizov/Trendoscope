@@ -56,7 +56,9 @@ def call_openai(
     if not OPENAI_API_KEY:
         raise LLMProviderError("OPENAI_API_KEY not set")
 
-    model = model or "gpt-4-turbo-preview"
+    # Use cheaper model by default (can be overridden via OPENAI_MODEL env var)
+    # GPT-3.5-turbo is ~20x cheaper than GPT-4
+    model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
     try:
         # Create client with optional base_url

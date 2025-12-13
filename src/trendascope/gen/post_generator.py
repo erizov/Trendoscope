@@ -341,7 +341,7 @@ POST_STYLES = {
 
 def get_author_style_context(
     analyzed_posts: List[Dict[str, Any]],
-    max_examples: int = 3
+    max_examples: int = 3  # Reduced from default to save tokens
 ) -> Dict[str, str]:
     """
     Extract author style context from analyzed posts.
@@ -397,16 +397,28 @@ def generate_post(
     # Get author style
     author_context = get_author_style_context(analyzed_posts)
 
-    # Fetch trending news
-    news_data = fetch_trending_news(max_items=10)
+    # Fetch trending news (reduced for cost savings)
+    news_data = fetch_trending_news(max_items=5)  # Reduced from 10
     
-    # Translate English news to Russian
-    from ..nlp.translator import translate_and_summarize_news
-    translated_news = translate_and_summarize_news(
-        news_data['news_items'],
-        provider=provider,
-        model=model
-    )
+    # Translate English news to Russian (can be skipped to save costs)
+    # Check if translation should be skipped
+    skip_translation = os.getenv("SKIP_TRANSLATION", "false").lower() == "true"
+    
+    if skip_translation and provider != "demo":
+        # Use news as-is (user understands English or prefers original)
+        translated_news = news_data['news_items']
+    else:
+        from ..nlp.translator import translate_and_summarize_news
+        # Use cheaper model for translation
+        from .model_selector import select_model_for_task
+        translation_config = select_model_for_task("translation", "standard", provider)
+        translation_model = translation_config.get("model", "gpt-3.5-turbo")
+        
+        translated_news = translate_and_summarize_news(
+            news_data['news_items'],
+            provider=provider,
+            model=translation_model  # Use cheaper model for translation
+        )
     
     # Filter news by topic (semantic + keyword hybrid)
     try:
@@ -425,19 +437,19 @@ def generate_post(
         # Fallback if semantic filter fails
         filtered_news = _filter_news_by_topic(translated_news, topic)
     
-    # Aggregate news context with multi-source narratives
+    # Aggregate news context (reduced for cost savings)
     from ..nlp.context_aggregator import aggregate_news_context
     try:
         news_context = aggregate_news_context(
-            filtered_news[:10],
+            filtered_news[:3],  # Reduced from 10 to 3
             topic=topic,
             format_for_prompt=True
         )
     except Exception:
-        # Fallback to simple formatting
+        # Fallback to simple formatting (summarized)
         news_context = "\n\n".join([
-            f"- {item['title']} ({item['source']})\n  {item['summary'][:200]}..."
-            for item in filtered_news[:5]
+            f"- {item['title']} ({item['source']})\n  {item['summary'][:150]}..."  # Reduced from 200
+            for item in filtered_news[:3]  # Reduced from 5
         ])
     
     # Add topic instruction
@@ -453,21 +465,30 @@ def generate_post(
             f"ФОКУС ТЕМЫ:\n{topic_instruction}\n\nЗАДАЧА:"
         )
     
+    # Limit style examples to save tokens (reduced from all to top 3)
+    style_examples_list = author_context["examples"][:3]  # Limit to 3 examples
+    
     prompt = prompt_base.format(
-        author_style=author_context["description"],
+        author_style=author_context["description"][:500],  # Limit style description
         style_examples="\n\n---\n\n".join([
-            f"Пример {i+1}:\n{ex}"
-            for i, ex in enumerate(author_context["examples"])
+            f"Пример {i+1}:\n{ex[:300]}"  # Limit each example to 300 chars
+            for i, ex in enumerate(style_examples_list)
         ]),
         news_context=news_context
     )
 
+    # Select appropriate max_tokens based on quality
+    from .model_selector import select_model_for_task
+    model_config = select_model_for_task("post_generation", "standard", provider)
+    max_tokens = model_config.get("max_tokens", 2000)
+    
     # Generate with LLM
     response = call_llm(
         provider=provider,
         prompt=prompt,
         model=model,
-        temperature=temperature
+        temperature=temperature,
+        max_tokens=max_tokens
     )
 
     # Parse JSON response (custom parser for posts)

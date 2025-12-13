@@ -409,11 +409,19 @@ async def generate_post_endpoint(
     ),
     model: Optional[str] = Query(
         default=None,
-        description="Model name"
+        description="Model name (overrides quality tier)"
+    ),
+    quality: str = Query(
+        default="standard",
+        description="Quality tier: draft (cheap), standard (balanced), premium (best)"
     ),
     temperature: float = Query(
         default=0.8,
         description="Generation temperature"
+    ),
+    translate: bool = Query(
+        default=True,
+        description="Translate English news to Russian (set false to save costs)"
     )
 ):
     """
@@ -434,8 +442,24 @@ async def generate_post_endpoint(
     
     try:
         from ..gen.post_generator import generate_post_from_storage
+        from ..gen.model_selector import select_model_for_task
         
-        logger.info(f"Generating post: style={style}, topic={topic}, provider={provider}")
+        logger.info(f"Generating post: style={style}, topic={topic}, provider={provider}, quality={quality}")
+        
+        # Select model based on quality tier if not specified
+        if not model:
+            model_config = select_model_for_task("post_generation", quality, provider)
+            model = model_config["model"]
+            # Override temperature and max_tokens if using quality tier
+            if quality in ["draft", "standard", "premium"]:
+                temperature = model_config.get("temperature", temperature)
+        
+        # Set translation preference
+        import os
+        if not translate:
+            os.environ["SKIP_TRANSLATION"] = "true"
+        else:
+            os.environ.pop("SKIP_TRANSLATION", None)
 
         result = generate_post_from_storage(
             style=style,
@@ -444,6 +468,19 @@ async def generate_post_endpoint(
             model=model,
             temperature=temperature
         )
+        
+        # Track cost if using AI provider
+        if provider in ["openai", "anthropic"]:
+            try:
+                from ..gen.cost_tracker import track_call
+                # Estimate tokens (rough calculation)
+                prompt_len = len(str(result.get("title", "")) + str(result.get("text", "")))
+                estimated_tokens_in = prompt_len // 4  # Rough estimate
+                estimated_tokens_out = len(result.get("text", "")) // 4
+                cost = track_call(provider, model, estimated_tokens_in, estimated_tokens_out)
+                result["cost_estimate"] = f"${cost:.4f}"
+            except Exception:
+                pass  # Don't fail if cost tracking fails
         
         logger.info(f"Post generated successfully: {result.get('title', 'No title')[:50]}")
 
