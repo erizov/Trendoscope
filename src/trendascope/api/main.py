@@ -416,13 +416,22 @@ async def get_news_feed(
                 ]
                 
                 if items_to_translate:
-                    logger.info(f"Translating {len(items_to_translate)} items to {translate_to} using free translator")
-                    # Use free translator by default
+                    # Limit translation to 5 items at a time for reliability
+                    max_translate = min(len(items_to_translate), 5)
+                    items_to_translate_limited = items_to_translate[:max_translate]
+                    items_not_translated = items_to_translate[max_translate:]
+                    
+                    logger.info(f"Translating {max_translate} items to {translate_to} using free translator (limited from {len(items_to_translate)})")
+                    # Use free translator by default, limit to 5 items
                     translated = translate_and_summarize_news(
-                        items_to_translate,
+                        items_to_translate_limited,
                         target_language=translate_to,
-                        provider="free"  # Use free translator
+                        provider="free",  # Use free translator
+                        max_items=5  # Limit to 5 items
                     )
+                    
+                    # Add non-translated items back (they keep original language)
+                    translated.extend(items_not_translated)
                     
                     # Update translated items in the list
                     translated_map = {item.get('link'): item for item in translated}
