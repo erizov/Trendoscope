@@ -472,12 +472,20 @@ def generate_demo_post(style: str, topic: str,
             "common_opinion": "том, что технологии решат все проблемы",
             "superficial_question": f"{topic_kw['question']}",
             "historical_example": "Промышленная революция",
+            "historical_parallel": "Промышленная революция принесла процветание, но и экологические проблемы",
+            "current_trend": f"{topic_kw['technology']} меняют наш мир",
         })
     elif style == "ironic":
         all_values.update({
             "event_type": "скандал" if topic == "politics" else "новость",
             "fact_1": "это инструмент манипуляции" if topic == "politics" else "это системный процесс",
             "historical_examples": "Континентальная блокада Наполеона, эмбарго против СССР",
+            "current_situation_1": fallback.get("current_situation_1", "ситуация болезненна"),
+            "current_situation_2": fallback.get("current_situation_2", "найдены альтернативы"),
+            "opposite_side": fallback.get("opposite_side", "другая сторона"),
+            "their_problems": fallback.get("their_problems", "свои проблемы"),
+            "prediction": fallback.get("prediction", "ситуация останется"),
+            "historical_lesson": fallback.get("historical_lesson", "экономика находит пути"),
         })
     elif style == "analytical":
         all_values.update({
@@ -493,6 +501,16 @@ def generate_demo_post(style: str, topic: str,
             "uncertainty_factor": "внешние обстоятельства",
             "conclusion": "процесс развивается",
             "recommendation": "наблюдать за развитием",
+            "fact_1": fallback.get("fact_1", "это системный процесс"),
+            "historical_examples": "Континентальная блокада Наполеона, эмбарго против СССР",
+            "current_situation_1": fallback.get("current_situation_1", "наблюдаются изменения"),
+            "current_situation_2": fallback.get("current_situation_2", "адаптация идёт"),
+            "opposite_side": fallback.get("opposite_side", "контрагенты"),
+            "their_problems": fallback.get("their_problems", "сопутствующие издержки"),
+            "prediction": fallback.get("prediction", "тренд продолжится"),
+            "historical_lesson": fallback.get("historical_lesson", "системы адаптируются"),
+            "data_insight": fallback.get("data_insight", "статистика показывает устойчивость"),
+            "implication": fallback.get("implication", "изменения носят структурный характер"),
         })
     elif style == "provocative":
         all_values.update({
