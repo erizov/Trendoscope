@@ -923,6 +923,108 @@
             }
         }
 
+        // Translate single article
+        async function translateArticle(index, targetLanguage) {
+            const item = allNews[index];
+            const btn = document.getElementById(`translate-btn-${index}`);
+            const titleEl = document.getElementById(`title-${index}`);
+            const summaryEl = document.getElementById(`summary-${index}`);
+            
+            if (!item) {
+                console.error('Article not found at index:', index);
+                return;
+            }
+            
+            // Check if already translated
+            if (item.translated && item.translated_language === targetLanguage) {
+                console.log('Already translated to', targetLanguage);
+                return; // Already translated
+            }
+            
+            // Show loading state
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Перевод...';
+            btn.disabled = true;
+            
+            try {
+                console.log('Translating article:', {
+                    index,
+                    title: item.title?.substring(0, 50),
+                    source_lang: item.language || 'en',
+                    target_lang: targetLanguage
+                });
+                
+                const response = await fetch(`${API_URL}/api/news/translate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: item.title || '',
+                        summary: item.summary || '',
+                        source_language: item.language || 'en',
+                        target_language: targetLanguage
+                    })
+                });
+                
+                console.log('Translation response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Translation error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Translation response data:', data);
+                
+                if (data.success && data.translated) {
+                    // Update article in memory
+                    item.title = data.translated.title;
+                    item.summary = data.translated.summary;
+                    item.translated = true;
+                    item.translated_language = targetLanguage;
+                    item.language = targetLanguage;
+                    
+                    // Update UI
+                    if (titleEl) {
+                        titleEl.textContent = data.translated.title;
+                    }
+                    if (summaryEl) {
+                        summaryEl.textContent = data.translated.summary.substring(0, 200) + '...';
+                    }
+                    
+                    // Update button text
+                    const newTargetLang = targetLanguage === 'ru' ? 'en' : 'ru';
+                    const newButtonText = targetLanguage === 'ru' ? '🌐 To English' : '🌐 На русский';
+                    btn.innerHTML = newButtonText;
+                    btn.setAttribute('onclick', `event.stopPropagation(); translateArticle(${index}, '${newTargetLang}')`);
+                    
+                    // Update modal if open
+                    if (currentNewsItem === item) {
+                        const modalTitle = document.getElementById('modalTitle');
+                        const modalText = document.getElementById('modalText');
+                        if (modalTitle) modalTitle.textContent = data.translated.title;
+                        if (modalText) modalText.textContent = data.translated.summary;
+                    }
+                    
+                    console.log('Translation successful');
+                } else {
+                    throw new Error(data.error || 'Translation failed');
+                }
+            } catch (error) {
+                console.error('Translation error:', error);
+                btn.innerHTML = '❌ Ошибка';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                alert('Ошибка перевода: ' + error.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         // Escape HTML
         function escapeHtml(text) {
             const div = document.createElement('div');

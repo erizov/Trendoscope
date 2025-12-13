@@ -184,6 +184,16 @@ class CostTracker:
         self._save_history()
 
 
+def get_cost_stats() -> Dict:
+    """Get cost statistics."""
+    return get_tracker().get_summary()
+
+
+def get_provider_costs() -> Dict[str, float]:
+    """Get costs by provider."""
+    return get_tracker().costs.copy()
+
+
 # Global tracker instance
 _tracker = None
 

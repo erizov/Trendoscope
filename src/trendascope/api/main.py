@@ -88,6 +88,25 @@ try:
 except ImportError as e:
     logger.warning(f"Could not import posts router: {e}")
 
+try:
+    from .cost_analytics import router as analytics_router
+    app.include_router(analytics_router)
+except ImportError as e:
+    logger.warning(f"Could not import analytics router: {e}")
+
+try:
+    from .post_editing import router as editing_router
+    app.include_router(editing_router)
+except ImportError as e:
+    logger.warning(f"Could not import post editing router: {e}")
+
+# WebSocket endpoint
+try:
+    from .websocket import websocket_endpoint
+    app.websocket("/ws")(websocket_endpoint)
+except ImportError as e:
+    logger.warning(f"Could not import websocket: {e}")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -730,16 +749,32 @@ async def generate_post_endpoint(
         if provider in ["openai", "anthropic"]:
             try:
                 from ..gen.cost_tracker import track_call
+                from ..utils.prometheus_metrics import record_llm_call
                 # Estimate tokens (rough calculation)
                 prompt_len = len(str(result.get("title", "")) + str(result.get("text", "")))
                 estimated_tokens_in = prompt_len // 4  # Rough estimate
                 estimated_tokens_out = len(result.get("text", "")) // 4
                 cost = track_call(provider, model, estimated_tokens_in, estimated_tokens_out)
                 result["cost_estimate"] = f"${cost:.4f}"
+                record_llm_call(provider, model, cost)
             except Exception:
                 pass  # Don't fail if cost tracking fails
         
         logger.info(f"Post generated successfully: {result.get('title', 'No title')[:50]}")
+        
+        # Broadcast via WebSocket if available
+        try:
+            from .websocket import manager
+            await manager.broadcast_post_update(result)
+        except Exception:
+            pass  # WebSocket not critical
+        
+        # Track metrics
+        try:
+            from ..utils.prometheus_metrics import increment_endpoint_counter
+            increment_endpoint_counter("/api/post/generate", 200)
+        except Exception:
+            pass
 
         return result
 

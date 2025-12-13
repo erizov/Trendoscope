@@ -97,6 +97,18 @@ async def update_post(
         if not success:
             return APIResponse.error_response("Post not found")
         
+        # Record edit for style learning
+        try:
+            from ..gen.style_learning import get_style_learner
+            original_post = post_storage.get_post(post_id)
+            if original_post:
+                # Get updated post
+                updated_post = post_storage.get_post(post_id)
+                if updated_post:
+                    get_style_learner().record_edit(original_post, updated_post)
+        except Exception as learn_error:
+            logger.debug(f"Style learning error (non-critical): {learn_error}")
+        
         return APIResponse.success_response(
             data={"post_id": post_id, "updated": True},
             metadata={"request_id": getattr(request.state, "request_id", None)}
