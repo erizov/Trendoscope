@@ -23,9 +23,12 @@ from ..services.news_service import NewsService
 from ..services.post_service import PostService
 from ..utils.response import APIResponse
 from ..utils.logger import setup_logging, get_logger
+from ..core.dependencies import get_news_service, get_post_service, get_config
+from ..core.settings import get_settings
 
 # Setup structured logging
-setup_logging(os.getenv("LOG_LEVEL", "INFO"))
+settings = get_settings()
+setup_logging(settings.log_level)
 logger = get_logger(__name__)
 
 # Rate limiter
