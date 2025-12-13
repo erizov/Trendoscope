@@ -215,6 +215,13 @@ async def favicon():
     return Response(status_code=204)
 
 
+@app.get("/metrics")
+async def get_metrics_endpoint():
+    """Get application metrics."""
+    from ..utils.monitoring import get_metrics
+    return get_metrics()
+
+
 @app.get("/api/health")
 async def health():
     """Health check endpoint."""
