@@ -292,7 +292,22 @@
         <div class="controls">
             <div class="controls-row">
                 <div class="control-group">
-                    <label for="style">Стиль:</label>
+                    <label for="authorStyle">В стиле автора:</label>
+                    <select id="authorStyle">
+                        <option value="">-- Не выбран --</option>
+                        <option value="tolstoy">📚 Лев Толстой</option>
+                        <option value="dostoevsky">📖 Фёдор Достоевский</option>
+                        <option value="pushkin">✍️ Александр Пушкин</option>
+                        <option value="lermontov">📝 Михаил Лермонтов</option>
+                        <option value="turgenev">📗 Иван Тургенев</option>
+                        <option value="leskov">📘 Николай Лесков</option>
+                        <option value="mark_twain">📕 Mark Twain</option>
+                        <option value="faulkner">📙 William Faulkner</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="style">Стиль (если автор не выбран):</label>
                     <select id="style">
                         <option value="philosophical">🧘 Философский</option>
                         <option value="ironic">😏 Ироничный</option>
@@ -353,6 +368,17 @@
             'provocative': 'Провокационный'
         };
 
+        const authorNames = {
+            'tolstoy': 'Лев Толстой',
+            'dostoevsky': 'Фёдор Достоевский',
+            'pushkin': 'Александр Пушкин',
+            'lermontov': 'Михаил Лермонтов',
+            'turgenev': 'Иван Тургенев',
+            'leskov': 'Николай Лесков',
+            'mark_twain': 'Mark Twain',
+            'faulkner': 'William Faulkner'
+        };
+
         const topicNames = {
             'any': 'Любая тема',
             'ai': 'ИИ',
@@ -363,6 +389,7 @@
         };
 
         async function generatePosts() {
+            const authorStyle = document.getElementById('authorStyle').value;
             const style = document.getElementById('style').value;
             const topic = document.getElementById('topic').value;
             const provider = document.getElementById('provider').value;
@@ -391,7 +418,10 @@
                         <p>Генерация поста ${i+1} из 3... Это может занять 30-60 секунд</p>
                     `;
                     
-                    const url = `${API_URL}/api/post/generate?style=${style}&topic=${topic}&provider=${provider}`;
+                    let url = `${API_URL}/api/post/generate?style=${style}&topic=${topic}&provider=${provider}`;
+                    if (authorStyle) {
+                        url += `&author_style=${authorStyle}`;
+                    }
                     console.log('Calling:', url);
                     
                     const response = await fetch(url, {
@@ -418,8 +448,9 @@
                         throw new Error(post.error);
                     }
                     
-                    post.style = style;
+                    post.style = authorStyle ? `author:${authorStyle}` : style;
                     post.topic = topic;
+                    post.author_style = authorStyle || null;
                     posts.push(post);
                 }
                 
@@ -478,7 +509,12 @@
             const card = document.createElement('div');
             card.className = 'post-card';
             
-            const styleName = styleNames[post.style] || post.style;
+            let styleName;
+            if (post.author_style && authorNames[post.author_style]) {
+                styleName = `В стиле: ${authorNames[post.author_style]}`;
+            } else {
+                styleName = styleNames[post.style] || post.style;
+            }
             const topicName = topicNames[post.topic] || post.topic;
             
             card.innerHTML = `

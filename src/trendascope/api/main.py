@@ -701,6 +701,10 @@ async def generate_post_endpoint(
     translate: bool = Query(
         default=True,
         description="Translate English news to Russian (set false to save costs)"
+    ),
+    author_style: Optional[str] = Query(
+        default=None,
+        description="Author style (tolstoy, dostoevsky, pushkin, lermontov, turgenev, leskov, mark_twain, faulkner)"
     )
 ):
     """
