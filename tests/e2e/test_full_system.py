@@ -18,6 +18,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Mark all tests as E2E
+pytestmark = pytest.mark.e2e
+
 # Test configuration
 API_URL = "http://localhost:8003"
 TEST_CATEGORIES = [
