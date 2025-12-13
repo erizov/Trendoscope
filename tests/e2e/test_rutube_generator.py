@@ -6,6 +6,7 @@ import pytest
 import sys
 import os
 import subprocess
+import shutil
 import time
 from pathlib import Path
 
@@ -26,15 +27,28 @@ TIMEOUT = 600  # 10 minutes for video processing
 
 def check_dependency(command: str, package_name: str = None) -> bool:
     """Check if a command-line tool is available."""
+    # First check if command exists in PATH
+    cmd_path = shutil.which(command)
+    if cmd_path is None:
+        return False
+    # Then verify it actually works
     try:
         result = subprocess.run(
             [command, "--version"],
             capture_output=True,
             text=True,
-            timeout=5
+            timeout=5,
+            shell=False
         )
-        return result.returncode == 0
-    except (FileNotFoundError, subprocess.TimeoutExpired):
+        # On Windows, some commands return non-zero but still work
+        # Check if we got any output as a sign it works
+        if result.returncode == 0:
+            return True
+        # If exit code is non-zero but we got output, it might still work
+        if result.stdout or result.stderr:
+            return True
+        return False
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         return False
 
 
