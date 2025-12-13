@@ -289,13 +289,10 @@ async def check_balance(
         }
     except Exception as e:
         logger.error(f"Balance check error: {e}", exc_info=True)
-        # Return error response instead of raising to help debugging
-        return {
-            "provider": provider,
-            "has_balance": False,
-            "error": f"Balance check failed: {str(e)}",
-            "recommended_provider": "demo"
-        }
+        raise HTTPException(
+            status_code=500,
+            detail=f"Balance check failed: {str(e)}"
+        )
 
 
 @app.get("/api/health")
