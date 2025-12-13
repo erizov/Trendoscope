@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutube Video to Text Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .input-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #5568d3;
+        }
+        
+        .btn:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .text-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+        
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .copy-btn:hover {
+            background: #218838;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .generated-article {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 25px;
+        }
+        
+        .generated-article h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .generated-article .tags {
+            margin-top: 15px;
+        }
+        
+        .generated-article .tags span {
+            display: inline-block;
+            background: #e7f3ff;
+            color: #0066cc;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 Rutube Video to Text Generator</h1>
+            <p>Generate articles from Rutube video content</p>
+        </div>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="rutubeUrl" 
+                    placeholder="Enter Rutube video URL (e.g., https://rutube.ru/video/...)"
+                    value=""
+                >
+                <button class="btn" id="generateBtn" onclick="generateText()">
+                    Generate Text
+                </button>
+            </div>
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing video... This may take a few minutes.</p>
+            </div>
+        </div>
+        
+        <div class="content" id="content" style="display: none;">
+            <div class="section">
+                <h2>📹 Video</h2>
+                <div class="video-container" id="videoContainer"></div>
+            </div>
+            
+            <div class="section">
+                <h2>📝 Transcript</h2>
+                <div class="text-box" id="transcript"></div>
+                <button class="copy-btn" onclick="copyToClipboard('transcript')">
+                    Copy Transcript
+                </button>
+            </div>
+            
+            <div class="section">
+                <h2>✍️ Generated Article</h2>
+                <div class="generated-article" id="generatedText"></div>
+                <button class="copy-btn" onclick="copyToClipboard('generatedText')">
+                    Copy Article
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = window.location.origin;
+        
+        async function generateText() {
+            const url = document.getElementById('rutubeUrl').value.trim();
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            if (!url) {
+                alert('Please enter a Rutube URL');
+                return;
+            }
+            
+            // Validate URL
+            if (!url.includes('rutube.ru/video/')) {
+                alert('Invalid Rutube URL. Please enter a valid Rutube video URL.');
+                return;
+            }
+            
+            // Show loading, hide content
+            loading.classList.add('active');
+            content.style.display = 'none';
+            generateBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/api/rutube/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || `HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display results
+                displayResults(data, url);
+                
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                loading.classList.remove('active');
+                generateBtn.disabled = false;
+            }
+        }
+        
+        function displayResults(data, videoUrl) {
+            const content = document.getElementById('content');
+            const videoContainer = document.getElementById('videoContainer');
+            const transcriptDiv = document.getElementById('transcript');
+            const generatedDiv = document.getElementById('generatedText');
+            
+            // Extract video ID from URL
+            const videoId = extractVideoId(videoUrl);
+            
+            // Embed video
+            if (videoId) {
+                videoContainer.innerHTML = `
+                    <iframe 
+                        src="https://rutube.ru/play/embed/${videoId}" 
+                        frameborder="0" 
+                        allow="clipboard-write; autoplay" 
+                        webkitAllowFullScreen 
+                        mozallowfullscreen 
+                        allowFullScreen>
+                    </iframe>
+                `;
+            }
+            
+            // Display transcript
+            transcriptDiv.textContent = data.transcript || 'No transcript available';
+            
+            // Display generated text
+            const generated = data.generated_text || {};
+            generatedDiv.innerHTML = `
+                <h3>${generated.title || 'Generated Article'}</h3>
+                <div>${(generated.text || '').replace(/\n/g, '<br>')}</div>
+                ${generated.tags ? `
+                    <div class="tags">
+                        ${generated.tags.map(tag => `<span>${tag}</span>`).join('')}
+                    </div>
+                ` : ''}
+            `;
+            
+            // Show content
+            content.style.display = 'block';
+            
+            // Scroll to content
+            content.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function extractVideoId(url) {
+            // Rutube URL format: https://rutube.ru/video/abc123def456/
+            const match = url.match(/rutube\.ru\/video\/([a-zA-Z0-9]+)/);
+            return match ? match[1] : null;
+        }
+        
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent || element.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+        
+        function showError(message) {
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <div class="error">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+            content.style.display = 'block';
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('rutubeUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateText();
+            }
+        });
+    </script>
+</body>
+</html>
+

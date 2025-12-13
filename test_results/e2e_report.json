@@ -1,59 +1,49 @@
 {
   "statistics": {
     "total_tests": 28,
-    "passed_tests": 26,
-    "failed_tests": 2,
-    "errors": [
-      {
-        "test": "translate_to_en",
-        "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-14T00:36:16.606839"
-      },
-      {
-        "test": "translate_to_ru",
-        "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-14T00:36:16.614249"
-      }
-    ],
+    "passed_tests": 28,
+    "failed_tests": 0,
+    "errors": [],
     "categories_tested": [
-      "all",
-      "business",
       "legal",
-      "politics",
       "conflict",
-      "general",
-      "society",
       "tech",
-      "science"
+      "science",
+      "general",
+      "all",
+      "politics",
+      "business",
+      "society"
     ],
     "authors_tested": [
-      "faulkner",
-      "tolstoy",
-      "mark_twain",
       "pushkin",
-      "leskov",
+      "faulkner",
       "lermontov",
       "turgenev",
+      "mark_twain",
+      "tolstoy",
+      "leskov",
       "dostoevsky"
     ],
-    "translations_tested": 0,
+    "translations_tested": 2,
     "api_endpoints_tested": [
       "/api/analytics/usage",
-      "/api/analytics/costs",
-      "/api/health",
-      "/api/post/generate",
-      "/metrics",
       "/api/analytics/trends",
+      "/metrics",
+      "/api/health",
       "/api/news/feed",
-      "/api/balance/check"
+      "/api/balance/check",
+      "/api/post/generate",
+      "/api/news/translate",
+      "/api/analytics/costs"
     ],
     "articles_fetched": 16,
     "posts_generated": 8,
-    "test_duration": 297.3457462787628
+    "test_duration": 333.39131259918213
   },
   "logs": [
     {
-      "timestamp": "2025-12-14T00:34:29.593804",
+      "timestamp": "2025-12-14T01:09:36.114908",
       "level": "INFO",
       "message": "Test session started",
       "data": {
@@ -61,169 +51,169 @@
       }
     },
     {
-      "timestamp": "2025-12-14T00:34:44.976799",
+      "timestamp": "2025-12-14T01:09:51.212464",
       "level": "INFO",
       "message": "[PASS] fetch_news_all",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:34:56.033243",
+      "timestamp": "2025-12-14T01:10:02.255938",
       "level": "INFO",
       "message": "[PASS] fetch_news_tech",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:35:07.589246",
+      "timestamp": "2025-12-14T01:10:14.010139",
       "level": "INFO",
       "message": "[PASS] fetch_news_politics",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:35:18.880941",
+      "timestamp": "2025-12-14T01:10:25.273699",
       "level": "INFO",
       "message": "[PASS] fetch_news_business",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:35:29.847997",
+      "timestamp": "2025-12-14T01:10:36.278545",
       "level": "INFO",
       "message": "[PASS] fetch_news_conflict",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:35:41.464215",
+      "timestamp": "2025-12-14T01:10:53.375011",
       "level": "INFO",
       "message": "[PASS] fetch_news_legal",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:35:53.104237",
+      "timestamp": "2025-12-14T01:11:08.490214",
       "level": "INFO",
       "message": "[PASS] fetch_news_society",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:36:04.127967",
+      "timestamp": "2025-12-14T01:11:19.517150",
       "level": "INFO",
       "message": "[PASS] fetch_news_science",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:36:16.600724",
+      "timestamp": "2025-12-14T01:11:32.184378",
       "level": "INFO",
       "message": "[PASS] fetch_news_general",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:36:16.606847",
-      "level": "ERROR",
-      "message": "[FAIL] translate_to_en: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+      "timestamp": "2025-12-14T01:11:44.813794",
+      "level": "INFO",
+      "message": "[PASS] translate_to_en",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:36:16.614258",
-      "level": "ERROR",
-      "message": "[FAIL] translate_to_ru: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
+      "timestamp": "2025-12-14T01:11:57.634984",
+      "level": "INFO",
+      "message": "[PASS] translate_to_ru",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:36:38.786722",
+      "timestamp": "2025-12-14T01:12:20.336361",
       "level": "INFO",
       "message": "[PASS] generate_post_tolstoy",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:37:01.108681",
+      "timestamp": "2025-12-14T01:12:42.569736",
       "level": "INFO",
       "message": "[PASS] generate_post_dostoevsky",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:37:23.317316",
+      "timestamp": "2025-12-14T01:13:04.763807",
       "level": "INFO",
       "message": "[PASS] generate_post_pushkin",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:37:45.560748",
+      "timestamp": "2025-12-14T01:13:27.332096",
       "level": "INFO",
       "message": "[PASS] generate_post_lermontov",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:38:07.675871",
+      "timestamp": "2025-12-14T01:13:50.083648",
       "level": "INFO",
       "message": "[PASS] generate_post_turgenev",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:38:29.859606",
+      "timestamp": "2025-12-14T01:14:12.285253",
       "level": "INFO",
       "message": "[PASS] generate_post_leskov",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:38:52.126206",
+      "timestamp": "2025-12-14T01:14:34.541715",
       "level": "INFO",
       "message": "[PASS] generate_post_mark_twain",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.319841",
+      "timestamp": "2025-12-14T01:14:56.801938",
       "level": "INFO",
       "message": "[PASS] generate_post_faulkner",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.329971",
+      "timestamp": "2025-12-14T01:14:56.808757",
       "level": "INFO",
       "message": "[PASS] health_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.338155",
+      "timestamp": "2025-12-14T01:14:56.813763",
       "level": "INFO",
       "message": "[PASS] metrics_endpoint",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.346325",
+      "timestamp": "2025-12-14T01:14:56.820401",
       "level": "INFO",
       "message": "[PASS] balance_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.352873",
+      "timestamp": "2025-12-14T01:14:56.828239",
       "level": "INFO",
       "message": "[PASS] analytics_costs",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.359637",
+      "timestamp": "2025-12-14T01:14:56.830637",
       "level": "INFO",
       "message": "[PASS] analytics_usage",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:14.363095",
+      "timestamp": "2025-12-14T01:14:56.833463",
       "level": "INFO",
       "message": "[PASS] analytics_trends",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:26.911805",
+      "timestamp": "2025-12-14T01:15:09.477389",
       "level": "INFO",
       "message": "[PASS] invalid_category",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:26.917464",
+      "timestamp": "2025-12-14T01:15:09.485735",
       "level": "INFO",
       "message": "[PASS] invalid_author_style",
       "data": {}
     },
     {
-      "timestamp": "2025-12-14T00:39:26.923175",
+      "timestamp": "2025-12-14T01:15:09.495471",
       "level": "INFO",
       "message": "[PASS] missing_translation_params",
       "data": {}
@@ -231,9 +221,9 @@
   ],
   "summary": {
     "total": 28,
-    "passed": 26,
-    "failed": 2,
-    "success_rate": 92.85714285714286,
-    "duration_seconds": 297.3457462787628
+    "passed": 28,
+    "failed": 0,
+    "success_rate": 100.0,
+    "duration_seconds": 333.39131259918213
   }
 }

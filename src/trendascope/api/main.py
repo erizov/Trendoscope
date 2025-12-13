@@ -100,6 +100,12 @@ try:
 except ImportError as e:
     logger.warning(f"Could not import post editing router: {e}")
 
+try:
+    from .rutube import router as rutube_router
+    app.include_router(rutube_router)
+except ImportError as e:
+    logger.warning(f"Could not import rutube router: {e}")
+
 # WebSocket endpoint
 try:
     from .websocket import websocket_endpoint
@@ -154,6 +160,17 @@ static_dir = os.path.join(
 )
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
+
+@app.get("/rutube", response_class=HTMLResponse)
+async def rutube_generator_page():
+    """Serve Rutube generator page."""
+    rutube_path = os.path.join(static_dir, "rutube_generator.html")
+    if os.path.exists(rutube_path):
+        with open(rutube_path, "r", encoding="utf-8") as f:
+            return f.read()
+    else:
+        raise HTTPException(status_code=404, detail="Rutube generator page not found")
 
 
 @app.get("/", response_class=HTMLResponse)
