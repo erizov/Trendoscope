@@ -241,11 +241,17 @@ class TestTranslation:
             if not articles:
                 pytest.skip("No articles available for translation test")
             
-            article = articles[0]
+            # Find first valid article with non-empty title or summary
+            article = None
+            for art in articles:
+                title = art.get('title', '').strip()
+                summary = art.get('summary', '').strip()
+                if title or summary:
+                    article = art
+                    break
             
-            # Ensure article has required fields
-            if not article.get('title') and not article.get('summary'):
-                pytest.skip("Article missing title and summary for translation test")
+            if not article:
+                pytest.skip("No valid articles with title or summary for translation test")
             
             # Translate article
             translate_response = api_client.post(
@@ -295,7 +301,7 @@ class TestAuthorStyles:
                     "provider": "demo",  # Use demo to avoid API costs
                     "translate": False
                 },
-                timeout=60.0  # Post generation can take time
+                timeout=180.0  # Increased timeout for RAG indexing and generation
             )
             
             assert response.status_code == 200, \

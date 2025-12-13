@@ -1,96 +1,79 @@
 {
   "statistics": {
     "total_tests": 28,
-    "passed_tests": 16,
-    "failed_tests": 12,
+    "passed_tests": 21,
+    "failed_tests": 7,
     "errors": [
       {
         "test": "translate_to_en",
         "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-13T21:53:06.032061"
+        "timestamp": "2025-12-13T23:10:50.113339"
       },
       {
         "test": "translate_to_ru",
         "error": "assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
-        "timestamp": "2025-12-13T21:53:06.039152"
+        "timestamp": "2025-12-13T23:10:50.120657"
+      },
+      {
+        "test": "generate_post_tolstoy",
+        "error": "timed out",
+        "timestamp": "2025-12-13T23:11:50.141605"
       },
       {
         "test": "generate_post_dostoevsky",
         "error": "timed out",
-        "timestamp": "2025-12-13T21:55:03.440889"
-      },
-      {
-        "test": "generate_post_pushkin",
-        "error": "timed out",
-        "timestamp": "2025-12-13T21:56:05.513998"
+        "timestamp": "2025-12-13T23:12:52.223932"
       },
       {
         "test": "generate_post_lermontov",
         "error": "timed out",
-        "timestamp": "2025-12-13T21:57:07.576127"
+        "timestamp": "2025-12-13T23:14:48.009128"
+      },
+      {
+        "test": "generate_post_turgenev",
+        "error": "timed out",
+        "timestamp": "2025-12-13T23:15:50.075725"
       },
       {
         "test": "generate_post_leskov",
         "error": "timed out",
-        "timestamp": "2025-12-13T21:59:00.983410"
-      },
-      {
-        "test": "generate_post_mark_twain",
-        "error": "timed out",
-        "timestamp": "2025-12-13T22:00:03.051423"
-      },
-      {
-        "test": "generate_post_faulkner",
-        "error": "timed out",
-        "timestamp": "2025-12-13T22:01:05.095052"
-      },
-      {
-        "test": "balance_check",
-        "error": "Balance check returned 500\nassert 500 == 200\n +  where 500 = <Response [500 Internal Server Error]>.status_code",
-        "timestamp": "2025-12-13T22:01:09.831121"
-      },
-      {
-        "test": "analytics_costs",
-        "error": "/api/analytics/costs returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
-        "timestamp": "2025-12-13T22:01:12.144211"
-      },
-      {
-        "test": "analytics_usage",
-        "error": "/api/analytics/usage returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
-        "timestamp": "2025-12-13T22:01:12.147328"
-      },
-      {
-        "test": "analytics_trends",
-        "error": "/api/analytics/trends returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
-        "timestamp": "2025-12-13T22:01:12.149901"
+        "timestamp": "2025-12-13T23:16:52.154613"
       }
     ],
     "categories_tested": [
+      "business",
+      "all",
       "politics",
       "legal",
-      "society",
-      "all",
-      "conflict",
-      "tech",
       "general",
+      "tech",
       "science",
-      "business"
+      "conflict",
+      "society"
     ],
-    "authors_tested": [],
+    "authors_tested": [
+      "mark_twain",
+      "faulkner",
+      "pushkin"
+    ],
     "translations_tested": 0,
     "api_endpoints_tested": [
+      "/api/health",
+      "/api/analytics/usage",
       "/api/news/feed",
       "/metrics",
+      "/api/balance/check",
+      "/api/analytics/costs",
       "/api/post/generate",
-      "/api/health"
+      "/api/analytics/trends"
     ],
-    "articles_fetched": 16,
-    "posts_generated": 2,
-    "test_duration": 664.5542049407959
+    "articles_fetched": 17,
+    "posts_generated": 3,
+    "test_duration": 589.7512395381927
   },
   "logs": [
     {
-      "timestamp": "2025-12-13T21:51:18.507827",
+      "timestamp": "2025-12-13T23:09:02.787824",
       "level": "INFO",
       "message": "Test session started",
       "data": {
@@ -98,169 +81,169 @@
       }
     },
     {
-      "timestamp": "2025-12-13T21:51:33.744627",
+      "timestamp": "2025-12-13T23:09:18.046227",
       "level": "INFO",
       "message": "[PASS] fetch_news_all",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:51:44.924740",
+      "timestamp": "2025-12-13T23:09:29.180876",
       "level": "INFO",
       "message": "[PASS] fetch_news_tech",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:51:56.513308",
+      "timestamp": "2025-12-13T23:09:40.875655",
       "level": "INFO",
       "message": "[PASS] fetch_news_politics",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:52:07.979833",
+      "timestamp": "2025-12-13T23:09:52.175512",
       "level": "INFO",
       "message": "[PASS] fetch_news_business",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:52:18.926695",
+      "timestamp": "2025-12-13T23:10:03.296141",
       "level": "INFO",
       "message": "[PASS] fetch_news_conflict",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:52:30.518865",
+      "timestamp": "2025-12-13T23:10:15.008565",
       "level": "INFO",
       "message": "[PASS] fetch_news_legal",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:52:41.867431",
+      "timestamp": "2025-12-13T23:10:26.346738",
       "level": "INFO",
       "message": "[PASS] fetch_news_society",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:52:53.030407",
+      "timestamp": "2025-12-13T23:10:37.375998",
       "level": "INFO",
       "message": "[PASS] fetch_news_science",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:53:06.024827",
+      "timestamp": "2025-12-13T23:10:50.104783",
       "level": "INFO",
       "message": "[PASS] fetch_news_general",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:53:06.032073",
+      "timestamp": "2025-12-13T23:10:50.113346",
       "level": "ERROR",
       "message": "[FAIL] translate_to_en: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:53:06.039160",
+      "timestamp": "2025-12-13T23:10:50.120673",
       "level": "ERROR",
       "message": "[FAIL] translate_to_ru: assert 422 == 200\n +  where 422 = <Response [422 Unprocessable Content]>.status_code",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:54:03.429301",
-      "level": "INFO",
-      "message": "[PASS] generate_post_tolstoy",
+      "timestamp": "2025-12-13T23:11:50.141623",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_tolstoy: timed out",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:55:03.440908",
+      "timestamp": "2025-12-13T23:12:52.223950",
       "level": "ERROR",
       "message": "[FAIL] generate_post_dostoevsky: timed out",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:56:05.514034",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_pushkin: timed out",
+      "timestamp": "2025-12-13T23:13:47.991193",
+      "level": "INFO",
+      "message": "[PASS] generate_post_pushkin",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:57:07.576143",
+      "timestamp": "2025-12-13T23:14:48.009149",
       "level": "ERROR",
       "message": "[FAIL] generate_post_lermontov: timed out",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:58:00.970590",
-      "level": "INFO",
-      "message": "[PASS] generate_post_turgenev",
+      "timestamp": "2025-12-13T23:15:50.075737",
+      "level": "ERROR",
+      "message": "[FAIL] generate_post_turgenev: timed out",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T21:59:00.983421",
+      "timestamp": "2025-12-13T23:16:52.154626",
       "level": "ERROR",
       "message": "[FAIL] generate_post_leskov: timed out",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:00:03.051441",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_mark_twain: timed out",
+      "timestamp": "2025-12-13T23:17:47.351016",
+      "level": "INFO",
+      "message": "[PASS] generate_post_mark_twain",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:05.095068",
-      "level": "ERROR",
-      "message": "[FAIL] generate_post_faulkner: timed out",
+      "timestamp": "2025-12-13T23:18:39.706363",
+      "level": "INFO",
+      "message": "[PASS] generate_post_faulkner",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:09.799439",
+      "timestamp": "2025-12-13T23:18:39.713313",
       "level": "INFO",
       "message": "[PASS] health_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:09.804341",
+      "timestamp": "2025-12-13T23:18:39.725078",
       "level": "INFO",
       "message": "[PASS] metrics_endpoint",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:09.831133",
-      "level": "ERROR",
-      "message": "[FAIL] balance_check: Balance check returned 500\nassert 500 == 200\n +  where 500 = <Response [500 Internal Server Error]>.status_code",
+      "timestamp": "2025-12-13T23:18:39.730833",
+      "level": "INFO",
+      "message": "[PASS] balance_check",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:12.144218",
-      "level": "ERROR",
-      "message": "[FAIL] analytics_costs: /api/analytics/costs returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "timestamp": "2025-12-13T23:18:39.738431",
+      "level": "INFO",
+      "message": "[PASS] analytics_costs",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:12.147334",
-      "level": "ERROR",
-      "message": "[FAIL] analytics_usage: /api/analytics/usage returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "timestamp": "2025-12-13T23:18:39.740818",
+      "level": "INFO",
+      "message": "[PASS] analytics_usage",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:12.149906",
-      "level": "ERROR",
-      "message": "[FAIL] analytics_trends: /api/analytics/trends returned 404\nassert 404 == 200\n +  where 404 = <Response [404 Not Found]>.status_code",
+      "timestamp": "2025-12-13T23:18:39.743147",
+      "level": "INFO",
+      "message": "[PASS] analytics_trends",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:01:24.817641",
+      "timestamp": "2025-12-13T23:18:52.509475",
       "level": "INFO",
       "message": "[PASS] invalid_category",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:02:23.040763",
+      "timestamp": "2025-12-13T23:18:52.515370",
       "level": "INFO",
       "message": "[PASS] invalid_author_style",
       "data": {}
     },
     {
-      "timestamp": "2025-12-13T22:02:23.048831",
+      "timestamp": "2025-12-13T23:18:52.528693",
       "level": "INFO",
       "message": "[PASS] missing_translation_params",
       "data": {}
@@ -268,9 +251,9 @@
   ],
   "summary": {
     "total": 28,
-    "passed": 16,
-    "failed": 12,
-    "success_rate": 57.14285714285714,
-    "duration_seconds": 664.5542049407959
+    "passed": 21,
+    "failed": 7,
+    "success_rate": 75.0,
+    "duration_seconds": 589.7512395381927
   }
 }
