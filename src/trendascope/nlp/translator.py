@@ -116,66 +116,66 @@ def _translate_with_free_service(
     
     # Process in small batches (3 items at a time)
     for batch_start in range(0, len(items_to_process), batch_size):
-        batch = news_items[batch_start:batch_start + batch_size]
+        batch = items_to_process[batch_start:batch_start + batch_size]
         logger.debug(f"Translating batch {batch_start // batch_size + 1} ({len(batch)} items)")
         
         for item in batch:
-        # Detect current language
-        text = f"{item.get('title', '')} {item.get('summary', '')}"
-        current_lang = 'ru' if _is_russian(text) else 'en'
-        
-        # Only translate if needed
-        if current_lang == target_lang:
-            # Already in target language
-            translated_items.append({**item, 'translated': False})
-            continue
-        
-        try:
-            # Translate title
-            title = item.get('title', '')
-            if title:
-                translator = GoogleTranslator(source=source_lang, target=target_lang)
-                translated_title = translator.translate(title)
-            else:
-                translated_title = title
+            # Detect current language
+            text = f"{item.get('title', '')} {item.get('summary', '')}"
+            current_lang = 'ru' if _is_russian(text) else 'en'
             
-            # Translate summary
-            summary = item.get('summary', '')
-            if summary:
-                # Split long text into chunks (Google Translate has limits)
-                if len(summary) > 5000:
-                    # Split by sentences
-                    sentences = summary.split('. ')
-                    translated_sentences = []
-                    for sentence in sentences:
-                        if sentence.strip():
-                            try:
-                                translator = GoogleTranslator(source=source_lang, target=target_lang)
-                                translated_sentences.append(translator.translate(sentence))
-                            except Exception as e:
-                                logger.debug(f"Translation error for sentence: {e}")
-                                translated_sentences.append(sentence)
-                    translated_summary = '. '.join(translated_sentences)
-                else:
+            # Only translate if needed
+            if current_lang == target_lang:
+                # Already in target language
+                translated_items.append({**item, 'translated': False})
+                continue
+            
+            try:
+                # Translate title
+                title = item.get('title', '')
+                if title:
                     translator = GoogleTranslator(source=source_lang, target=target_lang)
-                    translated_summary = translator.translate(summary)
-            else:
-                translated_summary = summary
-            
-            # Create translated item
-            translated_item = {
-                **item,
-                'title': translated_title,
-                'summary': translated_summary,
-                'language': target_lang,
-                'translated': True
-            }
-            translated_items.append(translated_item)
-            
-        except Exception as e:
-            logger.warning(f"Translation failed for item: {e}")
-            # Return original item if translation fails
-            translated_items.append({**item, 'translated': False})
+                    translated_title = translator.translate(title)
+                else:
+                    translated_title = title
+                
+                # Translate summary
+                summary = item.get('summary', '')
+                if summary:
+                    # Split long text into chunks (Google Translate has limits)
+                    if len(summary) > 5000:
+                        # Split by sentences
+                        sentences = summary.split('. ')
+                        translated_sentences = []
+                        for sentence in sentences:
+                            if sentence.strip():
+                                try:
+                                    translator = GoogleTranslator(source=source_lang, target=target_lang)
+                                    translated_sentences.append(translator.translate(sentence))
+                                except Exception as e:
+                                    logger.debug(f"Translation error for sentence: {e}")
+                                    translated_sentences.append(sentence)
+                        translated_summary = '. '.join(translated_sentences)
+                    else:
+                        translator = GoogleTranslator(source=source_lang, target=target_lang)
+                        translated_summary = translator.translate(summary)
+                else:
+                    translated_summary = summary
+                
+                # Create translated item
+                translated_item = {
+                    **item,
+                    'title': translated_title,
+                    'summary': translated_summary,
+                    'language': target_lang,
+                    'translated': True
+                }
+                translated_items.append(translated_item)
+                
+            except Exception as e:
+                logger.warning(f"Translation failed for item: {e}")
+                # Return original item if translation fails
+                translated_items.append({**item, 'translated': False})
     
     # Add non-translated items back (they keep original language)
     translated_items.extend([
@@ -303,8 +303,9 @@ def _translate_batch_llm(
 Переведи ВСЕ новости. Массив должен содержать {len(batch)} элементов."""
     
     try:
+        # Use OpenAI provider for LLM translation
         response = call_llm(
-            provider=provider,
+            provider="openai",
             prompt=prompt,
             model=model,
             temperature=0.3
