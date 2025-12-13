@@ -408,18 +408,48 @@ def generate_post(
     if skip_translation and provider != "demo":
         # Use news as-is (user understands English or prefers original)
         translated_news = news_data['news_items']
+    elif provider == "demo":
+        # Demo mode - no translation needed, use news as-is
+        translated_news = news_data['news_items']
     else:
-        from ..nlp.translator import translate_and_summarize_news
-        # Use cheaper model for translation
-        from .model_selector import select_model_for_task
-        translation_config = select_model_for_task("translation", "standard", provider)
-        translation_model = translation_config.get("model", "gpt-3.5-turbo")
+        # Check balance before translating
+        from ..utils.balance_checker import check_provider_balance
+        has_balance, error = check_provider_balance(provider)
         
-        translated_news = translate_and_summarize_news(
-            news_data['news_items'],
-            provider=provider,
-            model=translation_model  # Use cheaper model for translation
-        )
+        if not has_balance:
+            # No balance - skip translation, use news as-is
+            logger.warning(
+                "skipping_translation_no_balance",
+                extra={"provider": provider, "reason": error}
+            )
+            translated_news = news_data['news_items']
+        else:
+            from ..nlp.translator import translate_and_summarize_news
+            # Use cheaper model for translation
+            from .model_selector import select_model_for_task
+            translation_config = select_model_for_task("translation", "standard", provider)
+            translation_model = translation_config.get("model", "gpt-3.5-turbo")
+            
+            try:
+                translated_news = translate_and_summarize_news(
+                    news_data['news_items'],
+                    provider=provider,
+                    model=translation_model  # Use cheaper model for translation
+                )
+            except Exception as e:
+                # If translation fails (e.g., no balance), use original news
+                error_msg = str(e).lower()
+                if any(keyword in error_msg for keyword in [
+                    'insufficient_quota', 'insufficient funds', 'billing',
+                    'payment', 'credit', 'balance', 'quota'
+                ]):
+                    logger.warning(
+                        "translation_failed_no_balance",
+                        extra={"provider": provider, "error": str(e)}
+                    )
+                    translated_news = news_data['news_items']
+                else:
+                    raise
     
     # Filter news by topic (semantic + keyword hybrid)
     try:

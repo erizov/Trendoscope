@@ -72,15 +72,36 @@ class NewsService:
         
         logger.info("news_fetched", extra={"count": len(news_items)})
         
-        # Translate if requested
+        # Translate if requested (only if balance available)
         if translate and news_items:
-            try:
-                news_items = translate_and_summarize_news(
-                    news_items,
-                    provider="openai"
+            from ..utils.balance_checker import check_provider_balance
+            has_balance, error = check_provider_balance("openai")
+            
+            if not has_balance:
+                logger.info(
+                    "skipping_translation_no_balance",
+                    extra={"reason": error}
                 )
-            except Exception as e:
-                logger.warning("translation_failed", extra={"error": str(e)})
+                # Use news as-is without translation
+            else:
+                try:
+                    news_items = translate_and_summarize_news(
+                        news_items,
+                        provider="openai"
+                    )
+                except Exception as e:
+                    error_msg = str(e).lower()
+                    if any(keyword in error_msg for keyword in [
+                        'insufficient_quota', 'insufficient funds', 'billing',
+                        'payment', 'credit', 'balance', 'quota'
+                    ]):
+                        logger.warning(
+                            "translation_failed_no_balance",
+                            extra={"error": str(e)}
+                        )
+                        # Continue without translation
+                    else:
+                        logger.warning("translation_failed", extra={"error": str(e)})
         
         # Categorize and score
         for item in news_items:

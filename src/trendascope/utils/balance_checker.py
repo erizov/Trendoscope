@@ -11,42 +11,26 @@ logger = get_logger(__name__)
 def check_openai_balance() -> Tuple[bool, Optional[str]]:
     """
     Check if OpenAI API has balance/credits.
+    Uses API key existence as primary check, avoids making actual calls.
     
     Returns:
         Tuple of (has_balance, error_message)
     """
     try:
-        from ..gen.llm.providers import call_openai
-        
-        # Try a minimal test call to check balance
-        # Use a very cheap model and minimal tokens
+        # First check if API key exists
         try:
-            test_response = call_openai(
-                prompt="test",
-                model="gpt-3.5-turbo",
-                max_tokens=5
-            )
-            return True, None
-        except Exception as e:
-            error_msg = str(e).lower()
-            
-            # Check for common balance/credit errors
-            if any(keyword in error_msg for keyword in [
-                'insufficient_quota',
-                'insufficient funds',
-                'billing',
-                'payment',
-                'credit',
-                'balance',
-                'quota',
-                'rate limit exceeded'  # Sometimes rate limit means no credits
-            ]):
-                logger.warning("openai_no_balance", extra={"error": str(e)})
-                return False, "No OpenAI balance/credits available"
-            
-            # Other errors (network, etc.) - assume balance exists but call failed
-            logger.warning("openai_check_failed", extra={"error": str(e)})
-            return True, None  # Assume balance exists, just connection issue
+            from ..config import OPENAI_API_KEY
+        except ImportError:
+            OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+        
+        if not OPENAI_API_KEY:
+            logger.warning("openai_no_api_key")
+            return False, "No OpenAI API key configured"
+        
+        # If API key exists, assume balance exists
+        # We'll catch balance errors when making actual calls
+        # This avoids making unnecessary test calls that cost money
+        return True, None
             
     except Exception as e:
         logger.error("balance_check_error", extra={"error": str(e)})
@@ -57,37 +41,24 @@ def check_openai_balance() -> Tuple[bool, Optional[str]]:
 def check_anthropic_balance() -> Tuple[bool, Optional[str]]:
     """
     Check if Anthropic API has balance/credits.
+    Uses API key existence as primary check, avoids making actual calls.
     
     Returns:
         Tuple of (has_balance, error_message)
     """
     try:
-        from ..gen.llm.providers import call_anthropic_api
-        
-        # Try a minimal test call
+        # First check if API key exists
         try:
-            test_response = call_anthropic_api(
-                prompt="test",
-                model="claude-3-haiku-20240307",
-                max_tokens=5
-            )
-            return True, None
-        except Exception as e:
-            error_msg = str(e).lower()
-            
-            if any(keyword in error_msg for keyword in [
-                'insufficient_quota',
-                'insufficient funds',
-                'billing',
-                'payment',
-                'credit',
-                'balance',
-                'quota'
-            ]):
-                logger.warning("anthropic_no_balance", extra={"error": str(e)})
-                return False, "No Anthropic balance/credits available"
-            
-            return True, None
+            from ..config import ANTHROPIC_API_KEY
+        except ImportError:
+            ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+        
+        if not ANTHROPIC_API_KEY:
+            logger.warning("anthropic_no_api_key")
+            return False, "No Anthropic API key configured"
+        
+        # If API key exists, assume balance exists
+        return True, None
             
     except Exception as e:
         logger.error("anthropic_check_error", extra={"error": str(e)})

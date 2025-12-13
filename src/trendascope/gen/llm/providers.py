@@ -86,6 +86,16 @@ def call_openai(
         return response.choices[0].message.content or ""
 
     except Exception as e:
+        error_msg = str(e).lower()
+        # Check for balance/credit errors and provide helpful message
+        if any(keyword in error_msg for keyword in [
+            'insufficient_quota', 'insufficient funds', 'billing',
+            'payment', 'credit', 'balance', 'quota'
+        ]):
+            raise LLMProviderError(
+                f"OpenAI API error: No balance/credits available. "
+                f"Please add funds to your OpenAI account or use demo mode."
+            )
         raise LLMProviderError(f"OpenAI API error: {str(e)}")
 
 
