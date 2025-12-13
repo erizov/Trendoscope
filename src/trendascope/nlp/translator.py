@@ -24,10 +24,12 @@ def translate_and_summarize_news(
     target_language: str = "ru",
     provider: str = "free",
     model: Optional[str] = None,
-    preserve_context: bool = True
+    preserve_context: bool = True,
+    max_items: int = 5
 ) -> List[Dict[str, Any]]:
     """
     Translate news items to target language.
+    Limits translation to max_items for reliability.
     
     Args:
         news_items: List of news items to translate
@@ -35,6 +37,7 @@ def translate_and_summarize_news(
         provider: Translation provider ('free' for free translator, 'openai' for paid)
         model: Model name (for paid providers)
         preserve_context: Maintain meaning and emotional tone
+        max_items: Maximum number of items to translate (default: 5)
     
     Returns:
         List of translated news items
@@ -42,28 +45,43 @@ def translate_and_summarize_news(
     if not news_items:
         return []
     
+    # Limit number of items to translate (for reliability)
+    items_to_translate = news_items[:max_items] if len(news_items) > max_items else news_items
+    items_not_translated = news_items[max_items:] if len(news_items) > max_items else []
+    
+    if len(news_items) > max_items:
+        logger.info(f"Limiting translation to {max_items} items (from {len(news_items)})")
+    
     # Use free translator by default
+    translated = []
     if provider == "free" and FREE_TRANSLATOR_AVAILABLE:
-        return _translate_with_free_service(news_items, target_language)
+        translated = _translate_with_free_service(items_to_translate, target_language, batch_size=3)
     elif provider == "openai":
         # Fallback to OpenAI for paid translation
-        return _translate_with_llm(news_items, target_language, model)
+        translated = _translate_with_llm(items_to_translate, target_language, model)
     else:
         # If free translator not available, return original
         logger.warning("Free translator not available, returning original items")
-        return news_items
+        translated = items_to_translate
+    
+    # Combine translated items with non-translated items
+    result = translated + items_not_translated
+    return result
 
 
 def _translate_with_free_service(
     news_items: List[Dict[str, Any]],
-    target_language: str
+    target_language: str,
+    batch_size: int = 3
 ) -> List[Dict[str, Any]]:
     """
     Translate news using free Google Translate service.
+    Processes in small batches for reliability.
     
     Args:
         news_items: List of news items
         target_language: Target language ('ru' or 'en')
+        batch_size: Number of items to translate at once (default: 3)
     
     Returns:
         List of translated news items
@@ -83,7 +101,12 @@ def _translate_with_free_service(
     
     translated_items = []
     
-    for item in news_items:
+    # Process in small batches (3-5 items at a time)
+    for batch_start in range(0, len(news_items), batch_size):
+        batch = news_items[batch_start:batch_start + batch_size]
+        logger.debug(f"Translating batch {batch_start // batch_size + 1} ({len(batch)} items)")
+        
+        for item in batch:
         # Detect current language
         text = f"{item.get('title', '')} {item.get('summary', '')}"
         current_lang = 'ru' if _is_russian(text) else 'en'
