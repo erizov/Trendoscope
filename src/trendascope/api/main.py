@@ -325,14 +325,15 @@ async def get_news_feed(
     Args:
         category: Filter by category
         limit: Maximum items
-        translate: Translate English to Russian
+        language: Show only articles in this language (all, ru, en)
+        translate_to: Translate articles to target language (none, ru, en)
     
     Returns:
         List of scored news items
     """
     
     try:
-        logger.info(f"Fetching news: category={category}, limit={limit}")
+        logger.info(f"Fetching news: category={category}, limit={limit}, language={language}, translate_to={translate_to}")
         
         # Map new categories to source types
         category_map = {
@@ -367,37 +368,61 @@ async def get_news_feed(
         
         logger.info(f"Fetched {len(news_items)} news items")
         
-        # Detect and set language for each item
+        # Detect and set language for each item (based on entire article, not words)
         for item in news_items:
-            # Detect language (simple heuristic)
-            title = item.get('title', '').lower()
-            summary = item.get('summary', '').lower()
-            text = f"{title} {summary}"
+            # Detect language based on entire article content
+            title = item.get('title', '')
+            summary = item.get('summary', '')
+            full_text = item.get('full_text', '')
+            text = f"{title} {summary} {full_text}"
             
-            # Simple language detection
+            # Language detection: count Cyrillic vs Latin characters
             cyrillic_chars = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
-            total_chars = len([c for c in text if c.isalpha()])
+            latin_chars = sum(1 for c in text if c.isalpha() and ord(c) < 128)
+            total_chars = cyrillic_chars + latin_chars
             
-            if total_chars > 0 and cyrillic_chars / total_chars > 0.3:
-                item['language'] = 'ru'
+            if total_chars > 0:
+                cyrillic_ratio = cyrillic_chars / total_chars
+                # If more than 30% Cyrillic, consider it Russian
+                if cyrillic_ratio > 0.3:
+                    item['language'] = 'ru'
+                else:
+                    item['language'] = 'en'
             else:
+                # Default to English if no text
                 item['language'] = 'en'
         
-        # Filter by language if specified
+        # Filter by language - show complete articles only in selected language
         if language != 'all':
+            original_count = len(news_items)
             news_items = [
                 item for item in news_items
                 if item.get('language') == language
             ]
-            logger.info(f"Filtered to {len(news_items)} items for language={language}")
+            logger.info(f"Filtered to {len(news_items)} complete articles for language={language} (from {original_count})")
         
-        # Translate if requested
-        if translate and news_items:
+        # Translate if requested (translate_to is not 'none')
+        if translate_to != 'none' and news_items:
             try:
-                news_items = translate_and_summarize_news(
-                    news_items,
-                    provider="openai"
-                )
+                # Only translate items that are NOT already in target language
+                items_to_translate = [
+                    item for item in news_items
+                    if item.get('language') != translate_to
+                ]
+                
+                if items_to_translate:
+                    logger.info(f"Translating {len(items_to_translate)} items to {translate_to}")
+                    translated = translate_and_summarize_news(
+                        items_to_translate,
+                        provider="openai"
+                    )
+                    
+                    # Update translated items in the list
+                    translated_map = {item.get('link'): item for item in translated}
+                    for i, item in enumerate(news_items):
+                        if item.get('link') in translated_map:
+                            news_items[i] = translated_map[item.get('link')]
+                            news_items[i]['language'] = translate_to
             except Exception as e:
                 logger.warning(f"Translation failed: {e}, continuing without translation")
         

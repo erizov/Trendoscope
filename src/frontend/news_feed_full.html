@@ -677,7 +677,7 @@
                 console.log(`Loading news for category: ${category}`);
                 
                 const languageParam = currentLanguage !== 'all' ? `&language=${currentLanguage}` : '';
-                const translateParam = `&translate=${translateEnabled}`;
+                const translateParam = translateTo !== 'none' ? `&translate_to=${translateTo}` : '';
                 const response = await fetch(
                     `${API_URL}/api/news/feed?category=${category}&limit=30${languageParam}${translateParam}`
                 );
