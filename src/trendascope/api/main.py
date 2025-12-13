@@ -887,16 +887,17 @@ async def translate_article(
     }
     """
     try:
-        title = article.get('title', '')
-        summary = article.get('summary', '')
+        title = article.get('title', '').strip() if article.get('title') else ''
+        summary = article.get('summary', '').strip() if article.get('summary') else ''
         source_lang = article.get('source_language', article.get('language', 'en'))
         # Use query parameter (required)
         target_lang = target_language
         
+        # Validate that we have actual content (not just empty strings)
         if not title and not summary:
             raise HTTPException(
                 status_code=400,
-                detail="Title or summary required"
+                detail="Title or summary required (non-empty)"
             )
         
         # Create a single-item list for translation

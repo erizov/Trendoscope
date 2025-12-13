@@ -54,32 +54,67 @@ def generate_post_with_author_style(
             num_examples=3
         )
         
-        # Fetch trending news
-        news_data = fetch_trending_news(max_items=5)
-        news_items = news_data.get("news_items", [])
+        # Fetch trending news (skip for demo mode to avoid timeouts)
+        news_items = []
+        news_context = ""
         
-        # Filter by topic if needed
-        if topic != "any":
-            from .post_generator import _filter_news_by_topic
-            news_items = _filter_news_by_topic(news_items, topic)
-        
-        # Translate if needed
-        if translate and news_items:
-            skip_translation = os.getenv("SKIP_TRANSLATION", "false").lower() == "true"
-            if not skip_translation and provider != "demo":
-                from ..nlp.translator import translate_and_summarize_news
-                news_items = translate_and_summarize_news(
-                    news_items,
-                    target_language="ru",
-                    provider="free",
-                    max_items=3
-                )
-        
-        # Build news context
-        news_context = "\n\n".join([
-            f"Новость {i+1}: {item.get('title', '')}\n{item.get('summary', '')[:300]}"
-            for i, item in enumerate(news_items[:3])
-        ])
+        if provider != "demo":
+            try:
+                # Use timeout for news fetching to avoid hanging
+                import signal
+                import threading
+                
+                news_data = None
+                news_fetch_timeout = 10  # 10 seconds max for news fetch
+                
+                def fetch_news():
+                    nonlocal news_data
+                    try:
+                        news_data = fetch_trending_news(max_items=5)
+                    except Exception as e:
+                        logger.warning(f"News fetch failed: {e}")
+                        news_data = {"news_items": []}
+                
+                thread = threading.Thread(target=fetch_news)
+                thread.daemon = True
+                thread.start()
+                thread.join(timeout=news_fetch_timeout)
+                
+                if thread.is_alive():
+                    logger.warning("News fetch timed out, using empty context")
+                    news_data = {"news_items": []}
+                
+                if news_data:
+                    news_items = news_data.get("news_items", [])
+                    
+                    # Filter by topic if needed
+                    if topic != "any":
+                        from .post_generator import _filter_news_by_topic
+                        news_items = _filter_news_by_topic(news_items, topic)
+                    
+                    # Translate if needed
+                    if translate and news_items:
+                        skip_translation = os.getenv("SKIP_TRANSLATION", "false").lower() == "true"
+                        if not skip_translation:
+                            from ..nlp.translator import translate_and_summarize_news
+                            news_items = translate_and_summarize_news(
+                                news_items,
+                                target_language="ru",
+                                provider="free",
+                                max_items=3
+                            )
+                    
+                    # Build news context
+                    news_context = "\n\n".join([
+                        f"Новость {i+1}: {item.get('title', '')}\n{item.get('summary', '')[:300]}"
+                        for i, item in enumerate(news_items[:3])
+                    ])
+            except Exception as e:
+                logger.warning(f"Error fetching news: {e}, continuing without news context")
+                news_context = "Актуальные события современности"
+        else:
+            # Demo mode: use generic context
+            news_context = "Актуальные события современности"
         
         # Build prompt
         prompt = f"""Ты - писатель, который пишет в стиле {author_info['name']} ({author_info['english_name']}).
@@ -88,7 +123,7 @@ def generate_post_with_author_style(
 
 Задача: Напиши пост в стиле этого автора на основе следующих новостей:
 
-{news_context}
+{news_context if news_context else "Актуальные события современности"}
 
 Требования:
 1. Стиль должен точно соответствовать стилю {author_info['name']}
