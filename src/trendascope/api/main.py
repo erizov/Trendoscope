@@ -281,6 +281,7 @@ async def get_style_status():
 
 
 @app.get("/api/news/feed")
+@limiter.limit("30/minute")
 async def get_news_feed(
     request: Request,
     category: str = Query(
@@ -309,11 +310,6 @@ async def get_news_feed(
     Returns:
         List of scored news items
     """
-    # Rate limiting
-    try:
-        limiter.check(f"30/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded: 30 requests per minute")
     
     try:
         logger.info(f"Fetching news: category={category}, limit={limit}")

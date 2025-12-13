@@ -19,17 +19,12 @@ post_storage = PostStorage()
 
 
 @router.post("/save")
+@posts_limiter.limit("20/minute")
 async def save_post(
     request: Request,
     post: Dict
 ):
     """Save a generated post."""
-    # Rate limiting (if limiter available)
-    if limiter:
-        try:
-            limiter.check("20/minute", request)
-        except RateLimitExceeded:
-            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         post_id = post_storage.save_post(post if isinstance(post, dict) else post.dict())
@@ -43,6 +38,7 @@ async def save_post(
 
 
 @router.get("/list")
+@posts_limiter.limit("30/minute")
 async def list_posts(
     request: Request,
     limit: int = Query(default=50, le=100)
@@ -66,16 +62,12 @@ async def list_posts(
 
 
 @router.get("/{post_id}")
+@posts_limiter.limit("30/minute")
 async def get_post(
     request: Request,
     post_id: str
 ):
     """Get a specific post."""
-    if limiter:
-        try:
-            limiter.check("30/minute", request)
-        except RateLimitExceeded:
-            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         post = post_storage.get_post(post_id)
@@ -92,17 +84,13 @@ async def get_post(
 
 
 @router.put("/{post_id}")
+@posts_limiter.limit("20/minute")
 async def update_post(
     request: Request,
     post_id: str,
     updates: Dict
 ):
     """Update a post."""
-    if limiter:
-        try:
-            limiter.check("20/minute", request)
-        except RateLimitExceeded:
-            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         # Only include non-None fields if it's a Pydantic model
@@ -124,16 +112,12 @@ async def update_post(
 
 
 @router.delete("/{post_id}")
+@posts_limiter.limit("20/minute")
 async def delete_post(
     request: Request,
     post_id: str
 ):
     """Delete a post."""
-    if limiter:
-        try:
-            limiter.check("20/minute", request)
-        except RateLimitExceeded:
-            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         success = post_storage.delete_post(post_id)
