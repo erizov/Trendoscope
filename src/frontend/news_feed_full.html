@@ -654,7 +654,7 @@
                             <div class="news-meta">
                                 <div>
                                     <span class="news-source">${escapeHtml(item.source)}</span>
-                                    <span class="news-category">${item.category.toUpperCase()}</span>
+                                    <span class="news-category" title="Тип новости">${(item.category || 'general').toUpperCase()}</span>
                                 </div>
                                 <div class="news-time">${timeAgo(item.published)}</div>
                             </div>
