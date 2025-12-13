@@ -149,7 +149,14 @@ class NewsAggregator:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning)
                 try:
-                    response = self.client.get(url)
+                    # Add retry logic for network requests
+                    from ..core.resilience import retry_with_backoff
+                    
+                    @retry_with_backoff(max_attempts=2, initial_delay=0.5)
+                    def _fetch():
+                        return self.client.get(url)
+                    
+                    response = _fetch()
                 except Exception as e:
                     # Handle various timeout and connection errors
                     error_type = type(e).__name__

@@ -9,6 +9,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def is_valid_article(item: Dict[str, Any]) -> bool:
+    """
+    Alias for is_valid_news_item for consistency.
+    """
+    return is_valid_news_item(item)
+
+
 def is_valid_news_item(item: Dict[str, Any]) -> bool:
     """
     Check if news item is valid and should be displayed.

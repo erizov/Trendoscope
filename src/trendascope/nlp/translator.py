@@ -55,7 +55,12 @@ def translate_and_summarize_news(
     # Use free translator by default
     translated = []
     if provider == "free" and FREE_TRANSLATOR_AVAILABLE:
-        translated = _translate_with_free_service(items_to_translate, target_language, batch_size=3)
+        translated = _translate_with_free_service(
+            items_to_translate,
+            target_language,
+            batch_size=3,
+            max_items=max_items
+        )
     elif provider == "openai":
         # Fallback to OpenAI for paid translation
         translated = _translate_with_llm(items_to_translate, target_language, model)
@@ -72,7 +77,8 @@ def translate_and_summarize_news(
 def _translate_with_free_service(
     news_items: List[Dict[str, Any]],
     target_language: str,
-    batch_size: int = 3
+    batch_size: int = 3,
+    max_items: int = 5
 ) -> List[Dict[str, Any]]:
     """
     Translate news using free Google Translate service.
@@ -99,10 +105,17 @@ def _translate_with_free_service(
     target_lang = lang_map.get(target_language.lower(), 'ru')
     source_lang = 'en' if target_lang == 'ru' else 'ru'
     
+    # Limit total items to translate (for speed)
+    items_to_process = news_items[:max_items] if len(news_items) > max_items else news_items
+    items_not_translated = news_items[max_items:] if len(news_items) > max_items else []
+    
+    if len(news_items) > max_items:
+        logger.info(f"Limiting translation to {max_items} items (from {len(news_items)})")
+    
     translated_items = []
     
-    # Process in small batches (3-5 items at a time)
-    for batch_start in range(0, len(news_items), batch_size):
+    # Process in small batches (3 items at a time)
+    for batch_start in range(0, len(items_to_process), batch_size):
         batch = news_items[batch_start:batch_start + batch_size]
         logger.debug(f"Translating batch {batch_start // batch_size + 1} ({len(batch)} items)")
         
@@ -163,6 +176,11 @@ def _translate_with_free_service(
             logger.warning(f"Translation failed for item: {e}")
             # Return original item if translation fails
             translated_items.append({**item, 'translated': False})
+    
+    # Add non-translated items back (they keep original language)
+    translated_items.extend([
+        {**item, 'translated': False} for item in items_not_translated
+    ])
     
     return translated_items
 

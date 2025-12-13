@@ -25,6 +25,23 @@ from ..utils.response import APIResponse
 from ..utils.logger import setup_logging, get_logger
 from ..core.dependencies import get_news_service, get_post_service, get_config
 from ..core.settings import get_settings
+from ..core.health import (
+    get_health_checker,
+    check_database,
+    check_cache,
+    check_openai_provider,
+    check_anthropic_provider,
+    check_translator
+)
+from ..core.exceptions import (
+    TrendoscopeException,
+    ServiceUnavailableError,
+    LLMProviderError
+)
+from ..core.error_handler import (
+    trendoscope_exception_handler,
+    general_exception_handler
+)
 
 # Setup structured logging
 settings = get_settings()
@@ -57,6 +74,10 @@ async def add_utf8_header(request: Request, call_next):
 # Add rate limiter to app
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# Add custom exception handlers
+app.add_exception_handler(TrendoscopeException, trendoscope_exception_handler)
+app.add_exception_handler(Exception, general_exception_handler)
 
 # Include routers
 try:
@@ -249,8 +270,41 @@ async def check_balance(
 
 @app.get("/api/health")
 async def health():
-    """Health check endpoint."""
-    return {"status": "ok", "service": "trendoscope"}
+    """
+    Comprehensive health check endpoint.
+    
+    Checks:
+    - Database connectivity
+    - Cache availability
+    - LLM providers
+    - Translation service
+    """
+    health_checker = get_health_checker()
+    
+    # Register health checks on first call
+    if not health_checker._checks:
+        health_checker.register("database", check_database)
+        health_checker.register("cache", check_cache)
+        health_checker.register("openai", check_openai_provider)
+        health_checker.register("anthropic", check_anthropic_provider)
+        health_checker.register("translator", check_translator)
+    
+    # Run all checks
+    results = await health_checker.check_all()
+    overall_status = await health_checker.check_overall()
+    
+    return {
+        "status": overall_status.value,
+        "checks": {
+            name: {
+                "status": result.status.value,
+                "message": result.message,
+                "details": result.details,
+                "timestamp": result.timestamp.isoformat()
+            }
+            for name, result in results.items()
+        }
+    }
 
 
 @app.get("/api/modes")
@@ -419,18 +473,18 @@ async def get_news_feed(
                 ]
                 
                 if items_to_translate:
-                    # Limit translation to 5 items at a time for reliability
-                    max_translate = min(len(items_to_translate), 5)
+                    # Limit translation to 3 items at a time for speed
+                    max_translate = min(len(items_to_translate), 3)
                     items_to_translate_limited = items_to_translate[:max_translate]
                     items_not_translated = items_to_translate[max_translate:]
                     
                     logger.info(f"Translating {max_translate} items to {translate_to} using free translator (limited from {len(items_to_translate)})")
-                    # Use free translator by default, limit to 5 items
+                    # Use free translator, limit to 3 items for speed
                     translated = translate_and_summarize_news(
                         items_to_translate_limited,
                         target_language=translate_to,
                         provider="free",  # Use free translator
-                        max_items=5  # Limit to 5 items
+                        max_items=3  # Limit to 3 items for speed
                     )
                     
                     # Add non-translated items back (they keep original language)

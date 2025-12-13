@@ -5,6 +5,7 @@ Supports OpenAI, Anthropic, and local models.
 import os
 import json
 from typing import Optional, Dict, Any
+import logging
 
 try:
     import openai
@@ -16,33 +17,33 @@ try:
 except ImportError:
     anthropic = None
 
+from ..core.exceptions import LLMProviderError
+from ..core.resilience import CircuitBreaker, retry_with_backoff
 
-class LLMProviderError(Exception):
-    """Exception raised for LLM provider errors."""
-    pass
+logger = logging.getLogger(__name__)
+
+# Circuit breakers for LLM providers
+_openai_breaker = CircuitBreaker(
+    failure_threshold=5,
+    timeout=60,
+    name="openai"
+)
+
+_anthropic_breaker = CircuitBreaker(
+    failure_threshold=5,
+    timeout=60,
+    name="anthropic"
+)
 
 
-def call_openai(
+@retry_with_backoff(max_attempts=3, initial_delay=1.0)
+def _call_openai_internal(
     prompt: str,
     model: Optional[str] = None,
     temperature: float = 0.7,
     max_tokens: int = 4000
 ) -> str:
-    """
-    Call OpenAI API (supports proxy via base_url).
-
-    Args:
-        prompt: Input prompt
-        model: Model name (default: gpt-4-turbo-preview)
-        temperature: Sampling temperature
-        max_tokens: Maximum tokens to generate
-
-    Returns:
-        Generated text
-
-    Raises:
-        LLMProviderError: If API call fails
-    """
+    """Internal OpenAI call with retry logic."""
     if not openai:
         raise LLMProviderError("openai package not installed")
 
@@ -56,38 +57,66 @@ def call_openai(
     if not OPENAI_API_KEY:
         raise LLMProviderError("OPENAI_API_KEY not set")
 
-    # Use cheaper model by default (can be overridden via OPENAI_MODEL env var)
-    # GPT-3.5-turbo is ~20x cheaper than GPT-4
+    # Use cheaper model by default
     model = model or os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
 
+    # Create client with optional base_url
+    client_kwargs = {"api_key": OPENAI_API_KEY}
+    if OPENAI_API_BASE:
+        client_kwargs["base_url"] = OPENAI_API_BASE
+
+    client = openai.OpenAI(**client_kwargs)
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "Ты — эксперт по анализу трендов и генерации "
+                    "контента. Отвечай строго по инструкциям."
+                )
+            },
+            {"role": "user", "content": prompt}
+        ],
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
+    return response.choices[0].message.content or ""
+
+
+def call_openai(
+    prompt: str,
+    model: Optional[str] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 4000
+) -> str:
+    """
+    Call OpenAI API with circuit breaker and retry logic.
+
+    Args:
+        prompt: Input prompt
+        model: Model name (default: gpt-3.5-turbo)
+        temperature: Sampling temperature
+        max_tokens: Maximum tokens to generate
+
+    Returns:
+        Generated text
+
+    Raises:
+        LLMProviderError: If API call fails
+    """
     try:
-        # Create client with optional base_url
-        client_kwargs = {"api_key": OPENAI_API_KEY}
-        if OPENAI_API_BASE:
-            client_kwargs["base_url"] = OPENAI_API_BASE
-
-        client = openai.OpenAI(**client_kwargs)
-
-        response = client.chat.completions.create(
-            model=model,
-            messages=[
-                {
-                    "role": "system",
-                    "content": (
-                        "Ты — эксперт по анализу трендов и генерации "
-                        "контента. Отвечай строго по инструкциям."
-                    )
-                },
-                {"role": "user", "content": prompt}
-            ],
-            temperature=temperature,
-            max_tokens=max_tokens,
+        return _openai_breaker.call(
+            _call_openai_internal,
+            prompt,
+            model,
+            temperature,
+            max_tokens
         )
-        return response.choices[0].message.content or ""
-
     except Exception as e:
         error_msg = str(e).lower()
-        # Check for balance/credit errors and provide helpful message
+        # Check for balance/credit errors
         if any(keyword in error_msg for keyword in [
             'insufficient_quota', 'insufficient funds', 'billing',
             'payment', 'credit', 'balance', 'quota'
