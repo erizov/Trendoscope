@@ -21,16 +21,18 @@ post_storage = PostStorage()
 @router.post("/save")
 async def save_post(
     request: Request,
-    post: PostSaveRequest
+    post: Dict
 ):
     """Save a generated post."""
-    try:
-        limiter.check("20/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded")
+    # Rate limiting (if limiter available)
+    if limiter:
+        try:
+            limiter.check("20/minute", request)
+        except RateLimitExceeded:
+            return APIResponse.error_response("Rate limit exceeded")
     
     try:
-        post_id = post_storage.save_post(post.dict())
+        post_id = post_storage.save_post(post if isinstance(post, dict) else post.dict())
         return APIResponse.success_response(
             data={"post_id": post_id},
             metadata={"request_id": getattr(request.state, "request_id", None)}
@@ -46,10 +48,11 @@ async def list_posts(
     limit: int = Query(default=50, le=100)
 ):
     """List saved posts."""
-    try:
-        limiter.check("30/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded")
+    if limiter:
+        try:
+            limiter.check("30/minute", request)
+        except RateLimitExceeded:
+            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         posts = post_storage.list_posts(limit=limit)
@@ -68,10 +71,11 @@ async def get_post(
     post_id: str
 ):
     """Get a specific post."""
-    try:
-        limiter.check("30/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded")
+    if limiter:
+        try:
+            limiter.check("30/minute", request)
+        except RateLimitExceeded:
+            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         post = post_storage.get_post(post_id)
@@ -91,17 +95,21 @@ async def get_post(
 async def update_post(
     request: Request,
     post_id: str,
-    updates: PostUpdateRequest
+    updates: Dict
 ):
     """Update a post."""
-    try:
-        limiter.check("20/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded")
+    if limiter:
+        try:
+            limiter.check("20/minute", request)
+        except RateLimitExceeded:
+            return APIResponse.error_response("Rate limit exceeded")
     
     try:
-        # Only include non-None fields
-        update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+        # Only include non-None fields if it's a Pydantic model
+        if hasattr(updates, 'dict'):
+            update_dict = {k: v for k, v in updates.dict().items() if v is not None}
+        else:
+            update_dict = updates
         success = post_storage.update_post(post_id, update_dict)
         if not success:
             return APIResponse.error_response("Post not found")
@@ -121,10 +129,11 @@ async def delete_post(
     post_id: str
 ):
     """Delete a post."""
-    try:
-        limiter.check("20/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded")
+    if limiter:
+        try:
+            limiter.check("20/minute", request)
+        except RateLimitExceeded:
+            return APIResponse.error_response("Rate limit exceeded")
     
     try:
         success = post_storage.delete_post(post_id)

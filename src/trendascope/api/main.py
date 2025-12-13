@@ -42,7 +42,13 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Include routers
-app.include_router(posts_router)
+try:
+    from .posts import router as posts_router
+    # Set limiter on posts router
+    posts_router.limiter = limiter
+    app.include_router(posts_router)
+except ImportError as e:
+    logger.warning(f"Could not import posts router: {e}")
 
 # Add CORS middleware
 app.add_middleware(
