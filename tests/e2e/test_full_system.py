@@ -369,22 +369,18 @@ class TestAPIEndpoints:
         test_name = "balance_check"
         try:
             response = api_client.get("/api/balance/check", params={"provider": "openai"})
-            # Accept both 200 (success) and 500 (error but endpoint works)
-            assert response.status_code in [200, 500], \
-                f"Balance check returned {response.status_code}"
+            assert response.status_code == 200, \
+                f"Balance check returned {response.status_code}: {response.text}"
             
             data = response.json()
-            # Check if response has expected structure (even if error)
-            assert 'provider' in data or 'error' in data, \
-                "Invalid balance check response"
+            assert 'provider' in data, "Invalid balance check response"
             
             test_stats.record_endpoint("/api/balance/check")
             test_stats.record_test(test_name, True)
             
         except Exception as e:
             test_stats.record_test(test_name, False, str(e))
-            # Don't raise - endpoint might be working but returning error
-            pass
+            raise
     
     def test_analytics_endpoints(self, api_client, test_stats):
         """Test analytics endpoints."""
@@ -398,26 +394,19 @@ class TestAPIEndpoints:
             test_name = f"analytics_{name}"
             try:
                 response = api_client.get(endpoint, timeout=30.0)
-                # Accept 200 (success), 404 (not registered), or 500 (error)
-                if response.status_code == 404:
-                    # Endpoint not found - might not be registered
-                    pytest.skip(f"{endpoint} not found (may not be registered)")
+                assert response.status_code == 200, \
+                    f"{endpoint} returned {response.status_code}: {response.text}"
                 
-                assert response.status_code in [200, 500], \
-                    f"{endpoint} returned {response.status_code}"
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    assert 'success' in data or isinstance(data, dict), \
-                        f"Invalid response from {endpoint}"
+                data = response.json()
+                assert 'success' in data or isinstance(data, dict), \
+                    f"Invalid response from {endpoint}"
                 
                 test_stats.record_endpoint(endpoint)
                 test_stats.record_test(test_name, True)
                 
             except Exception as e:
                 test_stats.record_test(test_name, False, str(e))
-                # Don't raise - continue with other endpoints
-                pass
+                raise
 
 
 class TestErrorHandling:

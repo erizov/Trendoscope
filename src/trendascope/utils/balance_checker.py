@@ -24,7 +24,7 @@ def check_openai_balance() -> Tuple[bool, Optional[str]]:
             OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
         
         if not OPENAI_API_KEY:
-            logger.warning("openai_no_api_key", extra={})
+            logger.warning("openai_no_api_key")
             return False, "No OpenAI API key configured"
         
         # If API key exists, assume balance exists
@@ -33,7 +33,7 @@ def check_openai_balance() -> Tuple[bool, Optional[str]]:
         return True, None
             
     except Exception as e:
-        logger.error("balance_check_error", extra={"error": str(e)})
+        logger.error(f"balance_check_error: {str(e)}")
         # If we can't check, assume no balance to be safe
         return False, f"Could not check balance: {str(e)}"
 
@@ -54,14 +54,14 @@ def check_anthropic_balance() -> Tuple[bool, Optional[str]]:
             ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
         
         if not ANTHROPIC_API_KEY:
-            logger.warning("anthropic_no_api_key", extra={})
+            logger.warning("anthropic_no_api_key")
             return False, "No Anthropic API key configured"
         
         # If API key exists, assume balance exists
         return True, None
             
     except Exception as e:
-        logger.error("anthropic_check_error", extra={"error": str(e)})
+        logger.error(f"anthropic_check_error: {str(e)}")
         return False, f"Could not check balance: {str(e)}"
 
 
@@ -103,11 +103,7 @@ def auto_fallback_provider(requested_provider: str) -> str:
     
     if not has_balance:
         logger.info(
-            "auto_fallback_to_demo",
-            extra={
-                "requested": requested_provider,
-                "reason": error
-            }
+            f"auto_fallback_to_demo: requested={requested_provider}, reason={error}"
         )
         return "demo"
     

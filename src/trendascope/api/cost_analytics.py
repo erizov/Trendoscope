@@ -38,14 +38,19 @@ async def get_costs(
         total_cost = sum(provider_costs.values())
         
         # Get cost breakdown
-        breakdown = {
-            provider: {
+        breakdown = {}
+        for prov, cost in provider_costs.items():
+            if prov == "total":
+                continue
+            breakdown[prov] = {
                 'total_cost': cost,
                 'percentage': (cost / total_cost * 100) if total_cost > 0 else 0,
-                'calls': metrics.get('llm_calls_by_provider', {}).get(provider, 0)
+                'calls': metrics.get('llm_calls_by_provider', {}).get(prov, 0)
             }
-            for provider, cost in provider_costs.items()
-        }
+        
+        # Filter by provider if specified
+        if provider:
+            breakdown = {k: v for k, v in breakdown.items() if k == provider}
         
         # Cost optimization suggestions
         suggestions = []
