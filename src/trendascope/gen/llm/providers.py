@@ -209,7 +209,7 @@ def call_llm(
         return call_local(prompt, model, temperature, max_tokens)
     elif provider == "demo":
         # Improved demo mode with template-based generation
-        from .demo_generator import (
+        from ..demo_generator import (
             extract_style_from_prompt,
             extract_topic_from_prompt,
             generate_demo_post,
