@@ -426,8 +426,8 @@ async def get_news_feed(
         logger.info(f"Fetched {len(news_items)} news items")
         
         # Filter out invalid/empty articles
-        from ..utils.news_validator import filter_valid_news
-        news_items = filter_valid_news(news_items)
+        from ..utils.news_validator import is_valid_article
+        news_items = [item for item in news_items if is_valid_article(item)]
         logger.info(f"After validation: {len(news_items)} valid news items")
         
         # Detect and set language for each item (based on entire article, not words)
