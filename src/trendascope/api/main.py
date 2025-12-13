@@ -1,12 +1,16 @@
 """
 FastAPI application for Trendoscope.
 """
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Dict, Optional, Any
 import os
+import uuid
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from ..gen.generate import generate_summary
 from ..pipeline.orchestrator import run_pipeline
@@ -15,12 +19,25 @@ from ..ingest.news_sources import NewsAggregator
 from ..nlp.controversy_scorer import ControversyScorer
 from ..nlp.translator import translate_and_summarize_news
 from ..storage.news_db import NewsDatabase
+from ..utils.response import APIResponse
+from ..utils.logger import setup_logging, get_logger
+
+# Setup structured logging
+setup_logging(os.getenv("LOG_LEVEL", "INFO"))
+logger = get_logger(__name__)
+
+# Rate limiter
+limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
     title="Trendoscope API",
     description="Analyze LiveJournal posts and generate viral content",
-    version="1.0.0"
+    version="2.2.0"
 )
+
+# Add rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add CORS middleware
 app.add_middleware(
@@ -30,6 +47,37 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request ID middleware
+@app.middleware("http")
+async def add_request_id(request: Request, call_next):
+    """Add request ID to all requests."""
+    request_id = str(uuid.uuid4())
+    request.state.request_id = request_id
+    
+    # Add to logger context
+    logger.info(
+        "request_started",
+        extra={
+            "request_id": request_id,
+            "method": request.method,
+            "path": request.url.path,
+            "client": get_remote_address(request)
+        }
+    )
+    
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    
+    logger.info(
+        "request_completed",
+        extra={
+            "request_id": request_id,
+            "status_code": response.status_code
+        }
+    )
+    
+    return response
 
 # Serve static files (frontend)
 static_dir = os.path.join(
@@ -202,6 +250,7 @@ async def get_style_status():
 
 
 @app.get("/api/news/feed")
+@limiter.limit("30/minute")
 async def get_news_feed(
     category: str = Query(
         default="all",
@@ -432,6 +481,7 @@ def _categorize_news(item: Dict[str, Any]) -> str:
 
 
 @app.post("/api/post/generate")
+@limiter.limit("10/minute")
 async def generate_post_endpoint(
     style: str = Query(
         default="philosophical",
@@ -704,6 +754,7 @@ async def get_controversial_news_from_db(
 
 
 @app.post("/api/news/db/store")
+@limiter.limit("5/minute")
 async def store_news_batch(
     fetch_fresh: bool = Query(
         default=True,
