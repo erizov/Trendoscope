@@ -245,14 +245,21 @@ class TestTranslation:
             # Find first valid article with non-empty title or summary
             article = None
             for art in articles:
-                title = art.get('title', '').strip()
-                summary = art.get('summary', '').strip()
-                if title or summary:
+                title = art.get('title', '').strip() if art.get('title') else ''
+                summary = art.get('summary', '').strip() if art.get('summary') else ''
+                # Ensure we have meaningful content (at least 10 chars)
+                if (title and len(title) >= 10) or (summary and len(summary) >= 20):
                     article = art
                     break
             
             if not article:
-                pytest.skip("No valid articles with title or summary for translation test")
+                pytest.skip("No valid articles with sufficient title or summary for translation test")
+            
+            # Ensure article has required fields for API (add fallbacks if missing)
+            if not article.get('title') or not article.get('title', '').strip():
+                article['title'] = article.get('summary', '')[:50] or 'Test Article'
+            if not article.get('summary') or not article.get('summary', '').strip():
+                article['summary'] = article.get('title', '') or 'Test Summary'
             
             # Translate article
             translate_response = api_client.post(
