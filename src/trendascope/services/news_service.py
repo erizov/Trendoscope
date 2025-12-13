@@ -87,7 +87,8 @@ class NewsService:
                 try:
                     news_items = translate_and_summarize_news(
                         news_items,
-                        provider="openai"
+                        target_language="ru",
+                        provider="free"  # Use free translator
                     )
                 except Exception as e:
                     error_msg = str(e).lower()

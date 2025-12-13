@@ -433,8 +433,9 @@ def generate_post(
             try:
                 translated_news = translate_and_summarize_news(
                     news_data['news_items'],
-                    provider=provider,
-                    model=translation_model  # Use cheaper model for translation
+                    target_language="ru",
+                    provider="free" if provider == "demo" else provider,  # Use free for demo, otherwise use provider
+                    model=translation_model if provider != "free" else None
                 )
             except Exception as e:
                 # If translation fails (e.g., no balance), use original news
