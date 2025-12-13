@@ -32,15 +32,33 @@ def main():
     print("Running E2E tests...")
     print()
     
-    # Run pytest
-    result = subprocess.run([
+    # Check if pytest-html is available
+    html_available = False
+    try:
+        import pytest_html
+        html_available = True
+    except ImportError:
+        print("⚠️  pytest-html not installed, HTML report will be skipped")
+        print("   Install with: pip install pytest-html")
+        print()
+    
+    # Build pytest command
+    pytest_cmd = [
         sys.executable, "-m", "pytest",
         "tests/e2e/test_full_system.py",
         "-v",
-        "--tb=short",
-        "--html=test_results/e2e_report.html",
-        "--self-contained-html"
-    ], capture_output=False)
+        "--tb=short"
+    ]
+    
+    # Add HTML report if available
+    if html_available:
+        pytest_cmd.extend([
+            "--html=test_results/e2e_report.html",
+            "--self-contained-html"
+        ])
+    
+    # Run pytest
+    result = subprocess.run(pytest_cmd, capture_output=False)
     
     print()
     print("=" * 80)
@@ -87,7 +105,8 @@ def main():
                 print()
         
         print(f"Full report saved to: {report_path}")
-        print(f"HTML report saved to: test_results/e2e_report.html")
+        if html_available:
+            print(f"HTML report saved to: test_results/e2e_report.html")
     
     print("=" * 80)
     
