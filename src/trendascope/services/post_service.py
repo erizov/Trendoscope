@@ -80,8 +80,11 @@ class PostService:
                 estimated_tokens_out = len(result.get("text", "")) // 4
                 cost = track_call(provider, model, estimated_tokens_in, estimated_tokens_out)
                 result["cost_estimate"] = f"${cost:.4f}"
+                track_cost(cost)
             except Exception:
                 pass
+        
+        track_post_generation()
         
         logger.info(
             "post_generated",
