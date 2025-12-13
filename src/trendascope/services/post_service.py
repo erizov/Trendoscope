@@ -40,6 +40,20 @@ class PostService:
         Returns:
             Generated post with metadata
         """
+        # Auto-fallback to demo if no balance
+        original_provider = provider
+        provider = auto_fallback_provider(provider)
+        
+        if provider != original_provider:
+            logger.info(
+                "provider_fallback",
+                extra={
+                    "requested": original_provider,
+                    "using": provider,
+                    "reason": "No balance/credits available"
+                }
+            )
+        
         logger.info(
             "generating_post",
             extra={

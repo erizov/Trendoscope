@@ -137,12 +137,6 @@ async def generate(
     Returns:
         Generated summary with titles, ideas, and viral potential
     """
-    # Rate limiting
-    try:
-        limiter.check(f"20/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded: 20 requests per minute")
-    
     try:
         return generate_summary(
             items,
@@ -192,12 +186,6 @@ async def run_full_pipeline(
     Returns:
         Complete pipeline results including posts, trends, and generated content
     """
-    # Rate limiting
-    try:
-        limiter.check(f"5/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded: 5 requests per minute")
-    
     try:
         result = run_pipeline(
             blog_url=blog_url,
@@ -226,6 +214,20 @@ async def get_metrics_endpoint():
     """Get application metrics."""
     from ..utils.monitoring import get_metrics
     return get_metrics()
+
+
+@app.get("/api/balance/check")
+async def check_balance(
+    provider: str = Query(default="openai", description="Provider to check")
+):
+    """Check AI provider balance."""
+    has_balance, error = check_provider_balance(provider)
+    return {
+        "provider": provider,
+        "has_balance": has_balance,
+        "error": error,
+        "recommended_provider": "demo" if not has_balance else provider
+    }
 
 
 @app.get("/api/health")
@@ -555,12 +557,6 @@ async def generate_post_endpoint(
     Returns:
         Generated post with title, text, and tags
     """
-    # Rate limiting
-    try:
-        limiter.check(f"10/minute", request)
-    except RateLimitExceeded:
-        return APIResponse.error_response("Rate limit exceeded: 10 requests per minute")
-    
     try:
         from ..gen.post_generator import generate_post_from_storage
         from ..gen.model_selector import select_model_for_task
