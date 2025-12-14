@@ -22,7 +22,7 @@ from typing import Dict, Any
 # Test configuration
 RUTUBE_URL = "https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/"
 API_URL = "http://localhost:8003"
-TIMEOUT = 600  # 10 minutes for video processing
+TIMEOUT = 1200  # 20 minutes (audio download up to 15min + transcription)
 
 
 def check_dependency(command: str, package_name: str = None) -> bool:
