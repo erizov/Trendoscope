@@ -145,7 +145,8 @@ def process_video():
     
     try:
         print("Sending request to API...")
-        print("(This may take 2-5 minutes depending on video length)")
+        print("(This may take 5-15 minutes depending on video length)")
+        print(f"(Timeout set to {TIMEOUT // 60} minutes)")
         start_time = time.time()
         
         response = client.post(
