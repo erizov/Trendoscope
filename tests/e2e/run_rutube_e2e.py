@@ -140,6 +140,8 @@ def process_video():
     print("Processing Rutube Video")
     print("=" * 80)
     print(f"URL: {RUTUBE_URL}\n")
+    print("ℹ Note: Only audio is downloaded (no video data)")
+    print("   This reduces bandwidth and processing time.\n")
     
     client = httpx.Client(base_url=API_URL, timeout=TIMEOUT)
     

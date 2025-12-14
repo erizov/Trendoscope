@@ -176,6 +176,7 @@ class TestRutubeGenerator:
         print("Test: Process Rutube Video")
         print("-" * 80)
         print(f"URL: {RUTUBE_URL}")
+        print("ℹ Note: Only audio is downloaded (no video data)")
         
         # Make API call
         print("\nSending request to API...")
