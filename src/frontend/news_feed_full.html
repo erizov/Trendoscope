@@ -1029,9 +1029,9 @@
                     btn.innerHTML = originalText;
                     btn.disabled = false;
                 }, 2000);
-                alert('Ошибка перевода: ' + error.message);
-            } finally {
-                btn.disabled = false;
+                // Show user-friendly error message
+                const errorMsg = error.message || 'Неизвестная ошибка';
+                alert('Ошибка перевода: ' + errorMsg);
             }
         }
 
