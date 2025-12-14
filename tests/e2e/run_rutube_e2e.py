@@ -167,82 +167,82 @@ async def process_video_async():
                 "/api/rutube/generate",
                 json={"url": RUTUBE_URL}
             )
-        
-        elapsed_time = time.time() - start_time
-        
-        if response.status_code != 200:
-            print(f"\n✗ API Error: {response.status_code}")
-            print(response.text)
-            return None
-        
-        data = response.json()
-        
-        if not data.get("success"):
-            print(f"\n✗ API returned success=false")
-            print(data.get("detail", "Unknown error"))
-            return None
-        
-        print(f"\n✓ Processing completed in {elapsed_time:.2f} seconds")
-        
-        # Extract data
-        video_info = data.get("video_info", {})
-        transcript = data.get("transcript", "")
-        generated = data.get("generated_text", {})
-        language = data.get("language", "unknown")
-        
-        # Print summary
-        print("\n" + "-" * 80)
-        print("Video Information")
-        print("-" * 80)
-        print(f"Title: {video_info.get('title', 'N/A')}")
-        print(f"Duration: {video_info.get('duration', 0)} seconds")
-        print(f"Views: {video_info.get('view_count', 0)}")
-        print(f"Language: {language}")
-        print(f"Transcript Length: {len(transcript)} characters")
-        print(f"✓ Audio-only download completed (no video data downloaded)")
-        
-        # Save to file
-        output_file = project_root / "test_results" / "rutube_output.txt"
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write("=" * 80 + "\n")
-            f.write("Rutube Video to Text Generator - Output\n")
-            f.write("=" * 80 + "\n\n")
-            f.write(f"Video URL: {RUTUBE_URL}\n")
-            f.write(f"Video Title: {video_info.get('title', 'N/A')}\n")
-            f.write(f"Duration: {video_info.get('duration', 0)} seconds\n")
-            f.write(f"Views: {video_info.get('view_count', 0)}\n")
-            f.write(f"Language: {language}\n")
-            f.write(f"Processing Time: {elapsed_time:.2f} seconds\n")
-            f.write("\n" + "=" * 80 + "\n")
-            f.write("TRANSCRIPT\n")
-            f.write("=" * 80 + "\n\n")
-            f.write(transcript)
-            f.write("\n\n" + "=" * 80 + "\n")
-            f.write("GENERATED ARTICLE\n")
-            f.write("=" * 80 + "\n\n")
-            f.write(f"Title: {generated.get('title', 'N/A')}\n\n")
-            f.write(generated.get('text', ''))
-            f.write("\n\n")
+            
+            elapsed_time = time.time() - start_time
+            
+            if response.status_code != 200:
+                print(f"\n✗ API Error: {response.status_code}")
+                print(response.text)
+                return None
+            
+            data = response.json()
+            
+            if not data.get("success"):
+                print(f"\n✗ API returned success=false")
+                print(data.get("detail", "Unknown error"))
+                return None
+            
+            print(f"\n✓ Processing completed in {elapsed_time:.2f} seconds")
+            
+            # Extract data
+            video_info = data.get("video_info", {})
+            transcript = data.get("transcript", "")
+            generated = data.get("generated_text", {})
+            language = data.get("language", "unknown")
+            
+            # Print summary
+            print("\n" + "-" * 80)
+            print("Video Information")
+            print("-" * 80)
+            print(f"Title: {video_info.get('title', 'N/A')}")
+            print(f"Duration: {video_info.get('duration', 0)} seconds")
+            print(f"Views: {video_info.get('view_count', 0)}")
+            print(f"Language: {language}")
+            print(f"Transcript Length: {len(transcript)} characters")
+            print(f"✓ Audio-only download completed (no video data downloaded)")
+            
+            # Save to file
+            output_file = project_root / "test_results" / "rutube_output.txt"
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write("=" * 80 + "\n")
+                f.write("Rutube Video to Text Generator - Output\n")
+                f.write("=" * 80 + "\n\n")
+                f.write(f"Video URL: {RUTUBE_URL}\n")
+                f.write(f"Video Title: {video_info.get('title', 'N/A')}\n")
+                f.write(f"Duration: {video_info.get('duration', 0)} seconds\n")
+                f.write(f"Views: {video_info.get('view_count', 0)}\n")
+                f.write(f"Language: {language}\n")
+                f.write(f"Processing Time: {elapsed_time:.2f} seconds\n")
+                f.write("\n" + "=" * 80 + "\n")
+                f.write("TRANSCRIPT\n")
+                f.write("=" * 80 + "\n\n")
+                f.write(transcript)
+                f.write("\n\n" + "=" * 80 + "\n")
+                f.write("GENERATED ARTICLE\n")
+                f.write("=" * 80 + "\n\n")
+                f.write(f"Title: {generated.get('title', 'N/A')}\n\n")
+                f.write(generated.get('text', ''))
+                f.write("\n\n")
+                if generated.get('tags'):
+                    f.write(f"Tags: {', '.join(generated.get('tags', []))}\n")
+            
+            print(f"\n✓ Output saved to: {output_file}")
+            
+            # Print to terminal
+            print("\n" + "=" * 80)
+            print("TRANSCRIPT")
+            print("=" * 80)
+            print(transcript)
+            print("\n" + "=" * 80)
+            print("GENERATED ARTICLE")
+            print("=" * 80)
+            print(f"Title: {generated.get('title', 'N/A')}\n")
+            print(generated.get('text', ''))
             if generated.get('tags'):
-                f.write(f"Tags: {', '.join(generated.get('tags', []))}\n")
-        
-        print(f"\n✓ Output saved to: {output_file}")
-        
-        # Print to terminal
-        print("\n" + "=" * 80)
-        print("TRANSCRIPT")
-        print("=" * 80)
-        print(transcript)
-        print("\n" + "=" * 80)
-        print("GENERATED ARTICLE")
-        print("=" * 80)
-        print(f"Title: {generated.get('title', 'N/A')}\n")
-        print(generated.get('text', ''))
-        if generated.get('tags'):
-            print(f"\nTags: {', '.join(generated.get('tags', []))}")
-        
+                print(f"\nTags: {', '.join(generated.get('tags', []))}")
+            
             return data
             
         except httpx.TimeoutException:
