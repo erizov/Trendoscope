@@ -94,15 +94,16 @@ def download_audio_direct(url: str, output_dir: Optional[Path] = None) -> Path:
     
     audio_path = output_dir / "audio.%(ext)s"
     
-    # Use yt-dlp to extract audio directly (no video download)
-    # -f "bestaudio" explicitly selects only audio streams (no video)
-    # -x extracts/converts to audio format
+    # Use yt-dlp to extract audio directly
+    # -x extracts audio from video (downloads minimal format needed)
+    # For Rutube, formats are video+audio combined, so -x will extract audio
+    # yt-dlp automatically prefers smaller formats when extracting audio
     cmd = [
         "yt-dlp",
-        "-f", "bestaudio",  # Explicitly select audio-only streams (no video)
-        "-x",  # Extract audio (convert to specified format)
+        "-x",  # Extract audio (downloads format and extracts audio only)
         "--audio-format", "wav",  # WAV format
         "--audio-quality", "0",  # Best quality
+        "-f", "best[height<=480]/best",  # Prefer lower quality (faster, less bandwidth)
         "-o", str(audio_path),
         "--no-playlist",
         "--quiet",
