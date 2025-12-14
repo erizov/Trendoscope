@@ -1,6 +1,6 @@
 """
 Rutube video processing module.
-Downloads video and extracts audio for transcription.
+Downloads only audio (no video) for transcription.
 """
 import os
 import tempfile
@@ -94,10 +94,12 @@ def download_audio_direct(url: str, output_dir: Optional[Path] = None) -> Path:
     
     audio_path = output_dir / "audio.%(ext)s"
     
-    # Use yt-dlp to extract audio directly (much faster)
+    # Use yt-dlp to extract audio directly (no video download)
+    # -x extracts audio only, --no-video ensures no video streams
     cmd = [
         "yt-dlp",
-        "-x",  # Extract audio only
+        "-x",  # Extract audio only (no video)
+        "--no-video",  # Explicitly skip video streams
         "--audio-format", "wav",  # WAV format
         "--audio-quality", "0",  # Best quality
         "-o", str(audio_path),
