@@ -925,6 +925,12 @@ async def translate_article(
         }
         
         # Translate using free translator (limit to 1 item)
+        logger.info(
+            f"Translating article: title_length={len(title)}, "
+            f"summary_length={len(summary)}, "
+            f"source={source_lang}, target={target_lang}"
+        )
+        
         translated_items = translate_and_summarize_news(
             [news_item],
             target_language=target_lang,
@@ -933,18 +939,34 @@ async def translate_article(
         )
         
         if not translated_items or len(translated_items) == 0:
+            logger.error("Translation returned empty result")
             raise HTTPException(
                 status_code=500,
-                detail="Translation failed"
+                detail="Translation failed: No items returned"
             )
         
         translated = translated_items[0]
         
+        # Extract translated title and summary
+        translated_title = translated.get('title', title)
+        translated_summary = translated.get('summary', summary)
+        
+        # Check if translation actually happened
+        if translated_title == title and translated_summary == summary:
+            logger.warning(
+                "Translation appears unchanged - translation may have failed silently"
+            )
+        
+        logger.info(
+            f"Translation result: title_length={len(translated_title)}, "
+            f"summary_length={len(translated_summary)}"
+        )
+        
         return {
             "success": True,
             "translated": {
-                "title": translated.get('title', title),
-                "summary": translated.get('summary', summary)
+                "title": translated_title,
+                "summary": translated_summary
             }
         }
         
