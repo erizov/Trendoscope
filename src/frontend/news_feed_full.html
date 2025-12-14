@@ -758,7 +758,7 @@
                             <button class="action-btn" onclick="event.stopPropagation(); openModal(${index})">
                                 📖 Читать
                             </button>
-                            <button class="action-btn translate-btn" onclick="event.stopPropagation(); translateArticle(${index}, '${targetLanguage}')" id="translate-btn-${index}">
+                            <button class="action-btn translate-btn" onclick="event.stopPropagation(); translateArticle(${index}, '${targetLanguage}')" id="translate-btn-${index}" type="button">
                                 ${translateButtonText}
                             </button>
                             <button class="action-btn" onclick="event.stopPropagation(); shareToTelegram(${index})">
@@ -1019,15 +1019,16 @@
                     }
                     
                     console.log('Translation successful');
+                    btn.disabled = false;
                 } else {
                     throw new Error(data.error || 'Translation failed');
                 }
             } catch (error) {
                 console.error('Translation error:', error);
                 btn.innerHTML = '❌ Ошибка';
+                btn.disabled = false;
                 setTimeout(() => {
                     btn.innerHTML = originalText;
-                    btn.disabled = false;
                 }, 2000);
                 // Show user-friendly error message
                 const errorMsg = error.message || 'Неизвестная ошибка';
