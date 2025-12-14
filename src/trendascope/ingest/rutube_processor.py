@@ -95,11 +95,12 @@ def download_audio_direct(url: str, output_dir: Optional[Path] = None) -> Path:
     audio_path = output_dir / "audio.%(ext)s"
     
     # Use yt-dlp to extract audio directly (no video download)
-    # -x extracts audio only, --no-video ensures no video streams
+    # -f "bestaudio" explicitly selects only audio streams (no video)
+    # -x extracts/converts to audio format
     cmd = [
         "yt-dlp",
-        "-x",  # Extract audio only (no video)
-        "--no-video",  # Explicitly skip video streams
+        "-f", "bestaudio",  # Explicitly select audio-only streams (no video)
+        "-x",  # Extract audio (convert to specified format)
         "--audio-format", "wav",  # WAV format
         "--audio-quality", "0",  # Best quality
         "-o", str(audio_path),
