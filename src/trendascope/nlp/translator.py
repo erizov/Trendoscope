@@ -120,9 +120,16 @@ def _translate_with_free_service(
         logger.debug(f"Translating batch {batch_start // batch_size + 1} ({len(batch)} items)")
         
         for item in batch:
-            # Detect current language
-            text = f"{item.get('title', '')} {item.get('summary', '')}"
-            current_lang = 'ru' if _is_russian(text) else 'en'
+            # Detect current language from item or text
+            item_lang = item.get('language', '').lower()
+            if item_lang in ['ru', 'russian']:
+                current_lang = 'ru'
+            elif item_lang in ['en', 'english']:
+                current_lang = 'en'
+            else:
+                # Fallback to text detection
+                text = f"{item.get('title', '')} {item.get('summary', '')}"
+                current_lang = 'ru' if _is_russian(text) else 'en'
             
             # Only translate if needed
             if current_lang == target_lang:
@@ -130,11 +137,14 @@ def _translate_with_free_service(
                 translated_items.append({**item, 'translated': False})
                 continue
             
+            # Use detected source language, not hardcoded assumption
+            actual_source_lang = current_lang
+            
             try:
                 # Translate title
                 title = item.get('title', '')
                 if title:
-                    translator = GoogleTranslator(source=source_lang, target=target_lang)
+                    translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
                     translated_title = translator.translate(title)
                 else:
                     translated_title = title
@@ -150,14 +160,14 @@ def _translate_with_free_service(
                         for sentence in sentences:
                             if sentence.strip():
                                 try:
-                                    translator = GoogleTranslator(source=source_lang, target=target_lang)
+                                    translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
                                     translated_sentences.append(translator.translate(sentence))
                                 except Exception as e:
                                     logger.debug(f"Translation error for sentence: {e}")
                                     translated_sentences.append(sentence)
                         translated_summary = '. '.join(translated_sentences)
                     else:
-                        translator = GoogleTranslator(source=source_lang, target=target_lang)
+                        translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
                         translated_summary = translator.translate(summary)
                 else:
                     translated_summary = summary
