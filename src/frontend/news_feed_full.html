@@ -997,20 +997,29 @@
                 });
                 
                 // Check if we have valid translation data
-                if (data.success && data.translated && data.translated.title && data.translated.summary) {
+                if (data.success && data.translated) {
+                    const translatedTitle = data.translated.title || item.title;
+                    const translatedSummary = data.translated.summary || item.summary;
+                    
+                    // Check if translation actually changed anything
+                    if (!translatedTitle || !translatedSummary) {
+                        console.error('Translation missing title or summary:', data);
+                        throw new Error('Translation response missing required fields');
+                    }
+                    
                     // Update article in memory
-                    item.title = data.translated.title;
-                    item.summary = data.translated.summary;
+                    item.title = translatedTitle;
+                    item.summary = translatedSummary;
                     item.translated = true;
                     item.translated_language = targetLanguage;
                     item.language = targetLanguage;
                     
                     // Update UI
                     if (titleEl) {
-                        titleEl.textContent = data.translated.title;
+                        titleEl.textContent = translatedTitle;
                     }
                     if (summaryEl) {
-                        summaryEl.textContent = data.translated.summary.substring(0, 200) + '...';
+                        summaryEl.textContent = translatedSummary.substring(0, 200) + '...';
                     }
                     
                     // Update button text
