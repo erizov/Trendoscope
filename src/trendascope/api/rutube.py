@@ -4,6 +4,7 @@ Rutube video to text generation API.
 from fastapi import APIRouter, HTTPException, Body
 from typing import Dict, Any
 import logging
+import asyncio
 from pathlib import Path
 import shutil
 
@@ -47,23 +48,29 @@ async def generate_text_from_rutube(
     
     temp_dir = None
     try:
-        # Step 1: Download video and extract audio
+        # Step 1: Download video and extract audio (run in thread pool)
         logger.info(f"Processing Rutube video: {url}")
-        video_path, audio_path, video_info = process_rutube_video(url)
+        video_path, audio_path, video_info = await asyncio.to_thread(
+            process_rutube_video, url
+        )
         temp_dir = video_path.parent
         
-        # Step 2: Detect language
+        # Step 2: Detect language (run in thread pool)
         try:
-            language = detect_language(audio_path)
+            language = await asyncio.to_thread(detect_language, audio_path)
             lang_code = "ru" if language == "ru" else "en"
             logger.info(f"Detected language: {language}")
         except Exception as e:
-            logger.warning(f"Language detection failed: {e}, will auto-detect during transcription")
+            logger.warning(
+                f"Language detection failed: {e}, "
+                "will auto-detect during transcription"
+            )
             language = None
             lang_code = "auto"
         
-        # Step 3: Transcribe audio
-        transcript_result = transcribe_audio(
+        # Step 3: Transcribe audio (run in thread pool)
+        transcript_result = await asyncio.to_thread(
+            transcribe_audio,
             audio_path,
             language=language,
             model_size="base"  # Use base for speed
@@ -76,12 +83,15 @@ async def generate_text_from_rutube(
         
         logger.info(f"Transcript length: {len(transcript)} characters")
         
-        # Step 4: Generate text from transcript
+        # Step 4: Generate text from transcript (run in thread pool)
         # Use demo generator with transcript as context
         # Limit transcript to first 1000 chars for context
-        transcript_summary = transcript[:1000] if len(transcript) > 1000 else transcript
+        transcript_summary = (
+            transcript[:1000] if len(transcript) > 1000 else transcript
+        )
         
-        generated_post = generate_demo_post(
+        generated_post = await asyncio.to_thread(
+            generate_demo_post,
             style="analytical",  # Default style
             topic="any",
             news_items=[{
@@ -109,11 +119,17 @@ async def generate_text_from_rutube(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except TimeoutError as e:
-        raise HTTPException(status_code=504, detail=f"Processing timeout: {str(e)}")
+        raise HTTPException(
+            status_code=504,
+            detail=f"Processing timeout: {str(e)}"
+        )
     except FileNotFoundError as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Required tool not found: {str(e)}. Please install yt-dlp and ffmpeg."
+            detail=(
+                f"Required tool not found: {str(e)}. "
+                "Please install yt-dlp and ffmpeg."
+            )
         )
     except Exception as e:
         logger.error(f"Error processing Rutube video: {e}", exc_info=True)
@@ -122,10 +138,12 @@ async def generate_text_from_rutube(
             detail=f"Failed to process video: {str(e)}"
         )
     finally:
-        # Cleanup temp files
+        # Cleanup temp files (run in thread pool to avoid blocking)
         if temp_dir and temp_dir.exists():
             try:
-                shutil.rmtree(temp_dir, ignore_errors=True)
+                await asyncio.to_thread(
+                    shutil.rmtree, temp_dir, ignore_errors=True
+                )
                 logger.info(f"Cleaned up temp directory: {temp_dir}")
             except Exception as e:
                 logger.warning(f"Failed to cleanup temp directory: {e}")

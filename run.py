@@ -30,13 +30,15 @@ def main():
     print("=" * 60)
     print()
 
-    # Run uvicorn
+    # Run uvicorn with increased timeouts for long-running requests
     uvicorn.run(
         "trendascope.api.main:app",
         host="0.0.0.0",
         port=8003,
         reload=True,
-        log_level="info"
+        log_level="info",
+        timeout_keep_alive=1200,  # 20 minutes keepalive for long requests
+        timeout_graceful_shutdown=30
     )
 
 
