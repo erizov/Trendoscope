@@ -961,18 +961,21 @@
                     target_lang: targetLanguage
                 });
                 
-                const response = await fetch(`${API_URL}/api/news/translate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: item.title || '',
-                        summary: item.summary || '',
-                        source_language: item.language || 'en',
-                        target_language: targetLanguage
-                    })
-                });
+                // target_language must be a query parameter, not in body
+                const response = await fetch(
+                    `${API_URL}/api/news/translate?target_language=${targetLanguage}`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: item.title || '',
+                            summary: item.summary || '',
+                            source_language: item.language || 'en'
+                        })
+                    }
+                );
                 
                 console.log('Translation response status:', response.status);
                 
