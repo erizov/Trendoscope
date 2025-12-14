@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import time
 import httpx
+import asyncio
 from pathlib import Path
 
 # Add src to path
@@ -134,8 +135,8 @@ def wait_for_server(url: str, timeout: int = 30) -> bool:
     return False
 
 
-def process_video():
-    """Process the Rutube video and get text output."""
+async def process_video_async():
+    """Process the Rutube video and get text output (async)."""
     print("\n" + "=" * 80)
     print("Processing Rutube Video")
     print("=" * 80)
@@ -143,19 +144,29 @@ def process_video():
     print("ℹ Note: Only audio is downloaded (no video data)")
     print("   This reduces bandwidth and processing time.\n")
     
-    client = httpx.Client(base_url=API_URL, timeout=TIMEOUT)
+    # Use async client with proper timeout configuration
+    timeout_config = httpx.Timeout(
+        connect=30.0,
+        read=TIMEOUT,
+        write=30.0,
+        pool=30.0
+    )
     
-    try:
-        print("Sending request to API...")
-        print("(This may take 5-15 minutes depending on video length)")
-        print(f"(Timeout set to {TIMEOUT // 60} minutes)")
-        start_time = time.time()
-        
-        response = client.post(
-            "/api/rutube/generate",
-            json={"url": RUTUBE_URL},
-            timeout=TIMEOUT
-        )
+    async with httpx.AsyncClient(
+        base_url=API_URL,
+        timeout=timeout_config,
+        limits=httpx.Limits(max_keepalive_connections=1)
+    ) as client:
+        try:
+            print("Sending request to API...")
+            print("(This may take 5-15 minutes depending on video length)")
+            print(f"(Timeout set to {TIMEOUT // 60} minutes)")
+            start_time = time.time()
+            
+            response = await client.post(
+                "/api/rutube/generate",
+                json={"url": RUTUBE_URL}
+            )
         
         elapsed_time = time.time() - start_time
         
@@ -232,18 +243,21 @@ def process_video():
         if generated.get('tags'):
             print(f"\nTags: {', '.join(generated.get('tags', []))}")
         
-        return data
-        
-    except httpx.TimeoutException:
-        print(f"\n✗ Request timed out after {TIMEOUT} seconds")
-        return None
-    except Exception as e:
-        print(f"\n✗ Error: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
-    finally:
-        client.close()
+            return data
+            
+        except httpx.TimeoutException:
+            print(f"\n✗ Request timed out after {TIMEOUT} seconds")
+            return None
+        except Exception as e:
+            print(f"\n✗ Error: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+
+def process_video():
+    """Wrapper to run async process_video."""
+    return asyncio.run(process_video_async())
 
 
 def main():
