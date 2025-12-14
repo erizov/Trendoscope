@@ -140,10 +140,10 @@ def download_audio_direct(url: str, output_dir: Optional[Path] = None) -> Path:
         logger.info(f"Converting audio to Whisper format: {actual_audio_path}")
         subprocess.run(
             ffmpeg_cmd,
-            capture_output=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             check=True,
-            timeout=300,  # 5 minutes for conversion
-            stderr=subprocess.DEVNULL
+            timeout=300  # 5 minutes for conversion
         )
         
         if not final_audio_path.exists():
