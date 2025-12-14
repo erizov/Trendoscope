@@ -1022,40 +1022,51 @@
                         translatedSummary: translatedSummary.substring(0, 50)
                     });
                     
-                    // Force update title element
-                    if (titleEl) {
-                        titleEl.textContent = translatedTitle;
-                        console.log('✓ Title element updated');
+                    // Force update title element - use innerHTML to ensure update
+                    const titleElement = titleEl || document.getElementById(`title-${index}`);
+                    if (titleElement) {
+                        // Use innerHTML with escapeHtml to match original rendering
+                        titleElement.innerHTML = escapeHtml(translatedTitle);
+                        // Force a reflow to ensure browser updates
+                        titleElement.offsetHeight;
+                        console.log('✓ Title element updated:', translatedTitle.substring(0, 50));
                     } else {
-                        // Retry finding the element
-                        const titleElRetry = document.getElementById(`title-${index}`);
-                        if (titleElRetry) {
-                            titleElRetry.textContent = translatedTitle;
-                            console.log('✓ Title element updated on retry');
-                        } else {
-                            console.error('✗ Title element not found:', `title-${index}`);
+                        console.error('✗ Title element not found:', `title-${index}`);
+                        // Try to update the item in allNews and re-render
+                        console.log('Attempting to update allNews array and re-render...');
+                        allNews[index].title = translatedTitle;
+                        allNews[index].summary = translatedSummary;
+                        allNews[index].translated = true;
+                        allNews[index].translated_language = targetLanguage;
+                        allNews[index].language = targetLanguage;
+                        // Re-render just this card
+                        const card = document.querySelector(`[data-index="${index}"]`);
+                        if (card) {
+                            const titleDiv = card.querySelector('.news-title');
+                            const summaryDiv = card.querySelector('.news-summary');
+                            if (titleDiv) titleDiv.textContent = translatedTitle;
+                            if (summaryDiv) {
+                                const summaryText = translatedSummary.length > 200 
+                                    ? translatedSummary.substring(0, 200) + '...' 
+                                    : translatedSummary;
+                                summaryDiv.textContent = summaryText;
+                            }
+                            console.log('✓ Card re-rendered via querySelector');
                         }
                     }
                     
-                    // Force update summary element
-                    if (summaryEl) {
+                    // Force update summary element - use innerHTML to ensure update
+                    const summaryElement = summaryEl || document.getElementById(`summary-${index}`);
+                    if (summaryElement) {
                         const summaryText = translatedSummary.length > 200 
                             ? translatedSummary.substring(0, 200) + '...' 
                             : translatedSummary;
-                        summaryEl.textContent = summaryText;
-                        console.log('✓ Summary element updated');
+                        summaryElement.innerHTML = escapeHtml(summaryText);
+                        // Force a reflow to ensure browser updates
+                        summaryElement.offsetHeight;
+                        console.log('✓ Summary element updated:', summaryText.substring(0, 50));
                     } else {
-                        // Retry finding the element
-                        const summaryElRetry = document.getElementById(`summary-${index}`);
-                        if (summaryElRetry) {
-                            const summaryText = translatedSummary.length > 200 
-                                ? translatedSummary.substring(0, 200) + '...' 
-                                : translatedSummary;
-                            summaryElRetry.textContent = summaryText;
-                            console.log('✓ Summary element updated on retry');
-                        } else {
-                            console.error('✗ Summary element not found:', `summary-${index}`);
-                        }
+                        console.error('✗ Summary element not found:', `summary-${index}`);
                     }
                     
                     // Update button text and state
