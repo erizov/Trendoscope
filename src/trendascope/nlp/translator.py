@@ -93,6 +93,11 @@ def _translate_with_free_service(
         List of translated news items
     """
     if not FREE_TRANSLATOR_AVAILABLE:
+        logger.warning("Free translator (deep-translator) not available - returning original items")
+        return news_items
+    
+    if GoogleTranslator is None:
+        logger.error("GoogleTranslator is None - translation unavailable")
         return news_items
     
     # Map language codes
@@ -140,18 +145,28 @@ def _translate_with_free_service(
             # Use detected source language, not hardcoded assumption
             actual_source_lang = current_lang
             
+            logger.info(
+                f"Translating item: source={actual_source_lang}, target={target_lang}, "
+                f"title={item.get('title', '')[:50]}..."
+            )
+            
             try:
                 # Translate title
                 title = item.get('title', '')
                 if title:
+                    logger.debug(f"Translating title: {title[:50]}...")
                     translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
                     translated_title = translator.translate(title)
+                    logger.debug(f"Translated title: {translated_title[:50]}...")
+                    if translated_title == title:
+                        logger.warning(f"Title translation returned same text - translation may have failed")
                 else:
                     translated_title = title
                 
                 # Translate summary
                 summary = item.get('summary', '')
                 if summary:
+                    logger.debug(f"Translating summary: {len(summary)} chars")
                     # Split long text into chunks (Google Translate has limits)
                     if len(summary) > 5000:
                         # Split by sentences
@@ -161,14 +176,18 @@ def _translate_with_free_service(
                             if sentence.strip():
                                 try:
                                     translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
-                                    translated_sentences.append(translator.translate(sentence))
+                                    translated_sent = translator.translate(sentence)
+                                    translated_sentences.append(translated_sent)
                                 except Exception as e:
-                                    logger.debug(f"Translation error for sentence: {e}")
+                                    logger.warning(f"Translation error for sentence: {e}")
                                     translated_sentences.append(sentence)
                         translated_summary = '. '.join(translated_sentences)
                     else:
                         translator = GoogleTranslator(source=actual_source_lang, target=target_lang)
                         translated_summary = translator.translate(summary)
+                        logger.debug(f"Translated summary: {translated_summary[:100]}...")
+                        if translated_summary == summary:
+                            logger.warning(f"Summary translation returned same text - translation may have failed")
                 else:
                     translated_summary = summary
                 
@@ -181,9 +200,10 @@ def _translate_with_free_service(
                     'translated': True
                 }
                 translated_items.append(translated_item)
+                logger.info(f"Translation successful: {translated_title[:50]}...")
                 
             except Exception as e:
-                logger.warning(f"Translation failed for item: {e}")
+                logger.error(f"Translation failed for item: {e}", exc_info=True)
                 # Return original item if translation fails
                 translated_items.append({**item, 'translated': False})
     
