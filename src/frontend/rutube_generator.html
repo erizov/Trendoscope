@@ -32,6 +32,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
@@ -42,6 +43,25 @@
         .header p {
             opacity: 0.9;
             font-size: 1.1em;
+        }
+        
+        .nav-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .input-section {
@@ -213,6 +233,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <a href="/static/news_feed_full.html" class="nav-link">← Новости</a>
             <h1>🎥 Video to Text Generator</h1>
             <p>Extract audio and generate articles from video content</p>
             <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">
