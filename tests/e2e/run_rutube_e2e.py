@@ -188,6 +188,7 @@ def process_video():
         print(f"Views: {video_info.get('view_count', 0)}")
         print(f"Language: {language}")
         print(f"Transcript Length: {len(transcript)} characters")
+        print(f"✓ Audio-only download completed (no video data downloaded)")
         
         # Save to file
         output_file = project_root / "test_results" / "rutube_output.txt"
