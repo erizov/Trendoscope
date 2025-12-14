@@ -1014,30 +1014,73 @@
                     item.translated_language = targetLanguage;
                     item.language = targetLanguage;
                     
-                    // Update UI
+                    // Update UI - ensure elements are found and updated
+                    console.log('Updating UI with translation:', {
+                        titleEl: !!titleEl,
+                        summaryEl: !!summaryEl,
+                        translatedTitle: translatedTitle.substring(0, 50),
+                        translatedSummary: translatedSummary.substring(0, 50)
+                    });
+                    
+                    // Force update title element
                     if (titleEl) {
                         titleEl.textContent = translatedTitle;
-                    }
-                    if (summaryEl) {
-                        summaryEl.textContent = translatedSummary.substring(0, 200) + '...';
+                        console.log('✓ Title element updated');
+                    } else {
+                        // Retry finding the element
+                        const titleElRetry = document.getElementById(`title-${index}`);
+                        if (titleElRetry) {
+                            titleElRetry.textContent = translatedTitle;
+                            console.log('✓ Title element updated on retry');
+                        } else {
+                            console.error('✗ Title element not found:', `title-${index}`);
+                        }
                     }
                     
-                    // Update button text
+                    // Force update summary element
+                    if (summaryEl) {
+                        const summaryText = translatedSummary.length > 200 
+                            ? translatedSummary.substring(0, 200) + '...' 
+                            : translatedSummary;
+                        summaryEl.textContent = summaryText;
+                        console.log('✓ Summary element updated');
+                    } else {
+                        // Retry finding the element
+                        const summaryElRetry = document.getElementById(`summary-${index}`);
+                        if (summaryElRetry) {
+                            const summaryText = translatedSummary.length > 200 
+                                ? translatedSummary.substring(0, 200) + '...' 
+                                : translatedSummary;
+                            summaryElRetry.textContent = summaryText;
+                            console.log('✓ Summary element updated on retry');
+                        } else {
+                            console.error('✗ Summary element not found:', `summary-${index}`);
+                        }
+                    }
+                    
+                    // Update button text and state
                     const newTargetLang = targetLanguage === 'ru' ? 'en' : 'ru';
                     const newButtonText = targetLanguage === 'ru' ? '🌐 To English' : '🌐 На русский';
                     btn.innerHTML = newButtonText;
+                    btn.disabled = false;
                     btn.setAttribute('onclick', `event.stopPropagation(); translateArticle(${index}, '${newTargetLang}')`);
+                    console.log('✓ Button updated');
                     
                     // Update modal if open
                     if (currentNewsItem === item) {
                         const modalTitle = document.getElementById('modalTitle');
                         const modalText = document.getElementById('modalText');
-                        if (modalTitle) modalTitle.textContent = data.translated.title;
-                        if (modalText) modalText.textContent = data.translated.summary;
+                        if (modalTitle) {
+                            modalTitle.textContent = translatedTitle;
+                            console.log('✓ Modal title updated');
+                        }
+                        if (modalText) {
+                            modalText.textContent = translatedSummary;
+                            console.log('✓ Modal text updated');
+                        }
                     }
                     
-                    console.log('Translation successful');
-                    btn.disabled = false;
+                    console.log('✓ Translation successful - all UI elements updated');
                 } else {
                     console.error('Translation response invalid:', {
                         success: data.success,
