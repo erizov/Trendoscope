@@ -213,16 +213,19 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎥 Rutube Video to Text Generator</h1>
-            <p>Generate articles from Rutube video content</p>
+            <h1>🎥 Video to Text Generator</h1>
+            <p>Extract audio and generate articles from video content</p>
+            <p style="font-size: 0.9em; margin-top: 10px; opacity: 0.8;">
+                Supports: Rutube, YouTube, and other platforms
+            </p>
         </div>
         
         <div class="input-section">
             <div class="input-group">
                 <input 
                     type="text" 
-                    id="rutubeUrl" 
-                    placeholder="Enter Rutube video URL (e.g., https://rutube.ru/video/...)"
+                    id="videoUrl" 
+                    placeholder="Enter video URL (Rutube, YouTube, etc.)"
                     value=""
                 >
                 <button class="btn" id="generateBtn" onclick="generateText()">
@@ -262,21 +265,46 @@
     <script>
         const API_URL = window.location.origin;
         
+        // Supported platforms
+        const SUPPORTED_PLATFORMS = [
+            'rutube.ru',
+            'youtube.com',
+            'youtu.be',
+            'vimeo.com',
+            'dailymotion.com'
+        ];
+        
+        function detectPlatform(url) {
+            for (const platform of SUPPORTED_PLATFORMS) {
+                if (url.includes(platform)) {
+                    return platform;
+                }
+            }
+            return null;
+        }
+        
         async function generateText() {
-            const url = document.getElementById('rutubeUrl').value.trim();
+            const url = document.getElementById('videoUrl').value.trim();
             const loading = document.getElementById('loading');
             const content = document.getElementById('content');
             const generateBtn = document.getElementById('generateBtn');
             
             if (!url) {
-                alert('Please enter a Rutube URL');
+                alert('Please enter a video URL');
                 return;
             }
             
-            // Validate URL
-            if (!url.includes('rutube.ru/video/')) {
-                alert('Invalid Rutube URL. Please enter a valid Rutube video URL.');
+            // Check if platform is supported
+            const platform = detectPlatform(url);
+            if (!platform) {
+                alert('Unsupported platform. Currently supports: Rutube, YouTube, Vimeo, Dailymotion');
                 return;
+            }
+            
+            // For now, API only supports Rutube - show message for others
+            if (platform !== 'rutube.ru') {
+                alert(`Note: Currently only Rutube is fully supported. ${platform} support coming soon!`);
+                // Still try to process - API might handle it
             }
             
             // Show loading, hide content
@@ -321,16 +349,24 @@
             const videoId = extractVideoId(videoUrl);
             
             // Embed video
-            if (videoId) {
+            const embedUrl = getEmbedUrl(videoUrl);
+            if (embedUrl) {
                 videoContainer.innerHTML = `
                     <iframe 
-                        src="https://rutube.ru/play/embed/${videoId}" 
+                        src="${embedUrl}" 
                         frameborder="0" 
                         allow="clipboard-write; autoplay" 
                         webkitAllowFullScreen 
                         mozallowfullscreen 
                         allowFullScreen>
                     </iframe>
+                `;
+            } else {
+                videoContainer.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #666;">
+                        <p>Video preview not available for this platform</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">URL: ${videoUrl}</p>
+                    </div>
                 `;
             }
             
@@ -358,8 +394,33 @@
         
         function extractVideoId(url) {
             // Rutube URL format: https://rutube.ru/video/abc123def456/
-            const match = url.match(/rutube\.ru\/video\/([a-zA-Z0-9]+)/);
-            return match ? match[1] : null;
+            if (url.includes('rutube.ru/video/')) {
+                const match = url.match(/rutube\.ru\/video\/([a-zA-Z0-9]+)/);
+                return match ? match[1] : null;
+            }
+            // YouTube URL formats
+            if (url.includes('youtube.com/watch?v=')) {
+                const match = url.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+                return match ? match[1] : null;
+            }
+            if (url.includes('youtu.be/')) {
+                const match = url.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+                return match ? match[1] : null;
+            }
+            return null;
+        }
+        
+        function getEmbedUrl(url) {
+            const videoId = extractVideoId(url);
+            if (!videoId) return null;
+            
+            if (url.includes('rutube.ru')) {
+                return `https://rutube.ru/play/embed/${videoId}`;
+            }
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                return `https://www.youtube.com/embed/${videoId}`;
+            }
+            return null;
         }
         
         function copyToClipboard(elementId) {
@@ -385,7 +446,7 @@
         }
         
         // Allow Enter key to submit
-        document.getElementById('rutubeUrl').addEventListener('keypress', function(e) {
+        document.getElementById('videoUrl').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 generateText();
             }
