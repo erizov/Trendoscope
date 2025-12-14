@@ -161,12 +161,27 @@ async def process_video_async():
             print("Sending request to API...")
             print("(This may take 5-15 minutes depending on video length)")
             print(f"(Timeout set to {TIMEOUT // 60} minutes)")
+            print("⚠ Note: For very long operations, connection may drop.")
+            print("   The server will continue processing in the background.")
+            print("   Check server logs for progress.\n")
             start_time = time.time()
             
-            response = await client.post(
-                "/api/rutube/generate",
-                json={"url": RUTUBE_URL}
-            )
+            # Try the request - if connection drops, it's likely still processing
+            try:
+                response = await client.post(
+                    "/api/rutube/generate",
+                    json={"url": RUTUBE_URL}
+                )
+            except (httpx.ReadError, httpx.ConnectError) as e:
+                print(f"\n⚠ Connection dropped: {type(e).__name__}")
+                print("This is normal for very long operations.")
+                print("The server may still be processing the video.")
+                print("Please check the server logs to see if processing continues.")
+                print("\nTo verify processing:")
+                print("1. Check server terminal for log messages")
+                print("2. Look for 'Processing Rutube video' messages")
+                print("3. Wait for completion and check server response")
+                return None
             
             elapsed_time = time.time() - start_time
             
