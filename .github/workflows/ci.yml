@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "trendoscope2/**"
+      - "deploy/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "trendoscope2/**"
+      - "deploy/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          cd trendoscope2
+          pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir pytest pytest-cov flake8 black mypy
+
+      - name: Lint
+        run: |
+          cd trendoscope2
+          flake8 src/ tests/
+          black --check src/ tests/
+          mypy src/
+
+      - name: Tests
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          cd trendoscope2
+          pytest tests/ --cov=src --cov-report=xml
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: trendoscope2/coverage.xml
+
+  e2e-docker:
+    runs-on: ubuntu-latest
+    needs: test
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          cd trendoscope2
+          pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir pytest
+
+      - name: Start API (background)
+        working-directory: trendoscope2
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          python run.py &
+          sleep 10
+
+      - name: Run E2E minimal Docker flow
+        working-directory: trendoscope2
+        env:
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/e2e/test_minimal_setup.py -v --tb=short
+
+  prod-stack-e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          cd trendoscope2
+          pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir pytest httpx
+
+      - name: Run prod docker-compose E2E
+        run: |
+          pytest trendoscope2/tests/e2e/test_prod_stack.py -v --tb=short
+
