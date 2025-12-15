@@ -4,7 +4,10 @@ Minimal setup with essential endpoints.
 """
 from fastapi import FastAPI, HTTPException, Query, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from typing import Dict, Any, Optional
+from pathlib import Path
 import logging
 import sys
 import os
@@ -13,9 +16,11 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 from ..ingest.news_sources import NewsAggregator
+from ..ingest.news_sources_async import AsyncNewsAggregator
 from ..nlp.translator import translate_and_summarize_news
 from ..storage.news_db import NewsDatabase
 from ..config import DATA_DIR
+from ..services.background_tasks import background_manager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,6 +31,22 @@ app = FastAPI(
     version="2.0.0"
 )
 
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on startup."""
+    logger.info("Starting background tasks...")
+    await background_manager.start_all(news_interval=300)  # 5 minutes
+    logger.info("Background tasks started")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop background tasks on shutdown."""
+    logger.info("Stopping background tasks...")
+    await background_manager.stop_all()
+    logger.info("Background tasks stopped")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,6 +54,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files (frontend)
+frontend_path = Path(__file__).parent.parent.parent / "src" / "frontend"
+if frontend_path.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
+
+
+@app.get("/", response_class=FileResponse)
+async def serve_frontend():
+    """Serve frontend HTML."""
+    frontend_file = frontend_path / "news_feed.html"
+    if frontend_file.exists():
+        return FileResponse(frontend_file)
+    # Fallback to API root
+    return {
+        "name": "Trendoscope2",
+        "version": "2.0.0",
+        "status": "running",
+        "frontend": "/static/news_feed.html"
+    }
 
 
 @app.get("/")
@@ -82,24 +123,48 @@ async def get_news_feed(
     category: str = Query(default="all", description="Category filter"),
     limit: int = Query(default=20, ge=5, le=100, description="Maximum items"),
     language: str = Query(default="all", description="Language filter (all, ru, en)"),
-    translate_to: str = Query(default="none", description="Translate to (none, ru, en)")
+    translate_to: str = Query(default="none", description="Translate to (none, ru, en)"),
+    use_cache: bool = Query(default=True, description="Use cached news if available")
 ):
-    """Get news feed."""
+    """Get news feed (async with caching)."""
     try:
-        logger.info(f"Fetching news: category={category}, limit={limit}")
+        logger.info(f"Fetching news: category={category}, limit={limit}, use_cache={use_cache}")
         
-        aggregator = NewsAggregator(timeout=5)
-        news_items = aggregator.fetch_trending_topics(
-            include_russian=True,
-            include_international=True,
-            include_ai=True,
-            include_politics=True,
-            include_us=True,
-            include_eu=True,
-            max_per_source=2,
-            parallel=True,
-            max_workers=10
-        )
+        # Try to use cached news first
+        if use_cache:
+            cached_news = background_manager.get_cached_news()
+            if cached_news:
+                logger.info(f"Using {len(cached_news)} cached news items")
+                news_items = cached_news
+            else:
+                # Fallback to async fetch
+                logger.info("No cache available, fetching async...")
+                async with AsyncNewsAggregator(timeout=10) as aggregator:
+                    news_items = await aggregator.fetch_trending_topics(
+                        include_russian=True,
+                        include_international=True,
+                        include_ai=True,
+                        include_politics=True,
+                        include_us=True,
+                        include_eu=True,
+                        include_regional=True,
+                        include_asia=True,
+                        max_per_source=2
+                    )
+        else:
+            # Force fresh fetch
+            async with AsyncNewsAggregator(timeout=10) as aggregator:
+                news_items = await aggregator.fetch_trending_topics(
+                    include_russian=True,
+                    include_international=True,
+                    include_ai=True,
+                    include_politics=True,
+                    include_us=True,
+                    include_eu=True,
+                    include_regional=True,
+                    include_asia=True,
+                    max_per_source=2
+                )
         
         logger.info(f"Fetched {len(news_items)} news items")
         
