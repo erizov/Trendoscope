@@ -61,9 +61,9 @@ if frontend_path.exists():
     app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
 
 
-@app.get("/", response_class=FileResponse)
-async def serve_frontend():
-    """Serve frontend HTML."""
+@app.get("/")
+async def root():
+    """Root endpoint - serves frontend if available, otherwise API info."""
     frontend_file = frontend_path / "news_feed.html"
     if frontend_file.exists():
         return FileResponse(frontend_file)
@@ -72,7 +72,7 @@ async def serve_frontend():
         "name": "Trendoscope2",
         "version": "2.0.0",
         "status": "running",
-        "frontend": "/static/news_feed.html"
+        "frontend": "/static/news_feed.html" if frontend_path.exists() else None
     }
 
 
