@@ -16,19 +16,28 @@ This document outlines the CI/CD strategy for Trendoscope2, focusing on:
 
 ```
 Trendoscope/
-├── trendoscope2/          # Development environment
-│   ├── src/               # Source code
-│   ├── tests/             # Test suite
-│   ├── scripts/           # Development scripts
-│   └── docker/            # Development Docker configs
+├── trendoscope2/                 # Development environment
+│   ├── src/                      # Source code
+│   ├── tests/                    # Test suite
+│   ├── scripts/                  # Development scripts
+│   └── docker/                   # Development Docker configs
 │
-└── deploy/                # Production deployment (to be created)
-    ├── src/               # Production code (copied from trendoscope2)
-    ├── docker/            # Production Docker Compose
-    ├── monitoring/        # Prometheus & Grafana configs
-    ├── security/          # Security configs & secrets management
-    ├── scripts/           # Deployment scripts
-    └── docs/              # Deployment documentation
+└── deploy/                       # Production deployment (current)
+    ├── docker/                   # Production Docker & monitoring
+    │   ├── docker-compose.prod.yml
+    │   ├── Dockerfile.api        # FastAPI production image
+    │   ├── prometheus/
+    │   │   └── prometheus.yml    # Prometheus scrape config
+    │   └── grafana/
+    │       ├── dashboards/
+    │       │   └── placeholder.json
+    │       └── provisioning/
+    │           ├── dashboards/
+    │           │   └── dashboard.yml
+    │           └── datasources/
+    │               └── datasource.yml
+    ├── env_template.md           # Template for .env.prod
+    └── workflow_ci-cd.md         # Deployment / CI-CD workflow log
 ```
 
 ---
@@ -153,40 +162,25 @@ Trendoscope/
 
 ## 🚀 Deployment Pipeline
 
-### Deployment Folder Structure
+### Deployment Folder Structure (current)
 
 ```
 deploy/
 ├── docker/
-│   ├── docker-compose.prod.yml      # Production services
-│   ├── Dockerfile.fastapi           # FastAPI production image
-│   └── .env.prod.example            # Production env template
-│
-├── monitoring/
+│   ├── docker-compose.prod.yml      # Production services (FastAPI, Redis, Postgres, Prometheus, Grafana)
+│   ├── Dockerfile.api               # FastAPI production image
 │   ├── prometheus/
-│   │   ├── prometheus.yml           # Prometheus config
-│   │   └── alerts.yml               # Alert rules
+│   │   └── prometheus.yml           # Prometheus scrape config
 │   └── grafana/
 │       ├── dashboards/              # Grafana dashboards
+│       │   └── placeholder.json
 │       └── provisioning/            # Auto-provisioning
-│
-├── security/
-│   ├── nginx/                       # Nginx reverse proxy
-│   │   └── nginx.conf
-│   ├── ssl/                         # SSL certificates (gitignored)
-│   └── secrets/                     # Secrets management
-│       └── .env.prod                # Production secrets (gitignored)
-│
-├── scripts/
-│   ├── deploy.ps1                   # Main deployment script
-│   ├── rollback.ps1                 # Rollback script
-│   ├── health-check.ps1             # Health check script
-│   └── backup.ps1                   # Backup script
-│
-└── docs/
-    ├── DEPLOYMENT.md                # Deployment guide
-    ├── MONITORING.md                # Monitoring setup
-    └── SECURITY.md                  # Security guide
+│           ├── dashboards/
+│           │   └── dashboard.yml
+│           └── datasources/
+│               └── datasource.yml
+├── env_template.md                  # .env.prod template (not committed)
+└── workflow_ci-cd.md                # Deployment / CI-CD workflow log
 ```
 
 ### Services in Deployment
@@ -203,7 +197,7 @@ deploy/
 - **Backup Service** (automated database backups)
 - **Log Aggregation** (optional: ELK stack)
 
-### Deployment Steps
+### Deployment Steps (current)
 
 #### Step 1: Pre-Deployment Validation
 
@@ -219,11 +213,13 @@ deploy/
 #### Step 2: Build Production Images
 
 ```powershell
+cd deploy
+
 # Build FastAPI image
-docker build -f docker/Dockerfile.fastapi -t trendoscope2-api:latest .
+docker build -f docker/Dockerfile.api -t trendoscope2-api:latest ..
 
 # Build other service images if needed
-docker-compose -f docker/docker-compose.prod.yml build
+docker compose -f docker/docker-compose.prod.yml build
 ```
 
 #### Step 3: Database Migration
@@ -236,11 +232,24 @@ python scripts/migrate.py --env production
 #### Step 4: Deploy Services
 
 ```powershell
-# Start all services
-docker-compose -f docker/docker-compose.prod.yml up -d
+cd deploy
 
-# Wait for health checks
-.\scripts\health-check.ps1 -timeout 300
+# Start all services
+docker compose -f docker/docker-compose.prod.yml up -d
+```
+
+#### Step 5: Promote to Production (short command sequence)
+
+From the repository root:
+
+```bash
+git checkout main
+git pull
+
+cd deploy
+# Ensure .env.prod is created based on deploy/env_template.md
+docker compose -f docker/docker-compose.prod.yml pull
+docker compose -f docker/docker-compose.prod.yml up -d
 ```
 
 #### Step 5: Post-Deployment Validation
@@ -270,99 +279,35 @@ curl http://localhost:3000/api/health      # Grafana
 
 ### GitHub Actions Workflow
 
-**File**: `.github/workflows/ci-cd.yml`
+**File**: `.github/workflows/ci.yml`
 
-```yaml
-name: CI/CD Pipeline
+**Current Implementation** (as of 2025-12-15):
 
-on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'trendoscope2/**'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'trendoscope2/**'
+The CI pipeline consists of three jobs that run sequentially:
 
-jobs:
-  # Development Validation
-  validate:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.13'
-      
-      - name: Install dependencies
-        run: |
-          cd trendoscope2
-          pip install -r requirements-minimal.txt
-          pip install pytest pytest-cov flake8 black mypy
-      
-      - name: Lint
-        run: |
-          cd trendoscope2
-          flake8 src/ tests/
-          black --check src/ tests/
-          mypy src/
-      
-      - name: Test
-        run: |
-          cd trendoscope2
-          pytest tests/ --cov=src --cov-report=xml
-      
-      - name: E2E Tests
-        run: |
-          cd trendoscope2
-          # Start services
-          docker-compose -f docker/docker-compose.local.yml up -d redis
-          # Run E2E tests
-          pytest tests/e2e/ -v
-      
-      - name: Security Scan
-        run: |
-          cd trendoscope2
-          pip install safety bandit
-          safety check
-          bandit -r src/
-  
-  # Promotion to Deploy
-  promote:
-    needs: validate
-    runs-on: windows-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Promote to Deploy
-        run: |
-          cd trendoscope2
-          .\scripts\promote-to-deploy.ps1
-      
-      - name: Create Deployment PR
-        uses: peter-evans/create-pull-request@v5
-        with:
-          title: "Deploy: Promote changes to production"
-          body: "Automated promotion from trendoscope2 to deploy/"
-          branch: deploy/promote-$(date +%s)
-  
-  # Deployment Validation
-  deploy-validate:
-    needs: promote
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Validate Deployment
-        run: |
-          cd deploy
-          docker-compose -f docker/docker-compose.prod.yml config
-          docker-compose -f docker/docker-compose.prod.yml build
-```
+1. **`test`** - Code quality, linting, and unit tests
+   - Runs on `ubuntu-latest` with Redis service
+   - Lint: `flake8`, `black`, `mypy`
+   - Unit tests: `pytest` with coverage
+   - Uploads coverage XML artifact
+
+2. **`e2e-docker`** - Minimal E2E tests (depends on `test`)
+   - Runs on `ubuntu-latest` with Redis service
+   - Starts FastAPI API in background
+   - Runs `tests/e2e/test_minimal_setup.py`
+
+3. **`prod-stack-e2e`** - Full production stack E2E (depends on `test`)
+   - Runs on `ubuntu-latest`
+   - Uses `deploy/docker/docker-compose.prod.yml`
+   - Starts full stack: API, Redis, Postgres, Prometheus, Grafana
+   - Runs `tests/e2e/test_prod_stack.py`
+   - Validates API health, Prometheus targets, Grafana UI
+
+**Workflow Triggers**:
+- Push to `main` or `develop` branches (paths: `trendoscope2/**`, `deploy/**`)
+- Pull requests to `main` (paths: `trendoscope2/**`, `deploy/**`)
+
+**See**: `.github/workflows/ci.yml` for full implementation details.
 
 ---
 
