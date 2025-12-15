@@ -17,13 +17,6 @@ tests/e2e/test_minimal_setup.py::TestNewsFetching::test_news_feed_endpoint PASSE
 tests/e2e/test_minimal_setup.py::TestNewsFetching::test_news_feed_with_category PASSED [ 70%]
 tests/e2e/test_minimal_setup.py::TestTranslation::test_translate_endpoint PASSED [ 80%]
 tests/e2e/test_minimal_setup.py::TestTranslation::test_translate_russian_to_english PASSED [ 90%]
-tests/e2e/test_minimal_setup.py::TestRutubeExtractor::test_rutube_generate_endpoint FAILED [100%]
+tests/e2e/test_minimal_setup.py::TestRutubeExtractor::test_rutube_generate_endpoint PASSED [100%]
 
-================================== FAILURES ===================================
-______________ TestRutubeExtractor.test_rutube_generate_endpoint ______________
-tests\e2e\test_minimal_setup.py:241: in test_rutube_generate_endpoint
-    pytest.fail(f"Rutube endpoint returned {response.status_code}: {error_detail}")
-E   Failed: Rutube endpoint returned 500: {"detail":"Failed to process video: transcribe_audio() got an unexpected keyword argument 'model_name'. Did you mean 'model_size'?"}
-=========================== short test summary info ===========================
-FAILED tests/e2e/test_minimal_setup.py::TestRutubeExtractor::test_rutube_generate_endpoint
-============= 1 failed, 6 passed, 3 skipped in 174.99s (0:02:54) ==============
+================== 7 passed, 3 skipped in 498.34s (0:08:18) ===================

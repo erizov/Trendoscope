@@ -64,9 +64,13 @@ if frontend_path.exists():
 @app.get("/")
 async def root():
     """Root endpoint - serves frontend if available, otherwise API info."""
-    frontend_file = frontend_path / "news_feed.html"
-    if frontend_file.exists():
-        return FileResponse(frontend_file)
+    try:
+        frontend_file = frontend_path / "news_feed.html"
+        if frontend_file.exists():
+            return FileResponse(frontend_file)
+    except Exception as e:
+        logger.warning(f"Could not serve frontend: {e}")
+    
     # Fallback to API root
     return {
         "name": "Trendoscope2",
