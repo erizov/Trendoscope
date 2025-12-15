@@ -1,0 +1,7 @@
+INFO:     Will watch for changes in these directories: ['E:\\Python\\FastAPI\\Trendoscope\\trendoscope2']
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+INFO:     Started reloader process [2416] using WatchFiles
+INFO:     Started server process [23140]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'src\trendoscope2\api\main.py'. Reloading...

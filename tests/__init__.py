@@ -1,0 +1,4 @@
+"""
+Tests for Trendoscope2.
+"""
+
