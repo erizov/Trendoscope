@@ -42,13 +42,10 @@ class EmailSettings(BaseSettings):
         case_sensitive=False
     )
     
-    @field_validator('from_email', mode='before')
-    @classmethod
-    def set_from_email(cls, v, info):
+    def model_post_init(self, __context):
         """Set from_email to smtp_user if not provided."""
-        if v is None and info.data.get('smtp_user'):
-            return info.data.get('smtp_user')
-        return v
+        if self.from_email is None and self.smtp_user:
+            self.from_email = self.smtp_user
 
 
 class TelegramSettings(BaseSettings):
@@ -127,15 +124,10 @@ class RedisSettings(BaseSettings):
         case_sensitive=False
     )
     
-    @field_validator('url', mode='before')
-    @classmethod
-    def set_redis_url(cls, v, info):
+    def model_post_init(self, __context):
         """Set Redis URL from host and port if not provided."""
-        if v is None:
-            host = info.data.get('host', 'localhost')
-            port = info.data.get('port', 6379)
-            return f'redis://{host}:{port}/0'
-        return v
+        if self.url is None:
+            self.url = f'redis://{self.host}:{self.port}/0'
 
 
 class AppSettings(BaseSettings):
@@ -215,18 +207,16 @@ class AppSettings(BaseSettings):
             raise ValueError(f"Log level must be one of {allowed}")
         return v.upper()
     
-    @field_validator('database', mode='after')
-    @classmethod
-    def set_database_url(cls, v, info):
-        """Set database URL based on type."""
-        if v.type == 'sqlite' and not v.url:
-            data_dir = info.data.get('data_dir', Path('data'))
-            v.url = f"sqlite:///{data_dir / 'databases' / 'trendoscope2.db'}"
-        elif not v.url:
-            v.url = (
+    def model_post_init(self, __context):
+        """Set database URL after initialization."""
+        if self.database.type == 'sqlite' and not self.database.url:
+            self.database.url = (
+                f"sqlite:///{self.data_dir / 'databases' / 'trendoscope2.db'}"
+            )
+        elif not self.database.url:
+            self.database.url = (
                 'postgresql://trendoscope:trendoscope@localhost:5432/trendoscope2'
             )
-        return v
 
 
 # Global settings instance
