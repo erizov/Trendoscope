@@ -18,6 +18,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 from ..config import DATA_DIR
 from ..services.background_tasks import background_manager
 from ..storage.news_db import NewsDatabase
+from ..core.exceptions import TrendoscopeException
+from ..core.error_handler import (
+    trendoscope_exception_handler,
+    general_exception_handler
+)
 
 # Import routers
 from .routers import news, tts, email, telegram, rutube, admin

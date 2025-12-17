@@ -35,73 +35,111 @@ DATA_DIR.mkdir(exist_ok=True)
 (DATA_DIR / "temp").mkdir(exist_ok=True)
 
 # Application Configuration
-LOG_LEVEL = _settings.log_level
-ENVIRONMENT = _settings.environment
-DEBUG = _settings.debug
+def _get_app_config():
+    """Get application config from settings."""
+    s = _get_settings()
+    return s.log_level, s.environment, s.debug
+
+LOG_LEVEL, ENVIRONMENT, DEBUG = _get_app_config()
 
 # OpenAI Configuration
-OPENAI_API_KEY = _settings.openai_api_key
-OPENAI_API_BASE = _settings.openai_api_base
+def _get_openai_config():
+    """Get OpenAI config from settings."""
+    s = _get_settings()
+    return s.openai_api_key, s.openai_api_base
+
+OPENAI_API_KEY, OPENAI_API_BASE = _get_openai_config()
 
 # Anthropic Configuration
-ANTHROPIC_API_KEY = _settings.anthropic_api_key
+ANTHROPIC_API_KEY = _get_settings().anthropic_api_key
 
 # Redis Configuration
-REDIS_HOST = _settings.redis.host
-REDIS_PORT = _settings.redis.port
-REDIS_URL = _settings.redis.url or f'redis://{REDIS_HOST}:{REDIS_PORT}/0'
-USE_REDIS = _settings.redis.use_redis
+def _get_redis_config():
+    """Get Redis config from settings."""
+    s = _get_settings()
+    return s.redis.host, s.redis.port, s.redis.url or f'redis://{s.redis.host}:{s.redis.port}/0', s.redis.use_redis
+
+REDIS_HOST, REDIS_PORT, REDIS_URL, USE_REDIS = _get_redis_config()
 
 # Database Configuration
-DATABASE_TYPE = _settings.database.type
-DATABASE_URL = _settings.database.url or (
-    f"sqlite:///{DATA_DIR / 'databases' / 'trendoscope2.db'}"
-)
+def _get_db_config():
+    """Get database config from settings."""
+    s = _get_settings()
+    db_url = s.database.url or f"sqlite:///{DATA_DIR / 'databases' / 'trendoscope2.db'}"
+    return s.database.type, db_url
+
+DATABASE_TYPE, DATABASE_URL = _get_db_config()
 
 # Qdrant Configuration
-QDRANT_URL = _settings.qdrant_url
-QDRANT_API_KEY = _settings.qdrant_api_key
+def _get_qdrant_config():
+    """Get Qdrant config from settings."""
+    s = _get_settings()
+    return s.qdrant_url, s.qdrant_api_key
+
+QDRANT_URL, QDRANT_API_KEY = _get_qdrant_config()
 
 # Local LLM Configuration
-OLLAMA_URL = _settings.ollama_url
+OLLAMA_URL = _get_settings().ollama_url
 
 # TTS Configuration
-TTS_PROVIDER = _settings.tts.provider
-TTS_CACHE_ENABLED = _settings.tts.cache_enabled
-TTS_FALLBACK_ENABLED = _settings.tts.fallback_enabled
-TTS_CACHE_TTL_DAYS = _settings.tts.cache_ttl_days
-TTS_AUDIO_DIR = DATA_DIR / "audio" / "tts"
-TTS_CACHE_DIR = TTS_AUDIO_DIR / "cache"
-TTS_MAX_TEXT_LENGTH = _settings.tts.max_text_length
-TTS_CLEANUP_MAX_AGE_DAYS = _settings.tts.cleanup_max_age_days
+def _get_tts_config():
+    """Get TTS config from settings."""
+    s = _get_settings()
+    tts_audio_dir = DATA_DIR / "audio" / "tts"
+    tts_cache_dir = tts_audio_dir / "cache"
+    tts_audio_dir.mkdir(parents=True, exist_ok=True)
+    if s.tts.cache_enabled:
+        tts_cache_dir.mkdir(parents=True, exist_ok=True)
+    return (
+        s.tts.provider, s.tts.cache_enabled, s.tts.fallback_enabled,
+        s.tts.cache_ttl_days, tts_audio_dir, tts_cache_dir,
+        s.tts.max_text_length, s.tts.cleanup_max_age_days
+    )
+
+TTS_PROVIDER, TTS_CACHE_ENABLED, TTS_FALLBACK_ENABLED, TTS_CACHE_TTL_DAYS, TTS_AUDIO_DIR, TTS_CACHE_DIR, TTS_MAX_TEXT_LENGTH, TTS_CLEANUP_MAX_AGE_DAYS = _get_tts_config()
 
 # Email Configuration
-EMAIL_SMTP_HOST = _settings.email.smtp_host
-EMAIL_SMTP_PORT = _settings.email.smtp_port
-EMAIL_SMTP_USER = _settings.email.smtp_user
-EMAIL_SMTP_PASSWORD = _settings.email.smtp_password
-EMAIL_FROM = _settings.email.from_email or _settings.email.smtp_user
-EMAIL_ENABLED = _settings.email.enabled
-EMAIL_RATE_LIMIT_PER_MINUTE = _settings.email.rate_limit_per_minute
+def _get_email_config():
+    """Get email config from settings."""
+    s = _get_settings()
+    return (
+        s.email.smtp_host, s.email.smtp_port, s.email.smtp_user,
+        s.email.smtp_password, s.email.from_email or s.email.smtp_user,
+        s.email.enabled, s.email.rate_limit_per_minute
+    )
+
+EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, EMAIL_SMTP_USER, EMAIL_SMTP_PASSWORD, EMAIL_FROM, EMAIL_ENABLED, EMAIL_RATE_LIMIT_PER_MINUTE = _get_email_config()
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = _settings.telegram.bot_token
-TELEGRAM_CHANNEL_ID = _settings.telegram.channel_id
-TELEGRAM_ENABLED = _settings.telegram.enabled
-TELEGRAM_POST_FORMAT = _settings.telegram.post_format
-TELEGRAM_MAX_POST_LENGTH = _settings.telegram.max_post_length
-TELEGRAM_RATE_LIMIT_PER_MINUTE = _settings.telegram.rate_limit_per_minute
+def _get_telegram_config():
+    """Get Telegram config from settings."""
+    s = _get_settings()
+    return (
+        s.telegram.bot_token, s.telegram.channel_id, s.telegram.enabled,
+        s.telegram.post_format, s.telegram.max_post_length,
+        s.telegram.rate_limit_per_minute
+    )
+
+TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID, TELEGRAM_ENABLED, TELEGRAM_POST_FORMAT, TELEGRAM_MAX_POST_LENGTH, TELEGRAM_RATE_LIMIT_PER_MINUTE = _get_telegram_config()
 
 # News Database Configuration
-NEWS_DB_MAX_RECORDS = _settings.news.db_max_records
-NEWS_DB_AUTO_CLEANUP = _settings.news.db_auto_cleanup
-NEWS_DB_DEFAULT_LIMIT = _settings.news.db_default_limit
+def _get_news_db_config():
+    """Get news DB config from settings."""
+    s = _get_settings()
+    return s.news.db_max_records, s.news.db_auto_cleanup, s.news.db_default_limit
+
+NEWS_DB_MAX_RECORDS, NEWS_DB_AUTO_CLEANUP, NEWS_DB_DEFAULT_LIMIT = _get_news_db_config()
 
 # News Fetching Configuration
-NEWS_FETCH_TIMEOUT = _settings.news.fetch_timeout
-NEWS_MAX_PER_SOURCE = _settings.news.max_per_source
-NEWS_MAX_ITEMS_PER_FEED = _settings.news.max_items_per_feed
-NEWS_TRANSLATION_MAX_ITEMS = _settings.news.translation_max_items
+def _get_news_fetch_config():
+    """Get news fetch config from settings."""
+    s = _get_settings()
+    return (
+        s.news.fetch_timeout, s.news.max_per_source,
+        s.news.max_items_per_feed, s.news.translation_max_items
+    )
+
+NEWS_FETCH_TIMEOUT, NEWS_MAX_PER_SOURCE, NEWS_MAX_ITEMS_PER_FEED, NEWS_TRANSLATION_MAX_ITEMS = _get_news_fetch_config()
 
 # HTTP Configuration
-HTTP_MAX_KEEPALIVE_CONNECTIONS = _settings.http_max_keepalive_connections
+HTTP_MAX_KEEPALIVE_CONNECTIONS = _get_settings().http_max_keepalive_connections
