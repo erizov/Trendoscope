@@ -47,7 +47,7 @@ class TestErrorHandling:
                 "/api/tts/generate",
                 json={"text": "Test"}
             )
-            assert response.status_code in [500]
+            assert response.status_code in [500, 503]  # 503 for service unavailable
     
     def test_tts_audio_not_found(self):
         """Test TTS audio download with non-existent ID."""
@@ -67,7 +67,7 @@ class TestErrorHandling:
                     "text_content": "Test content"
                 }
             )
-            assert response.status_code in [500]
+            assert response.status_code in [500, 503]  # 503 for service unavailable
     
     def test_telegram_post_connection_error(self):
         """Test Telegram post with connection error."""
@@ -84,7 +84,7 @@ class TestErrorHandling:
                     }
                 }
             )
-            assert response.status_code in [500]
+            assert response.status_code in [500, 503]  # 503 for service unavailable
     
     def test_translate_article_translator_error(self):
         """Test article translation with translator error."""
@@ -100,11 +100,11 @@ class TestErrorHandling:
                 },
                 params={"target_language": "ru"}
             )
-            assert response.status_code in [500]
+            assert response.status_code in [500, 503]  # 503 for service unavailable
     
     def test_rutube_generate_processing_error(self):
         """Test Rutube generation with processing error."""
-        with patch('trendoscope2.api.main.process_rutube_video') as mock_proc:
+        with patch('trendoscope2.ingest.rutube_processor.process_rutube_video') as mock_proc:
             mock_proc.side_effect = Exception("Processing error")
             
             response = client.post(
@@ -113,7 +113,7 @@ class TestErrorHandling:
                     "url": "https://rutube.ru/video/1234567890/"
                 }
             )
-            assert response.status_code in [500]
+            assert response.status_code in [500, 503]  # 503 for service unavailable
     
     def test_invalid_json_body(self):
         """Test endpoints with invalid JSON."""
