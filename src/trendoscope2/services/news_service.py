@@ -35,6 +35,8 @@ class NewsService:
         Returns:
             List of news items
         """
+        # Lazy import to avoid circular dependency
+        from ..services.cache_service import get_cache_service
         cache = get_cache_service()
         cache_key = "news:feed:all"
         
@@ -292,6 +294,8 @@ class NewsService:
         Returns:
             Dictionary with success status, count, category, and news items
         """
+        # Lazy import to avoid circular dependency
+        from ..services.cache_service import get_cache_service
         cache = get_cache_service()
         # Create cache key based on all parameters
         cache_key = f"news:feed:{category}:{language}:{translate_to}:{limit or 'all'}"
