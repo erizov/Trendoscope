@@ -188,6 +188,8 @@ async def get_task_status(job_id: str):
 async def get_queue_stats():
     """Get task queue statistics."""
     try:
+        # Lazy import to avoid circular dependency
+        from ...services.task_queue import get_task_queue
         task_queue = get_task_queue()
         stats = task_queue.get_queue_stats()
         
