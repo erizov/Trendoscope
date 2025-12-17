@@ -4,6 +4,7 @@ Provides interfaces for swapping storage backends.
 """
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
+import asyncio
 
 
 class NewsRepository(ABC):
@@ -34,6 +35,19 @@ class NewsRepository(ABC):
         
         Args:
             item: News item dictionary
+        """
+        pass
+    
+    @abstractmethod
+    async def save_many(self, items: List[Dict[str, Any]]) -> int:
+        """
+        Save multiple news items.
+        
+        Args:
+            items: List of news item dictionaries
+            
+        Returns:
+            Number of items saved
         """
         pass
     
@@ -88,6 +102,11 @@ class InMemoryNewsRepository(NewsRepository):
         """Save news item."""
         self._items.append(item)
     
+    async def save_many(self, items: List[Dict[str, Any]]) -> int:
+        """Save multiple news items."""
+        self._items.extend(items)
+        return len(items)
+    
     async def get_statistics(self) -> Dict[str, Any]:
         """Get statistics."""
         return {
@@ -106,3 +125,67 @@ class InMemoryNewsRepository(NewsRepository):
             reverse=True
         )[:keep_count]
         return deleted
+
+
+class SQLiteNewsRepository(NewsRepository):
+    """SQLite implementation of NewsRepository."""
+    
+    def __init__(self, db_path: Optional[str] = None):
+        """
+        Initialize SQLite repository.
+        
+        Args:
+            db_path: Optional database path
+        """
+        from ..storage.news_db import NewsDatabase
+        self._db = NewsDatabase(db_path=db_path)
+    
+    async def get_recent(
+        self,
+        category: str,
+        limit: int
+    ) -> List[Dict[str, Any]]:
+        """Get recent news items."""
+        return await asyncio.to_thread(
+            self._db.get_recent,
+            category=category,
+            limit=limit
+        )
+    
+    async def save(self, item: Dict[str, Any]) -> None:
+        """Save news item."""
+        await asyncio.to_thread(
+            self._db.bulk_insert,
+            news_items=[item],
+            auto_cleanup=False
+        )
+    
+    async def save_many(self, items: List[Dict[str, Any]]) -> int:
+        """Save multiple news items."""
+        return await asyncio.to_thread(
+            self._db.bulk_insert,
+            news_items=items,
+            auto_cleanup=True
+        )
+    
+    async def get_statistics(self) -> Dict[str, Any]:
+        """Get database statistics."""
+        return await asyncio.to_thread(
+            self._db.get_statistics
+        )
+    
+    async def cleanup_old_records(self, keep_count: int) -> int:
+        """Cleanup old records."""
+        return await asyncio.to_thread(
+            self._db.cleanup_old_records,
+            keep_count=keep_count
+        )
+    
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        if hasattr(self._db, '__exit__'):
+            self._db.__exit__(exc_type, exc_val, exc_tb)
