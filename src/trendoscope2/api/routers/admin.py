@@ -8,7 +8,6 @@ import logging
 
 from ...storage.news_db import NewsDatabase
 from ...config import NEWS_DB_MAX_RECORDS
-from ...services.task_queue import get_task_queue
 
 logger = logging.getLogger(__name__)
 
