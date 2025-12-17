@@ -35,6 +35,9 @@ from ..services.background_tasks import background_manager
 from ..services.email_service import EmailService
 from ..services.telegram_service import TelegramService
 from ..tts.tts_service import TTSService
+from ..utils.encoding import fix_double_encoding, safe_str
+from ..utils.text_processing import clean_html
+from ..services.categorization_service import CategorizationService
 from .schemas import (
     TranslateArticleRequest,
     RutubeGenerateRequest,
@@ -226,63 +229,6 @@ async def get_news_feed(
         logger.info(f"Fetched {len(news_items)} news items")
         
         # Fix double-encoding issues in all news items
-        def fix_double_encoding(text):
-            """Fix double-encoded UTF-8 text (mojibake)."""
-            if not text:
-                return ''
-            if isinstance(text, bytes):
-                try:
-                    text = text.decode('utf-8')
-                except UnicodeDecodeError:
-                    return text.decode('utf-8', errors='replace')
-            
-            if not isinstance(text, str):
-                text = str(text)
-            
-            # Check if text looks like double-encoded UTF-8 (mojibake)
-            # Common pattern: "Р"Рё" instead of "Ди"
-            # This happens when UTF-8 bytes are interpreted as Latin-1
-            try:
-                # Detect mojibake: if text contains sequences like "Р"Рё" (common in Russian)
-                # These are UTF-8 bytes interpreted as Latin-1
-                has_mojibake_pattern = False
-                if len(text) > 0:
-                    # Check for common mojibake patterns (more comprehensive list)
-                    mojibake_indicators = [
-                        'Р"', 'РІ', 'РЅ', 'Рѕ', 'Р°', 'Рё', 'СЂ', 'СЃ', 'РЅР°', 'РІРѕ',
-                        'РґРё', 'РїРѕ', 'РєР°', 'РјРё', 'РЅР°С€', 'РІР°С€', 'РїСЂРё'
-                    ]
-                    has_mojibake_pattern = any(indicator in text[:300] for indicator in mojibake_indicators)
-                    
-                    # Also check if text has high-byte chars but no valid Cyrillic
-                    high_byte_chars = sum(1 for c in text[:200] if ord(c) > 127)
-                    cyrillic_chars = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
-                    if high_byte_chars > 5 and cyrillic_chars < high_byte_chars * 0.2:
-                        has_mojibake_pattern = True
-                
-                if has_mojibake_pattern or any(ord(c) > 127 for c in text[:200] if text):
-                    # Try: encode as latin1 then decode as utf8
-                    fixed = text.encode('latin1', errors='ignore').decode('utf-8', errors='replace')
-                    # Only use if it looks better
-                    if fixed and '\ufffd' not in fixed[:100]:
-                        # Check if fixed version has more Cyrillic characters
-                        cyrillic_original = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
-                        cyrillic_fixed = sum(1 for c in fixed if '\u0400' <= c <= '\u04FF')
-                        # Also check if fixed has fewer high-byte non-Cyrillic chars
-                        high_byte_original = sum(1 for c in text[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
-                        high_byte_fixed = sum(1 for c in fixed[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
-                        
-                        # More lenient condition: if fixed has ANY Cyrillic and fewer mojibake chars
-                        if (cyrillic_fixed > cyrillic_original) or \
-                           (cyrillic_fixed > 0 and high_byte_fixed < high_byte_original) or \
-                           (cyrillic_fixed > 0 and cyrillic_original == 0):
-                            logger.debug(f"Fixed encoding: '{text[:50]}...' -> '{fixed[:50]}...' (Cyrillic: {cyrillic_original}->{cyrillic_fixed})")
-                            return fixed
-            except (UnicodeEncodeError, UnicodeDecodeError) as e:
-                logger.debug(f"Encoding fix error: {e}")
-                pass
-            
-            return text
         
         # Detect and set language for each item
         encoding_fixed_count = 0
@@ -376,7 +322,7 @@ async def get_news_feed(
         for item in news_items:
             # Always recategorize based on content for more accurate categorization
             old_category = item.get('category', 'none')
-            item['category'] = _categorize_news(item)
+            item['category'] = CategorizationService.categorize(item)
             category_counts[item['category']] = category_counts.get(item['category'], 0) + 1
             
             # Log if category changed
@@ -429,169 +375,6 @@ async def get_news_feed(
     except Exception as e:
         logger.error(f"Error fetching news: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-def _categorize_news(item: Dict[str, Any]) -> str:
-    """Categorize news item based on content - 8 main categories."""
-    try:
-        # Text fields should already be fixed by fix_double_encoding
-        # But we still need to safely extract them
-        def safe_str(value):
-            """Safely convert value to string, handling encoding issues."""
-            if value is None:
-                return ''
-            if isinstance(value, bytes):
-                try:
-                    return value.decode('utf-8')
-                except UnicodeDecodeError:
-                    return value.decode('utf-8', errors='replace')
-            return str(value)
-        
-        title = safe_str(item.get('title', ''))
-        summary = safe_str(item.get('summary', ''))
-        description = safe_str(item.get('description', ''))
-        
-        # Combine text
-        text = f"{title} {summary} {description}"
-        
-        # Ensure UTF-8 and convert to lowercase safely
-        if isinstance(text, bytes):
-            try:
-                text = text.decode('utf-8')
-            except UnicodeDecodeError:
-                text = text.decode('utf-8', errors='replace')
-        
-        # Convert to lowercase safely (handles Cyrillic)
-        text = text.lower()
-        
-        # Ensure we have text to categorize
-        if not text or len(text.strip()) == 0:
-            logger.warning(f"Empty text for categorization, item: {item.get('title', 'no title')[:50]}")
-            return 'general'
-    except (UnicodeDecodeError, UnicodeEncodeError, AttributeError, TypeError) as e:
-        # Fallback: use only title if encoding fails
-        logger.warning(f"Encoding error in categorization: {e}, item keys: {list(item.keys())}")
-        try:
-            text = safe_str(item.get('title', '')).lower()
-            if not text or len(text.strip()) == 0:
-                return 'general'
-        except Exception:
-            return 'general'
-    
-    # Legal & Criminal (courts, law, crime, justice) - проверяем первым
-    legal_keywords = [
-        'court', 'judge', 'lawyer', 'attorney', 'trial', 'verdict', 'sentenced', 'conviction',
-        'criminal', 'crime', 'arrest', 'police', 'investigation', 'lawsuit', 'legal',
-        'justice', 'prison', 'jail', 'prosecutor', 'defendant', 'case', 'ruling',
-        'суд', 'судья', 'адвокат', 'прокурор', 'приговор', 'уголовн', 'преступ',
-        'полиц', 'следств', 'дело', 'обвинение', 'оправдан', 'тюрьма', 'арест',
-        'юрист', 'право', 'закон', 'нарушение', 'расследование', 'обыск', 'задержан',
-        'подозреваем', 'обвиняем', 'штраф', 'наказание', 'судопроизводство'
-    ]
-    
-    # War & Conflict - проверяем вторым (более специфично)
-    conflict_keywords = [
-        'war', 'military', 'army', 'weapon', 'conflict', 'attack', 'defense', 'battle',
-        'война', 'военн', 'армия', 'оружи', 'конфликт', 'удар', 'атак', 'оборон',
-        'бой', 'сражение', 'вооружен', 'войск', 'солдат', 'фронт', 'наступление',
-        'обстрел', 'ракет', 'бомбардировк', 'санкц', 'санкции', 'sanction'
-    ]
-    
-    # Business & Economy - расширенные ключевые слова (проверяем ДО tech)
-    business_keywords = [
-        'market', 'stock', 'stock market', 'economy', 'economic', 'business', 'company', 'corporation',
-        'trading', 'trade', 'investment', 'investor', 'ceo', 'cfo', 'revenue', 'profit', 'loss',
-        'бизнес', 'компани', 'корпорац', 'рынок', 'фондов', 'экономик', 'экономика',
-        'инвестиц', 'инвестор', 'акци', 'акции', 'финанс', 'финансы', 'банк', 'банки',
-        'валют', 'доллар', 'евро', 'рубл', 'рубль', 'курс', 'обмен', 'обменн',
-        'инфляц', 'инфляция', 'безработиц', 'безработица', 'gdp', 'ввп',
-        'recession', 'depression', 'crisis', 'кризис', 'рецессия', 'торговл', 'торговля',
-        'экспорт', 'импорт', 'производств', 'производство', 'завод', 'предприяти', 'предприятие',
-        'бюджет', 'налог', 'налоги', 'налогообложен'
-    ]
-    
-    # Tech (AI, ML, technology, platforms, internet)
-    tech_keywords = [
-        'ai', 'artificial', 'intelligence', 'gpt', 'neural', 'machine', 'learning',
-        'tech', 'technology', 'algorithm', 'data', 'digital', 'internet', 'platform',
-        'cloud', 'software', 'app', 'ии', 'нейросет', 'технолог', 'алгоритм', 'данные',
-        'telegram', 'google', 'microsoft', 'apple', 'meta', 'программ', 'код',
-        'chatbot', 'chat', 'robot', 'робот', 'автоматизац', 'кибер', 'cyber'
-    ]
-    
-    # Science & Research - расширенные ключевые слова
-    science_keywords = [
-        'science', 'research', 'study', 'university', 'scientist', 'discovery',
-        'наука', 'исследован', 'ученые', 'университет', 'открыти', 'experiment',
-        'climate', 'energy', 'environment', 'климат', 'энергия', 'экология',
-        'медицин', 'лекарств', 'лечение', 'болезн', 'вирус', 'вакцин',
-        'космос', 'space', 'mars', 'марс', 'ракет', 'спутник', 'satellite',
-        'физик', 'хими', 'биолог', 'генетик', 'dna', 'ген'
-    ]
-    
-    # Society (social issues, people, rights) - расширенные ключевые слова
-    society_keywords = [
-        'social', 'people', 'society', 'protest', 'demonstration', 'rights', 'human rights', 'welfare',
-        'социальн', 'общество', 'социальная', 'люди', 'права', 'справедлив', 'справедливость',
-        'пенси', 'пенсия', 'пенсионер', 'пенсионеры', 'льгот', 'льгота', 'выплат', 'выплата',
-        'миграц', 'миграция', 'беженц', 'беженец', 'демографи', 'демография', 'население',
-        'образование', 'школ', 'школа', 'университет', 'студент', 'учитель', 'education',
-        'здравоохранение', 'больниц', 'больница', 'врач', 'медицин', 'медицина', 'здоровье',
-        'культур', 'культура', 'искусств', 'искусство', 'театр', 'кино', 'музей'
-    ]
-    
-    # Politics (general, any country) - проверяем последним (самая общая категория)
-    politics_keywords = [
-        'politics', 'government', 'election', 'president', 'minister', 'congress',
-        'политик', 'правительств', 'выборы', 'президент', 'министр', 'партия',
-        'biden', 'trump', 'putin', 'путин', 'parliament', 'senate', 'кремль',
-        'белый дом', 'white house', 'госдум', 'дум', 'сенат', 'конгресс',
-        'депутат', 'депутаты', 'законодательств', 'законодатель', 'политическ',
-        'власть', 'власт', 'администрац', 'администрация', 'кабинет', 'кабинет министров',
-        'премьер', 'премьер-министр', 'глава', 'руководитель', 'лидер', 'лидеры',
-        'оппозиц', 'оппозиция', 'фракц', 'фракция', 'коалиц', 'коалиция',
-        'реформа', 'реформы', 'законопроект', 'законопроекты', 'голосован', 'голосование',
-        'избирательн', 'избирательный', 'кампания', 'кампании', 'кандидат', 'кандидаты'
-    ]
-    
-    # Check categories (order matters - most specific first)
-    # Используем подсчет совпадений для более точной категоризации
-    # Сначала проверяем специфичные категории, потом общие
-    
-    def count_matches(keywords, text):
-        """Count how many keywords match in text."""
-        return sum(1 for kw in keywords if kw in text)
-    
-    # Подсчитываем совпадения для каждой категории
-    legal_matches = count_matches(legal_keywords, text)
-    conflict_matches = count_matches(conflict_keywords, text)
-    business_matches = count_matches(business_keywords, text)
-    science_matches = count_matches(science_keywords, text)
-    society_matches = count_matches(society_keywords, text)
-    tech_matches = count_matches(tech_keywords, text)
-    politics_matches = count_matches(politics_keywords, text)
-    
-    # Находим категорию с максимальным количеством совпадений
-    category_scores = {
-        'legal': legal_matches,
-        'conflict': conflict_matches,
-        'business': business_matches,
-        'science': science_matches,
-        'society': society_matches,
-        'tech': tech_matches,
-        'politics': politics_matches
-    }
-    
-    # Если есть совпадения, возвращаем категорию с наибольшим количеством
-    max_score = max(category_scores.values())
-    if max_score > 0:
-        # Если несколько категорий имеют одинаковый максимум, выбираем по приоритету
-        for category in ['legal', 'conflict', 'business', 'science', 'society', 'tech', 'politics']:
-            if category_scores[category] == max_score:
-                return category
-    
-    # Если нет совпадений, возвращаем general
-    return 'general'
 
 
 @app.post("/api/news/translate")

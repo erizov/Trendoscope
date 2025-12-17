@@ -20,10 +20,6 @@ try:
 except ImportError:
     feedparser = None
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    BeautifulSoup = None
 
 
 class AsyncNewsAggregator:
@@ -135,7 +131,7 @@ class AsyncNewsAggregator:
                             pass
                     
                     # Extract source and fix encoding
-                    source = self._fix_encoding(feed.feed.get('title', ''))
+                    source = fix_double_encoding(feed.feed.get('title', ''))
                     if not source:
                         # Try to extract from URL
                         source = self._extract_source(url)
@@ -217,69 +213,13 @@ class AsyncNewsAggregator:
             return 'general'
     
     def _fix_encoding(self, text: str) -> str:
-        """Fix encoding issues including double-encoded UTF-8 (mojibake)."""
-        if not text:
-            return ""
-        try:
-            # Try to decode if bytes
-            if isinstance(text, bytes):
-                try:
-                    text = text.decode('utf-8')
-                except UnicodeDecodeError:
-                    text = text.decode('utf-8', errors='replace')
-            
-            if not isinstance(text, str):
-                text = str(text)
-            
-            # Fix double-encoded UTF-8 (mojibake)
-            # Common pattern: "Р"Рё" instead of "Ди"
-            # This happens when UTF-8 bytes are interpreted as Latin-1
-            try:
-                # Detect mojibake patterns (more comprehensive)
-                has_mojibake_pattern = False
-                if len(text) > 0:
-                    mojibake_indicators = [
-                        'Р"', 'РІ', 'РЅ', 'Рѕ', 'Р°', 'Рё', 'СЂ', 'СЃ', 'РЅР°', 'РІРѕ',
-                        'РґРё', 'РїРѕ', 'РєР°', 'РјРё', 'РЅР°С€', 'РІР°С€', 'РїСЂРё'
-                    ]
-                    has_mojibake_pattern = any(indicator in text[:300] for indicator in mojibake_indicators)
-                    
-                    # Also check if text has high-byte chars but no valid Cyrillic
-                    high_byte_chars = sum(1 for c in text[:200] if ord(c) > 127)
-                    cyrillic_chars = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
-                    if high_byte_chars > 5 and cyrillic_chars < high_byte_chars * 0.2:
-                        has_mojibake_pattern = True
-                
-                if has_mojibake_pattern or any(ord(c) > 127 for c in text[:200] if text):
-                    # Try: encode as latin1 then decode as utf8
-                    fixed = text.encode('latin1', errors='ignore').decode('utf-8', errors='replace')
-                    # Only use if it looks better
-                    if fixed and '\ufffd' not in fixed[:100]:
-                        # Check if fixed version has more Cyrillic characters
-                        cyrillic_original = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
-                        cyrillic_fixed = sum(1 for c in fixed if '\u0400' <= c <= '\u04FF')
-                        # Also check if fixed has fewer high-byte non-Cyrillic chars
-                        high_byte_original = sum(1 for c in text[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
-                        high_byte_fixed = sum(1 for c in fixed[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
-                        
-                        # More lenient condition: if fixed has ANY Cyrillic and fewer mojibake chars
-                        if (cyrillic_fixed > cyrillic_original) or \
-                           (cyrillic_fixed > 0 and high_byte_fixed < high_byte_original) or \
-                           (cyrillic_fixed > 0 and cyrillic_original == 0):
-                            text = fixed
-            except (UnicodeEncodeError, UnicodeDecodeError) as e:
-                logger.debug(f"Encoding fix error in async: {e}")
-                pass
-            
-            # Clean up common encoding issues
-            text = text.replace('\xa0', ' ')  # Non-breaking space
-            text = text.replace('\u200b', '')  # Zero-width space
-            text = text.replace('\u200c', '')  # Zero-width non-joiner
-            text = text.replace('\u200d', '')  # Zero-width joiner
-            return str(text)
-        except Exception as e:
-            logger.debug(f"Encoding fix error: {e}")
-            return str(text)
+        """
+        Fix encoding issues including double-encoded UTF-8 (mojibake).
+        
+        DEPRECATED: Use fix_double_encoding from utils.encoding instead.
+        Kept for backward compatibility.
+        """
+        return fix_double_encoding(text)
     
     async def fetch_trending_topics(
         self,
