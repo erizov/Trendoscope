@@ -10,7 +10,6 @@ from ..config import (
     NEWS_FETCH_TIMEOUT, NEWS_MAX_PER_SOURCE, NEWS_TRANSLATION_MAX_ITEMS
 )
 from ..services.background_tasks import background_manager
-from ..services.cache_service import get_cache_service
 from ..utils.encoding import fix_double_encoding, safe_str
 from ..utils.text_processing import clean_html
 from ..services.categorization_service import CategorizationService
