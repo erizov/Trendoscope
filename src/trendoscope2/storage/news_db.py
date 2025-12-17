@@ -8,7 +8,11 @@ from datetime import datetime
 import logging
 import os
 from pathlib import Path
-from ..config import NEWS_DB_MAX_RECORDS, NEWS_DB_AUTO_CLEANUP, NEWS_DB_DEFAULT_LIMIT
+# Lazy import to avoid circular dependencies
+def _get_news_db_config():
+    """Get news DB config (lazy import)."""
+    from ..config import NEWS_DB_MAX_RECORDS, NEWS_DB_AUTO_CLEANUP, NEWS_DB_DEFAULT_LIMIT
+    return NEWS_DB_MAX_RECORDS, NEWS_DB_AUTO_CLEANUP, NEWS_DB_DEFAULT_LIMIT
 
 logger = logging.getLogger(__name__)
 
