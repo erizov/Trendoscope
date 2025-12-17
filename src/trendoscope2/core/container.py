@@ -17,6 +17,7 @@ from ..config import (
     TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID,
     TELEGRAM_RATE_LIMIT_PER_MINUTE, NEWS_FETCH_TIMEOUT
 )
+from ..services.cache_service import CacheService, get_cache_service
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ class Container:
         self._news_service: Optional[NewsService] = None
         self._news_aggregator: Optional[AsyncNewsAggregator] = None
         self._news_db: Optional[NewsDatabase] = None
+        self._cache_service: Optional[CacheService] = None
 
     @property
     def tts_service(self) -> TTSService:
@@ -106,6 +108,7 @@ class Container:
         self._news_service = None
         self._news_aggregator = None
         self._news_db = None
+        self._cache_service = None
         logger.debug("Reset all service instances")
 
 

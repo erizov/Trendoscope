@@ -64,3 +64,18 @@ def get_news_service(
         NewsService class (static methods)
     """
     return container.news_service
+
+
+def get_cache_service(
+    container: Container = Depends(get_container)
+) -> 'CacheService':
+    """
+    Dependency function to get CacheService.
+
+    Args:
+        container: DI container instance
+
+    Returns:
+        CacheService instance
+    """
+    return container.cache_service

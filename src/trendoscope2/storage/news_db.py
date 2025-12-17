@@ -62,6 +62,27 @@ class NewsDatabase:
             CREATE INDEX IF NOT EXISTS idx_published ON news(published_at DESC)
         """)
         
+        # Composite indexes for common queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_category_published 
+            ON news(category, published_at DESC)
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_source_language 
+            ON news(source, language)
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_fetched_at 
+            ON news(fetched_at DESC)
+        """)
+        
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_controversy 
+            ON news(controversy_score DESC)
+        """)
+        
         cursor.execute("""
             CREATE VIRTUAL TABLE IF NOT EXISTS news_fts USING fts5(
                 title, summary, content=news, content_rowid=id
@@ -121,6 +142,7 @@ class NewsDatabase:
     def get_recent(self, category: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get recent news."""
         if limit is None:
+            from ..config import NEWS_DB_DEFAULT_LIMIT
             limit = NEWS_DB_DEFAULT_LIMIT
         cursor = self.conn.cursor()
         sql = "SELECT * FROM news WHERE 1=1"
@@ -154,6 +176,7 @@ class NewsDatabase:
             Number of records deleted
         """
         if keep_count is None:
+            from ..config import NEWS_DB_MAX_RECORDS
             keep_count = NEWS_DB_MAX_RECORDS
         cursor = self.conn.cursor()
         

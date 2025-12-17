@@ -10,6 +10,7 @@ from ..config import (
     NEWS_FETCH_TIMEOUT, NEWS_MAX_PER_SOURCE, NEWS_TRANSLATION_MAX_ITEMS
 )
 from ..services.background_tasks import background_manager
+from ..services.cache_service import get_cache_service
 from ..utils.encoding import fix_double_encoding, safe_str
 from ..utils.text_processing import clean_html
 from ..services.categorization_service import CategorizationService
@@ -35,10 +36,23 @@ class NewsService:
         Returns:
             List of news items
         """
+        cache = get_cache_service()
+        cache_key = "news:feed:all"
+        
+        # Try cache first
         if use_cache and not force_fresh:
-            cached_news = background_manager.get_cached_news()
+            # Try Redis/in-memory cache
+            cached_news = cache.get(cache_key)
             if cached_news:
                 logger.info(f"Using {len(cached_news)} cached news items")
+                return cached_news
+            
+            # Fallback to background manager cache
+            cached_news = background_manager.get_cached_news()
+            if cached_news:
+                logger.info(f"Using {len(cached_news)} background cached news items")
+                # Store in Redis cache for next time
+                cache.set(cache_key, cached_news, ttl=300)  # 5 minutes
                 return cached_news
 
         logger.info("Fetching fresh news...")
@@ -55,6 +69,10 @@ class NewsService:
                 max_per_source=NEWS_MAX_PER_SOURCE
             )
         logger.info(f"Fetched {len(news_items)} news items")
+        
+        # Cache the result
+        cache.set(cache_key, news_items, ttl=300)  # 5 minutes
+        
         return news_items
 
     @staticmethod
@@ -275,6 +293,17 @@ class NewsService:
         Returns:
             Dictionary with success status, count, category, and news items
         """
+        cache = get_cache_service()
+        # Create cache key based on all parameters
+        cache_key = f"news:feed:{category}:{language}:{translate_to}:{limit or 'all'}"
+        
+        # Try cache first
+        if use_cache:
+            cached_result = cache.get(cache_key)
+            if cached_result:
+                logger.info(f"Using cached news feed: {cache_key}")
+                return cached_result
+        
         # Fetch news
         news_items = await NewsService.fetch_news(use_cache=use_cache)
 
@@ -295,12 +324,17 @@ class NewsService:
         if limit:
             news_items = news_items[:limit]
 
-        return {
+        result = {
             "success": True,
             "count": len(news_items),
             "category": category,
             "news": news_items
         }
+        
+        # Cache the result
+        cache.set(cache_key, result, ttl=300)  # 5 minutes
+        
+        return result
 
     @staticmethod
     async def translate_article(
