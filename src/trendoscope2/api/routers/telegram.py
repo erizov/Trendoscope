@@ -2,26 +2,17 @@
 Telegram API endpoints.
 Handles Telegram posting and connection testing.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import logging
 
 from ..schemas import TelegramPostRequest
 from ...services.telegram_service import TelegramService
-from ...config import (
-    TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID,
-    TELEGRAM_RATE_LIMIT_PER_MINUTE
-)
+from ...core.dependencies import get_telegram_service
+from ...config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/telegram", tags=["telegram"])
-
-# Telegram service instance (will be injected via DI later)
-telegram_service = TelegramService(
-    bot_token=TELEGRAM_BOT_TOKEN,
-    default_channel_id=TELEGRAM_CHANNEL_ID,
-    rate_limit_per_minute=TELEGRAM_RATE_LIMIT_PER_MINUTE
-)
 
 
 @router.post("/post")
@@ -68,7 +59,9 @@ async def post_to_telegram(request: TelegramPostRequest):
 
 
 @router.get("/test")
-async def test_telegram_connection():
+async def test_telegram_connection(
+    telegram_service: TelegramService = Depends(get_telegram_service)
+):
     """
     Test Telegram bot connection.
     
@@ -100,14 +93,18 @@ async def test_telegram_connection():
 
 
 @router.get("/status")
-async def get_telegram_status():
+async def get_telegram_status(
+    telegram_service: TelegramService = Depends(get_telegram_service)
+):
     """
     Get Telegram service status.
+    
+    Args:
+        telegram_service: Injected TelegramService
     
     Returns:
         Telegram service configuration and status
     """
-    from ...config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
     return {
         "success": True,
         "enabled": telegram_service.is_available(),

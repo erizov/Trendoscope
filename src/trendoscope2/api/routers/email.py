@@ -2,34 +2,25 @@
 Email API endpoints.
 Handles email sending and digest functionality.
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 import logging
 
 from ..schemas import EmailSendRequest, EmailDigestRequest
 from ...services.email_service import EmailService
-from ...config import (
-    EMAIL_SMTP_HOST, EMAIL_SMTP_PORT, EMAIL_SMTP_USER,
-    EMAIL_SMTP_PASSWORD, EMAIL_FROM, EMAIL_RATE_LIMIT_PER_MINUTE,
-    NEWS_FETCH_TIMEOUT, NEWS_MAX_PER_SOURCE
-)
+from ...core.dependencies import get_email_service, get_news_service
+from ...services.news_service import NewsService
+from ...config import EMAIL_SMTP_USER, EMAIL_SMTP_PASSWORD
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/email", tags=["email"])
 
-# Email service instance (will be injected via DI later)
-email_service = EmailService(
-    smtp_host=EMAIL_SMTP_HOST,
-    smtp_port=EMAIL_SMTP_PORT,
-    smtp_user=EMAIL_SMTP_USER,
-    smtp_password=EMAIL_SMTP_PASSWORD,
-    from_email=EMAIL_FROM,
-    rate_limit_per_minute=EMAIL_RATE_LIMIT_PER_MINUTE
-)
-
 
 @router.post("/send")
-async def send_email(request: EmailSendRequest):
+async def send_email(
+    request: EmailSendRequest,
+    email_service: EmailService = Depends(get_email_service)
+):
     """
     Send email to recipient.
     
@@ -68,20 +59,25 @@ async def send_email(request: EmailSendRequest):
 
 
 @router.post("/digest")
-async def send_daily_digest(request: EmailDigestRequest):
+async def send_daily_digest(
+    request: EmailDigestRequest,
+    email_service: EmailService = Depends(get_email_service),
+    news_service: NewsService = Depends(get_news_service)
+):
     """
     Send daily news digest email.
     
     Args:
         request: Digest request with to_email and language
+        email_service: Injected EmailService
+        news_service: Injected NewsService
         
     Returns:
         Success status
     """
     try:
         # Get top news items using NewsService
-        from ...services.news_service import NewsService
-        news_result = await NewsService.get_news_feed(
+        news_result = await news_service.get_news_feed(
             category='all',
             limit=5,
             language='all',
@@ -118,14 +114,18 @@ async def send_daily_digest(request: EmailDigestRequest):
 
 
 @router.get("/status")
-async def get_email_status():
+async def get_email_status(
+    email_service: EmailService = Depends(get_email_service)
+):
     """
     Get email service status.
+    
+    Args:
+        email_service: Injected EmailService
     
     Returns:
         Email service configuration and status
     """
-    from ...config import EMAIL_SMTP_USER, EMAIL_SMTP_PASSWORD
     return {
         "success": True,
         "enabled": email_service.is_available(),

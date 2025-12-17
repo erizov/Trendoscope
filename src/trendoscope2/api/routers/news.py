@@ -2,12 +2,13 @@
 News API endpoints.
 Handles news feed, translation, and related operations.
 """
-from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi import APIRouter, HTTPException, Query, Body, Depends
 from typing import Dict, Any, Optional
 import logging
 
 from ...config import NEWS_DB_DEFAULT_LIMIT
 from ...services.news_service import NewsService
+from ...core.dependencies import get_news_service
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,8 @@ async def get_news_feed(
     limit: Optional[int] = Query(default=None, ge=5, le=100, description="Maximum items"),
     language: str = Query(default="all", description="Language filter (all, ru, en)"),
     translate_to: str = Query(default="none", description="Translate to (none, ru, en)"),
-    use_cache: bool = Query(default=True, description="Use cached news if available")
+    use_cache: bool = Query(default=True, description="Use cached news if available"),
+    news_service: NewsService = Depends(get_news_service)
 ):
     """Get news feed (async with caching)."""
     try:
@@ -31,7 +33,7 @@ async def get_news_feed(
             f"use_cache={use_cache}"
         )
 
-        result = await NewsService.get_news_feed(
+        result = await news_service.get_news_feed(
             category=category,
             limit=limit,
             language=language,
@@ -48,11 +50,12 @@ async def get_news_feed(
 @router.post("/translate")
 async def translate_article(
     article: Dict[str, Any] = Body(...),
-    target_language: str = Query(..., description="Target language (ru, en)")
+    target_language: str = Query(..., description="Target language (ru, en)"),
+    news_service: NewsService = Depends(get_news_service)
 ):
     """Translate a single article."""
     try:
-        result = await NewsService.translate_article(article, target_language)
+        result = await news_service.translate_article(article, target_language)
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

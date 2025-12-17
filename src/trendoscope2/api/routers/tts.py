@@ -2,7 +2,7 @@
 TTS (Text-to-Speech) API endpoints.
 Handles audio generation and retrieval.
 """
-from fastapi import APIRouter, HTTPException, Path as PathParam
+from fastapi import APIRouter, HTTPException, Path as PathParam, Depends
 from fastapi.responses import FileResponse
 from pathlib import Path
 import logging
@@ -10,25 +10,18 @@ import mimetypes
 
 from ..schemas import TTSGenerateRequest
 from ...tts.tts_service import TTSService
-from ...config import (
-    TTS_PROVIDER, TTS_CACHE_ENABLED, TTS_FALLBACK_ENABLED
-)
+from ...core.dependencies import get_tts_service
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/tts", tags=["tts"])
 
-# TTS service instance (will be injected or created per request)
-# For now, create it here - will be refactored to DI later
-tts_service = TTSService(
-    provider=TTS_PROVIDER,
-    cache_enabled=TTS_CACHE_ENABLED,
-    fallback_enabled=TTS_FALLBACK_ENABLED
-)
-
 
 @router.post("/generate")
-async def generate_tts(request: TTSGenerateRequest):
+async def generate_tts(
+    request: TTSGenerateRequest,
+    tts_service: TTSService = Depends(get_tts_service)
+):
     """
     Generate audio from text using TTS with automatic fallback.
     """
@@ -79,7 +72,10 @@ async def generate_tts(request: TTSGenerateRequest):
 
 
 @router.get("/audio/{audio_id}")
-async def get_tts_audio(audio_id: str = PathParam(..., description="Audio ID")):
+async def get_tts_audio(
+    audio_id: str = PathParam(..., description="Audio ID"),
+    tts_service: TTSService = Depends(get_tts_service)
+):
     """Get generated TTS audio file."""
     try:
         audio_path = tts_service.get_audio_path(audio_id)
@@ -108,7 +104,9 @@ async def get_tts_audio(audio_id: str = PathParam(..., description="Audio ID")):
 
 
 @router.get("/stats")
-async def get_tts_stats():
+async def get_tts_stats(
+    tts_service: TTSService = Depends(get_tts_service)
+):
     """Get TTS service statistics."""
     try:
         stats = tts_service.get_cache_stats()
