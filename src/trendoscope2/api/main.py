@@ -65,8 +65,14 @@ app.add_middleware(
 
 # Serve static files (frontend)
 frontend_path = Path(__file__).parent.parent.parent / "frontend"
-if frontend_path.exists():
-    app.mount("/static", StaticFiles(directory=str(frontend_path)), name="static")
+frontend_dist = frontend_path / "dist"
+frontend_src = Path(__file__).parent.parent.parent / "src" / "frontend"
+
+# Try dist first (built React app), then src (legacy HTML)
+if frontend_dist.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_dist)), name="static")
+elif frontend_src.exists():
+    app.mount("/static", StaticFiles(directory=str(frontend_src)), name="static")
 
 # Register routers
 app.include_router(news.router)

@@ -132,6 +132,7 @@ async def websocket_endpoint(websocket: WebSocket):
     - news_updates: Real-time news feed updates
     - news_batch: Batch news updates
     """
+    from ..websocket_manager import manager
     await manager.connect(websocket)
     
     try:
