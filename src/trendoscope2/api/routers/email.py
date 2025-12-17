@@ -79,17 +79,16 @@ async def send_daily_digest(request: EmailDigestRequest):
         Success status
     """
     try:
-        # Get top news items
-        from ...ingest.news_sources_async import AsyncNewsAggregator
-        async with AsyncNewsAggregator(timeout=NEWS_FETCH_TIMEOUT) as aggregator:
-            news_items = await aggregator.fetch_trending_topics(
-                include_russian=True,
-                include_international=True,
-                max_per_source=NEWS_MAX_PER_SOURCE
-            )
-        
-        # Limit to top 5
-        news_items = news_items[:5]
+        # Get top news items using NewsService
+        from ...services.news_service import NewsService
+        news_result = await NewsService.get_news_feed(
+            category='all',
+            limit=5,
+            language='all',
+            translate_to='none',
+            use_cache=True
+        )
+        news_items = news_result.get('news', [])
         
         success = await email_service.send_daily_digest_async(
             to_email=request.to_email,

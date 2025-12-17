@@ -23,8 +23,8 @@ class TestErrorHandling:
     
     def test_news_feed_timeout(self):
         """Test news feed with timeout scenario."""
-        with patch('trendoscope2.api.routers.news.AsyncNewsAggregator') as mock_agg:
-            mock_agg.side_effect = TimeoutError("Request timeout")
+        with patch('trendoscope2.services.news_service.NewsService.fetch_news') as mock_fetch:
+            mock_fetch.side_effect = TimeoutError("Request timeout")
             
             response = client.get("/api/news/feed?use_cache=false")
             # Should handle timeout gracefully
@@ -32,8 +32,8 @@ class TestErrorHandling:
     
     def test_news_feed_network_error(self):
         """Test news feed with network error."""
-        with patch('trendoscope2.api.routers.news.AsyncNewsAggregator') as mock_agg:
-            mock_agg.side_effect = ConnectionError("Network error")
+        with patch('trendoscope2.services.news_service.NewsService.fetch_news') as mock_fetch:
+            mock_fetch.side_effect = ConnectionError("Network error")
             
             response = client.get("/api/news/feed?use_cache=false")
             assert response.status_code in [200, 500]
@@ -88,7 +88,7 @@ class TestErrorHandling:
     
     def test_translate_article_translator_error(self):
         """Test article translation with translator error."""
-        with patch('trendoscope2.api.routers.news.translate_and_summarize_news') as mock_trans:
+        with patch('trendoscope2.services.news_service.NewsService.translate_article') as mock_trans:
             mock_trans.side_effect = Exception("Translator error")
             
             response = client.post(
