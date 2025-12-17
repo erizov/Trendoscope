@@ -483,36 +483,40 @@ All refactoring can be done incrementally without breaking existing functionalit
 ---
 
 **Last Updated**: 2025-01-XX
-**Status**: Phase 1 Complete - Utilities Extracted
+**Status**: Phase 2 Complete - API Routers Created
 
-## ✅ Completed Refactoring (Phase 1)
+## ✅ Completed Refactoring
 
-### 1. Utilities Module Created
+### Phase 1: Utilities Extraction ✅
 - ✅ `src/trendoscope2/utils/encoding.py` - Encoding utilities
 - ✅ `src/trendoscope2/utils/text_processing.py` - HTML cleaning
-- ✅ `src/trendoscope2/utils/__init__.py` - Module exports
-
-**Functions Extracted**:
-- `fix_double_encoding()` - Unified encoding fix (removed duplication)
-- `clean_html()` - HTML tag removal
-- `safe_str()` - Safe string conversion
-
-**Impact**:
+- ✅ `src/trendoscope2/services/categorization_service.py` - News categorization
 - ✅ Reduced `main.py` from 1115 → 897 lines (-218 lines, -19.5%)
-- ✅ Eliminated code duplication between `main.py` and `news_sources_async.py`
-- ✅ All tests passing
 
-### 2. Categorization Service Created
-- ✅ `src/trendoscope2/services/categorization_service.py`
-- ✅ Extracted 160+ lines from `main.py`
-- ✅ Reusable service class with keyword-based categorization
+### Phase 2: API Router Separation ✅
+- ✅ Created `api/routers/` directory structure
+- ✅ `routers/news.py` - News endpoints (feed, translate) - ~200 lines
+- ✅ `routers/tts.py` - TTS endpoints (generate, audio, stats) - ~120 lines
+- ✅ `routers/email.py` - Email endpoints (send, digest, status) - ~120 lines
+- ✅ `routers/telegram.py` - Telegram endpoints (post, test, status) - ~100 lines
+- ✅ `routers/rutube.py` - Rutube endpoints (generate) - ~70 lines
+- ✅ `routers/admin.py` - Admin/DB endpoints (cleanup, stats) - ~60 lines
 
 **Impact**:
-- ✅ Business logic separated from API layer
-- ✅ Can be reused by background tasks
-- ✅ Easier to test and extend
+- ✅ Reduced `main.py` from 897 → 137 lines (-760 lines, -84.7%)
+- ✅ Each router is focused and manageable (~60-200 lines)
+- ✅ Clear separation of concerns by domain
+- ✅ Updated test mocks to use router paths
+- ✅ All tests passing: 102/103 (1 E2E requires running server)
 
-### Next Steps (Phase 2)
-1. Split API into routers (target: reduce main.py to ~200 lines)
-2. Create news service layer
-3. Implement dependency injection
+**main.py now contains only**:
+- App initialization
+- Lifespan management
+- Middleware setup
+- Router registration
+- Root and health endpoints
+
+### Next Steps (Phase 3)
+1. Create news service layer (extract business logic from routers)
+2. Implement dependency injection
+3. Pydantic Settings class
