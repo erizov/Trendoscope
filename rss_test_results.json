@@ -1,0 +1,273 @@
+﻿{
+    "ERROR":  [
+                  {
+                      "Url":  "https://feeds.bbci.co.uk/news/world/rss.xml",
+                      "Message":  "The operation has timed out.",
+                      "Category":  "INTERNATIONAL_SOURCES",
+                      "Code":  null
+                  }
+              ],
+    "NOT_FOUND":  [
+
+                  ],
+    "REDIRECT":  [
+
+                 ],
+    "OK":  [
+               {
+                   "Url":  "https://lenta.ru/rss",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  126424
+               },
+               {
+                   "Url":  "https://www.kommersant.ru/rss/main.xml",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  25193
+               },
+               {
+                   "Url":  "https://www.vedomosti.ru/rss/news",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  140855
+               },
+               {
+                   "Url":  "https://tass.ru/rss/v2.xml",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  48286
+               },
+               {
+                   "Url":  "https://rg.ru/xml/index.xml",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  61619
+               },
+               {
+                   "Url":  "https://www.mk.ru/rss/index.xml",
+                   "Category":  "RUSSIAN_SOURCES",
+                   "Size":  71155
+               },
+               {
+                   "Url":  "https://habr.com/ru/rss/articles/",
+                   "Category":  "RUSSIAN_TECH_SOURCES",
+                   "Size":  65476
+               },
+               {
+                   "Url":  "https://vc.ru/rss/all",
+                   "Category":  "RUSSIAN_TECH_SOURCES",
+                   "Size":  18140
+               },
+               {
+                   "Url":  "https://dtf.ru/rss/all",
+                   "Category":  "RUSSIAN_TECH_SOURCES",
+                   "Size":  20016
+               },
+               {
+                   "Url":  "https://3dnews.ru/news/rss",
+                   "Category":  "RUSSIAN_TECH_SOURCES",
+                   "Size":  52873
+               },
+               {
+                   "Url":  "https://www.cnews.ru/inc/rss/news.xml",
+                   "Category":  "RUSSIAN_TECH_SOURCES",
+                   "Size":  189360
+               },
+               {
+                   "Url":  "https://www.gazeta.ru/export/rss/first.xml",
+                   "Category":  "RUSSIAN_POLITICS_SOURCES",
+                   "Size":  7667
+               },
+               {
+                   "Url":  "https://ria.ru/export/rss2/archive/index.xml",
+                   "Category":  "RUSSIAN_POLITICS_SOURCES",
+                   "Size":  53278
+               },
+               {
+                   "Url":  "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  121074
+               },
+               {
+                   "Url":  "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  56458
+               },
+               {
+                   "Url":  "https://www.theguardian.com/world/rss",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  151746
+               },
+               {
+                   "Url":  "http://rss.cnn.com/rss/cnn_topstories.rss",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  174826
+               },
+               {
+                   "Url":  "https://abcnews.go.com/abcnews/topstories",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  44732
+               },
+               {
+                   "Url":  "https://www.cbsnews.com/latest/rss/main",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  25507
+               },
+               {
+                   "Url":  "http://feeds.nbcnews.com/feeds/topstories",
+                   "Category":  "INTERNATIONAL_SOURCES",
+                   "Size":  48850
+               },
+               {
+                   "Url":  "https://www.scmp.com/rss/feed",
+                   "Category":  "INTERNATIONAL_REGIONAL_SOURCES",
+                   "Size":  80303
+               },
+               {
+                   "Url":  "https://www.aljazeera.com/xml/rss/all.xml",
+                   "Category":  "INTERNATIONAL_REGIONAL_SOURCES",
+                   "Size":  17091
+               },
+               {
+                   "Url":  "https://www.forbes.com/business/feed/",
+                   "Category":  "INTERNATIONAL_BUSINESS_SOURCES",
+                   "Size":  51266
+               },
+               {
+                   "Url":  "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+                   "Category":  "INTERNATIONAL_BUSINESS_SOURCES",
+                   "Size":  20995
+               },
+               {
+                   "Url":  "https://www.investing.com/rss/news.rss",
+                   "Category":  "INTERNATIONAL_BUSINESS_SOURCES",
+                   "Size":  4109
+               },
+               {
+                   "Url":  "https://www.marketwatch.com/rss/topstories",
+                   "Category":  "INTERNATIONAL_BUSINESS_SOURCES",
+                   "Size":  8278
+               },
+               {
+                   "Url":  "https://techcrunch.com/feed/",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  18997
+               },
+               {
+                   "Url":  "https://www.theverge.com/rss/index.xml",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  70661
+               },
+               {
+                   "Url":  "https://arstechnica.com/feed/",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  76424
+               },
+               {
+                   "Url":  "https://www.wired.com/feed/rss",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  46970
+               },
+               {
+                   "Url":  "https://www.engadget.com/rss.xml",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  529934
+               },
+               {
+                   "Url":  "https://www.cnet.com/rss/news/",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  25614
+               },
+               {
+                   "Url":  "https://www.zdnet.com/news/rss.xml",
+                   "Category":  "INTERNATIONAL_TECH_SOURCES",
+                   "Size":  11781
+               },
+               {
+                   "Url":  "https://www.technologyreview.com/feed/",
+                   "Category":  "AI_SOURCES",
+                   "Size":  179172
+               },
+               {
+                   "Url":  "https://techcrunch.com/category/artificial-intelligence/feed/",
+                   "Category":  "AI_SOURCES",
+                   "Size":  19273
+               },
+               {
+                   "Url":  "https://www.analyticsvidhya.com/blog/feed/",
+                   "Category":  "AI_SOURCES",
+                   "Size":  1165
+               },
+               {
+                   "Url":  "https://towardsdatascience.com/feed/",
+                   "Category":  "AI_SOURCES",
+                   "Size":  26650
+               },
+               {
+                   "Url":  "https://foreignpolicy.com/feed/",
+                   "Category":  "POLITICS_SOURCES",
+                   "Size":  40172
+               },
+               {
+                   "Url":  "https://www.foreignaffairs.com/rss.xml",
+                   "Category":  "POLITICS_SOURCES",
+                   "Size":  13314
+               },
+               {
+                   "Url":  "https://thehill.com/policy/technology/feed/",
+                   "Category":  "POLITICS_SOURCES",
+                   "Size":  19596
+               },
+               {
+                   "Url":  "https://www.vox.com/rss/index.xml",
+                   "Category":  "POLITICS_SOURCES",
+                   "Size":  145977
+               },
+               {
+                   "Url":  "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
+                   "Category":  "US_SOURCES",
+                   "Size":  52110
+               },
+               {
+                   "Url":  "https://feeds.npr.org/1001/rss.xml",
+                   "Category":  "US_SOURCES",
+                   "Size":  15284
+               },
+               {
+                   "Url":  "https://feeds.npr.org/1004/rss.xml",
+                   "Category":  "US_SOURCES",
+                   "Size":  13416
+               },
+               {
+                   "Url":  "https://abcnews.go.com/abcnews/politicsheadlines",
+                   "Category":  "US_SOURCES",
+                   "Size":  44516
+               },
+               {
+                   "Url":  "https://www.theverge.com/rss/index.xml",
+                   "Category":  "LEGAL_SOURCES",
+                   "Size":  70661
+               },
+               {
+                   "Url":  "https://www.reddit.com/r/worldnews/.rss",
+                   "Category":  "SOCIAL_MEDIA_SOURCES",
+                   "Size":  42136
+               },
+               {
+                   "Url":  "https://www.reddit.com/r/news/.rss",
+                   "Category":  "SOCIAL_MEDIA_SOURCES",
+                   "Size":  25109
+               },
+               {
+                   "Url":  "https://www.reddit.com/r/technology/.rss",
+                   "Category":  "SOCIAL_MEDIA_SOURCES",
+                   "Size":  46766
+               }
+           ],
+    "WARNING":  [
+                    {
+                        "Url":  "https://www.brookings.edu/feed/",
+                        "Message":  "Not XML/RSS format",
+                        "Category":  "POLITICS_SOURCES"
+                    }
+                ],
+    "FORBIDDEN":  [
+
+                  ]
+}

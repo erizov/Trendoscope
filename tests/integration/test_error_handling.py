@@ -23,7 +23,7 @@ class TestErrorHandling:
     
     def test_news_feed_timeout(self):
         """Test news feed with timeout scenario."""
-        with patch('trendoscope2.api.main.AsyncNewsAggregator') as mock_agg:
+        with patch('trendoscope2.api.routers.news.AsyncNewsAggregator') as mock_agg:
             mock_agg.side_effect = TimeoutError("Request timeout")
             
             response = client.get("/api/news/feed?use_cache=false")
@@ -32,7 +32,7 @@ class TestErrorHandling:
     
     def test_news_feed_network_error(self):
         """Test news feed with network error."""
-        with patch('trendoscope2.api.main.AsyncNewsAggregator') as mock_agg:
+        with patch('trendoscope2.api.routers.news.AsyncNewsAggregator') as mock_agg:
             mock_agg.side_effect = ConnectionError("Network error")
             
             response = client.get("/api/news/feed?use_cache=false")
@@ -40,7 +40,7 @@ class TestErrorHandling:
     
     def test_tts_generate_provider_error(self):
         """Test TTS generation with provider error."""
-        with patch('trendoscope2.api.main.tts_service.generate_audio') as mock_gen:
+        with patch('trendoscope2.api.routers.tts.tts_service.generate_audio') as mock_gen:
             mock_gen.side_effect = Exception("TTS provider error")
             
             response = client.post(
@@ -56,7 +56,7 @@ class TestErrorHandling:
     
     def test_email_send_smtp_error(self):
         """Test email sending with SMTP error."""
-        with patch('trendoscope2.api.main.email_service.send_email') as mock_send:
+        with patch('trendoscope2.api.routers.email.email_service.send_email') as mock_send:
             mock_send.return_value = False  # Simulate failure
             
             response = client.post(
@@ -71,7 +71,7 @@ class TestErrorHandling:
     
     def test_telegram_post_connection_error(self):
         """Test Telegram post with connection error."""
-        with patch('trendoscope2.api.main.telegram_service.post_article') as mock_post:
+        with patch('trendoscope2.api.routers.telegram.telegram_service.post_article') as mock_post:
             mock_post.side_effect = Exception("Telegram connection error")
             
             response = client.post(
@@ -88,7 +88,7 @@ class TestErrorHandling:
     
     def test_translate_article_translator_error(self):
         """Test article translation with translator error."""
-        with patch('trendoscope2.api.main.translate_and_summarize_news') as mock_trans:
+        with patch('trendoscope2.api.routers.news.translate_and_summarize_news') as mock_trans:
             mock_trans.side_effect = Exception("Translator error")
             
             response = client.post(

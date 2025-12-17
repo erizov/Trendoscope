@@ -11,6 +11,14 @@ Write-Host ""
 Write-Host "Stopping services..."
 & "$scriptDir\\stop.ps1"
 
+# Extra safety: kill any leftover python processes (Trendoscope2 servers)
+Write-Host "Killing leftover python processes (if any)..."
+try {
+    Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+} catch {
+    Write-Host "No python processes to kill or insufficient permissions."
+}
+
 Write-Host ""
 Write-Host "Waiting 5 seconds..."
 Start-Sleep -Seconds 5
