@@ -76,6 +76,16 @@ app.include_router(telegram.router)
 app.include_router(rutube.router)
 app.include_router(admin.router)
 
+# Register exception handlers
+app.add_exception_handler(
+    TrendoscopeException,
+    trendoscope_exception_handler
+)
+app.add_exception_handler(
+    Exception,
+    general_exception_handler
+)
+
 
 @app.get("/", include_in_schema=False)
 async def root():

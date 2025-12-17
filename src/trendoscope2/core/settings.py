@@ -45,7 +45,7 @@ class EmailSettings(BaseSettings):
     def model_post_init(self, __context):
         """Set from_email to smtp_user if not provided."""
         if self.from_email is None and self.smtp_user:
-            self.from_email = self.smtp_user
+            object.__setattr__(self, 'from_email', self.smtp_user)
 
 
 class TelegramSettings(BaseSettings):
