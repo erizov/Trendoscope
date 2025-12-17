@@ -139,21 +139,67 @@ class NewsDatabase:
         
         return inserted
     
-    def get_recent(self, category: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Get recent news."""
+    def get_recent(
+        self,
+        category: Optional[str] = None,
+        limit: Optional[int] = None,
+        language: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get recent news with optimized query.
+        
+        Args:
+            category: Category filter
+            limit: Maximum number of items
+            language: Language filter
+            
+        Returns:
+            List of news items
+        """
         if limit is None:
             from ..config import NEWS_DB_DEFAULT_LIMIT
             limit = NEWS_DB_DEFAULT_LIMIT
+        
         cursor = self.conn.cursor()
-        sql = "SELECT * FROM news WHERE 1=1"
-        params = []
         
+        # Use optimized query with indexes
         if category and category != 'all':
-            sql += " AND category = ?"
-            params.append(category)
-        
-        sql += " ORDER BY fetched_at DESC LIMIT ?"
-        params.append(limit)
+            if language and language != 'all':
+                # Use composite index (category, published_at)
+                sql = """
+                    SELECT * FROM news 
+                    WHERE category = ? AND language = ?
+                    ORDER BY published_at DESC, fetched_at DESC 
+                    LIMIT ?
+                """
+                params = [category, language, limit]
+            else:
+                # Use category index
+                sql = """
+                    SELECT * FROM news 
+                    WHERE category = ?
+                    ORDER BY published_at DESC, fetched_at DESC 
+                    LIMIT ?
+                """
+                params = [category, limit]
+        else:
+            if language and language != 'all':
+                # Use language index
+                sql = """
+                    SELECT * FROM news 
+                    WHERE language = ?
+                    ORDER BY published_at DESC, fetched_at DESC 
+                    LIMIT ?
+                """
+                params = [language, limit]
+            else:
+                # Use fetched_at index
+                sql = """
+                    SELECT * FROM news 
+                    ORDER BY fetched_at DESC, published_at DESC 
+                    LIMIT ?
+                """
+                params = [limit]
         
         cursor.execute(sql, params)
         return [dict(row) for row in cursor.fetchall()]
