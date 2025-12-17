@@ -10,7 +10,6 @@ import asyncio
 from ...config import NEWS_DB_DEFAULT_LIMIT
 from ...services.news_service import NewsService
 from ...core.dependencies import get_news_service
-from ..websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +121,71 @@ async def get_trending_topics(
     except Exception as e:
         logger.error(f"Trending topics error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get trending topics: {str(e)}")
+
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time news updates.
+    
+    Clients can subscribe to:
+    - news_updates: Real-time news feed updates
+    - news_batch: Batch news updates
+    """
+    await manager.connect(websocket)
+    
+    try:
+        # Send welcome message
+        await manager.send_personal_message(
+            {
+                "type": "connected",
+                "message": "Connected to news feed",
+                "connections": manager.get_connection_count()
+            },
+            websocket
+        )
+        
+        # Keep connection alive and handle messages
+        while True:
+            try:
+                # Wait for client message (with timeout)
+                data = await asyncio.wait_for(
+                    websocket.receive_json(),
+                    timeout=30.0
+                )
+                
+                # Handle client messages
+                if data.get("type") == "ping":
+                    await manager.send_personal_message(
+                        {"type": "pong"},
+                        websocket
+                    )
+                elif data.get("type") == "subscribe":
+                    # Client can subscribe to specific channels
+                    channel = data.get("channel", "news_updates")
+                    await manager.send_personal_message(
+                        {
+                            "type": "subscribed",
+                            "channel": channel
+                        },
+                        websocket
+                    )
+                
+            except asyncio.TimeoutError:
+                # Send keepalive
+                await manager.send_personal_message(
+                    {"type": "keepalive"},
+                    websocket
+                )
+            except WebSocketDisconnect:
+                break
+                
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}", exc_info=True)
+    finally:
+        manager.disconnect(websocket)
 
 
 @router.post("/translate")

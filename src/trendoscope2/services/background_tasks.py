@@ -41,6 +41,14 @@ class BackgroundTaskManager:
                 self._last_fetch = datetime.now()
                 logger.info(f"Background: Fetched {len(news_items)} news items")
                 
+                # Broadcast to WebSocket connections
+                try:
+                    from ..api.websocket_manager import manager
+                    if news_items:
+                        await manager.broadcast_news_batch(news_items[:10])  # Top 10
+                except Exception as e:
+                    logger.debug(f"WebSocket broadcast failed: {e}")
+                
         except Exception as e:
             logger.error(f"Background news fetch error: {e}", exc_info=True)
     

@@ -91,3 +91,113 @@ async def get_database_stats():
             status_code=500,
             detail=f"Failed to get database statistics: {str(e)}"
         )
+
+
+@router.post("/tasks/enqueue")
+async def enqueue_task(
+    task_name: str = Body(..., description="Task name"),
+    args: list = Body(default=[], description="Task arguments"),
+    kwargs: Dict[str, Any] = Body(default={}, description="Task keyword arguments")
+):
+    """
+    Enqueue a background task.
+    
+    Returns:
+        Job ID
+    """
+    try:
+        task_queue = get_task_queue()
+        
+        # Map task names to functions
+        task_map = {
+            "fetch_news": "trendoscope2.services.news_service.NewsService.fetch_news",
+            "process_news": "trendoscope2.services.news_service.NewsService.process_news_items",
+            "cleanup_db": "trendoscope2.storage.news_db.NewsDatabase.cleanup_old_records"
+        }
+        
+        if task_name not in task_map:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown task: {task_name}"
+            )
+        
+        # Import and enqueue
+        module_path, func_name = task_map[task_name].rsplit('.', 1)
+        module = __import__(module_path, fromlist=[func_name])
+        func = getattr(module, func_name)
+        
+        job_id = task_queue.enqueue(func, *args, **kwargs)
+        
+        if not job_id:
+            raise HTTPException(
+                status_code=500,
+                detail="Failed to enqueue task"
+            )
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "task": task_name
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task enqueue error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to enqueue task: {str(e)}"
+        )
+
+
+@router.get("/tasks/{job_id}")
+async def get_task_status(job_id: str):
+    """
+    Get task status.
+    
+    Args:
+        job_id: Job ID
+        
+    Returns:
+        Task status
+    """
+    try:
+        task_queue = get_task_queue()
+        status = task_queue.get_job_status(job_id)
+        
+        if not status:
+            raise HTTPException(
+                status_code=404,
+                detail="Job not found"
+            )
+        
+        return {
+            "success": True,
+            **status
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Task status error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get task status: {str(e)}"
+        )
+
+
+@router.get("/tasks/queue/stats")
+async def get_queue_stats():
+    """Get task queue statistics."""
+    try:
+        task_queue = get_task_queue()
+        stats = task_queue.get_queue_stats()
+        
+        return {
+            "success": True,
+            **stats
+        }
+    except Exception as e:
+        logger.error(f"Queue stats error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to get queue stats: {str(e)}"
+        )
