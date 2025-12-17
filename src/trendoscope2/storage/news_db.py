@@ -8,6 +8,7 @@ from datetime import datetime
 import logging
 import os
 from pathlib import Path
+from ..config import NEWS_DB_MAX_RECORDS, NEWS_DB_AUTO_CLEANUP, NEWS_DB_DEFAULT_LIMIT
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +66,18 @@ class NewsDatabase:
         
         self.conn.commit()
     
-    def bulk_insert(self, news_items: List[Dict[str, Any]]) -> int:
-        """Insert multiple news items."""
+    def bulk_insert(self, news_items: List[Dict[str, Any]], auto_cleanup: bool = True, max_records: int = 10000) -> int:
+        """
+        Insert multiple news items.
+        
+        Args:
+            news_items: List of news dictionaries
+            auto_cleanup: Automatically cleanup old records if exceeds max_records (default: True)
+            max_records: Maximum records to keep if auto_cleanup is True (default: 10000)
+            
+        Returns:
+            Number of items inserted
+        """
         cursor = self.conn.cursor()
         inserted = 0
         
@@ -89,10 +100,24 @@ class NewsDatabase:
                 continue
         
         self.conn.commit()
+        
+        # Auto-cleanup if enabled and exceeds limit
+        if auto_cleanup:
+            try:
+                cursor.execute("SELECT COUNT(*) FROM news")
+                total_count = cursor.fetchone()[0]
+                if total_count > max_records:
+                    logger.info(f"Auto-cleanup: {total_count} records exceed limit {max_records}, cleaning up...")
+                    self.cleanup_old_records(keep_count=max_records)
+            except Exception as e:
+                logger.warning(f"Auto-cleanup failed: {e}")
+        
         return inserted
     
-    def get_recent(self, category: Optional[str] = None, limit: int = 20) -> List[Dict[str, Any]]:
+    def get_recent(self, category: Optional[str] = None, limit: Optional[int] = None) -> List[Dict[str, Any]]:
         """Get recent news."""
+        if limit is None:
+            limit = NEWS_DB_DEFAULT_LIMIT
         cursor = self.conn.cursor()
         sql = "SELECT * FROM news WHERE 1=1"
         params = []
@@ -113,6 +138,62 @@ class NewsDatabase:
         cursor.execute("SELECT COUNT(*) FROM news")
         total = cursor.fetchone()[0]
         return {'total_items': total}
+    
+    def cleanup_old_records(self, keep_count: Optional[int] = None) -> int:
+        """
+        Remove old records, keeping only the most recent N records.
+        
+        Args:
+            keep_count: Number of most recent records to keep (default: from config)
+            
+        Returns:
+            Number of records deleted
+        """
+        if keep_count is None:
+            keep_count = NEWS_DB_MAX_RECORDS
+        cursor = self.conn.cursor()
+        
+        # Get total count
+        cursor.execute("SELECT COUNT(*) FROM news")
+        total_count = cursor.fetchone()[0]
+        
+        if total_count <= keep_count:
+            logger.info(f"Database has {total_count} records, no cleanup needed (limit: {keep_count})")
+            return 0
+        
+        # Get IDs of records to keep (most recent by fetched_at or published_at)
+        cursor.execute("""
+            SELECT id FROM news 
+            ORDER BY COALESCE(fetched_at, published_at, '1970-01-01') DESC 
+            LIMIT ?
+        """, (keep_count,))
+        keep_ids = [row[0] for row in cursor.fetchall()]
+        
+        if not keep_ids:
+            logger.warning("No records to keep, skipping cleanup")
+            return 0
+        
+        # Delete old records (not in keep_ids)
+        placeholders = ','.join(['?'] * len(keep_ids))
+        cursor.execute(f"""
+            DELETE FROM news 
+            WHERE id NOT IN ({placeholders})
+        """, keep_ids)
+        
+        deleted_count = cursor.rowcount
+        
+        # Also clean up FTS index
+        cursor.execute(f"""
+            DELETE FROM news_fts 
+            WHERE rowid NOT IN ({placeholders})
+        """, keep_ids)
+        
+        # Vacuum to reclaim space
+        self.conn.execute("VACUUM")
+        self.conn.commit()
+        
+        logger.info(f"Cleaned up database: kept {len(keep_ids)} records, deleted {deleted_count} old records")
+        return deleted_count
     
     def close(self):
         """Close database connection."""

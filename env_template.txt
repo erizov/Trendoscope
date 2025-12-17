@@ -1,0 +1,82 @@
+# ============================================
+# Email Configuration
+# ============================================
+# For Gmail: smtp.gmail.com, port 587
+# For Outlook: smtp-mail.outlook.com, port 587
+# For Yahoo: smtp.mail.yahoo.com, port 587
+EMAIL_SMTP_HOST=smtp.gmail.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=your_email@gmail.com
+EMAIL_SMTP_PASSWORD=your_app_password_here
+EMAIL_FROM=your_email@gmail.com
+EMAIL_ENABLED=false
+
+# ============================================
+# Telegram Configuration
+# ============================================
+# Get token from @BotFather on Telegram
+# Channel ID: @username for public channel, or -1001234567890 for private
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_CHANNEL_ID=@your_channel_username
+TELEGRAM_ENABLED=false
+TELEGRAM_POST_FORMAT=markdown
+TELEGRAM_MAX_POST_LENGTH=4096
+
+# ============================================
+# TTS Configuration
+# ============================================
+TTS_PROVIDER=auto
+TTS_CACHE_ENABLED=true
+TTS_FALLBACK_ENABLED=true
+TTS_CACHE_TTL_DAYS=30
+TTS_MAX_TEXT_LENGTH=5000
+
+# ============================================
+# Application Configuration
+# ============================================
+LOG_LEVEL=INFO
+ENVIRONMENT=development
+DEBUG=false
+
+# ============================================
+# Database Configuration
+# ============================================
+DATABASE_TYPE=sqlite
+
+# ============================================
+# Redis Configuration (optional)
+# ============================================
+REDIS_HOST=localhost
+REDIS_PORT=6379
+USE_REDIS=false
+
+# ============================================
+# News Database Configuration
+# ============================================
+NEWS_DB_MAX_RECORDS=10000
+NEWS_DB_AUTO_CLEANUP=true
+NEWS_DB_DEFAULT_LIMIT=20
+
+# ============================================
+# News Fetching Configuration
+# ============================================
+NEWS_FETCH_TIMEOUT=10
+NEWS_MAX_PER_SOURCE=2
+NEWS_MAX_ITEMS_PER_FEED=10
+NEWS_TRANSLATION_MAX_ITEMS=3
+
+# ============================================
+# HTTP Configuration
+# ============================================
+HTTP_MAX_KEEPALIVE_CONNECTIONS=20
+
+# ============================================
+# Rate Limiting
+# ============================================
+EMAIL_RATE_LIMIT_PER_MINUTE=10
+TELEGRAM_RATE_LIMIT_PER_MINUTE=20
+
+# ============================================
+# TTS Cleanup Configuration
+# ============================================
+TTS_CLEANUP_MAX_AGE_DAYS=30

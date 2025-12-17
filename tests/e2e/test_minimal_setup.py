@@ -110,12 +110,12 @@ class TestAPIEndpoints:
     
     @pytest.mark.asyncio
     async def test_root_endpoint(self, api_client):
-        """Test root endpoint."""
-        response = await api_client.get("/")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["name"] == "Trendoscope2"
-        assert data["status"] == "running"
+        """Test root endpoint - should redirect to news feed."""
+        response = await api_client.get("/", follow_redirects=False)
+        # Root endpoint now redirects to news feed (301)
+        assert response.status_code == 301
+        # Check that it redirects to the news feed
+        assert "/static/news_feed.html" in response.headers.get("location", "")
     
     @pytest.mark.asyncio
     async def test_health_endpoint(self, api_client):
@@ -228,6 +228,7 @@ class TestRutubeExtractor:
             pytest.skip("yt-dlp or whisper not installed")
         
         try:
+            # Body(..., embed=True) means the request body is directly the RutubeGenerateRequest
             response = await api_client.post(
                 "/api/rutube/generate",
                 json={"url": RUTUBE_URL},

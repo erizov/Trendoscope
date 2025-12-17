@@ -32,91 +32,87 @@ class NewsAggregator:
     # Russian general news sources
     RUSSIAN_SOURCES = [
         "https://lenta.ru/rss",
-        "https://www.kommersant.ru/RSS/main.xml",
+        "https://www.kommersant.ru/rss/main.xml",
         "https://www.vedomosti.ru/rss/news",
         "https://tass.ru/rss/v2.xml",
-        "https://www.rg.ru/rss.xml",  # NEW: Rossiyskaya Gazeta
-        "https://www.kp.ru/rss/news.xml",  # NEW: Komsomolskaya Pravda
-        "https://www.mk.ru/rss/news.xml",  # NEW: Moskovsky Komsomolets
+        "https://rg.ru/xml/index.xml",  # NEW: Rossiyskaya Gazeta
+        "https://www.mk.ru/rss/index.xml",  # NEW: Moskovsky Komsomolets
     ]
 
     # Russian regional sources (NEW)
     RUSSIAN_REGIONAL_SOURCES = [
-        "https://www.fontanka.ru/rss/news.xml",  # St. Petersburg
-        "https://www.nsk.aif.ru/rss/all.xml",    # Novosibirsk
-        "https://www.ekb.aif.ru/rss/all.xml",    # Yekaterinburg
+        # Note: aif.ru sources have SSL certificate issues
     ]
 
     # Russian economy sources (NEW)
     RUSSIAN_ECONOMY_SOURCES = [
-        "https://www.rbc.ru/rss.xml",
-        "https://www.forbes.ru/rss.xml",
+        # Note: rbc.ru and forbes.ru RSS feeds currently unavailable
     ]
 
     # Russian tech/AI sources
     RUSSIAN_TECH_SOURCES = [
-        "https://habr.com/ru/rss/best/",
+        "https://habr.com/ru/rss/articles/",
         "https://vc.ru/rss/all",
         "https://dtf.ru/rss/all",
         "https://3dnews.ru/news/rss",
-        "https://roem.ru/feed/",
+        "https://www.cnews.ru/inc/rss/news.xml",
     ]
 
     # Russian politics sources
     RUSSIAN_POLITICS_SOURCES = [
         "https://www.gazeta.ru/export/rss/first.xml",
-        "https://meduza.io/rss/all",
-        "https://www.interfax.ru/rss.asp",
         "https://ria.ru/export/rss2/archive/index.xml",
+        # Note: meduza.io has timeout issues
     ]
 
     # Russian culture sources (NEW)
     RUSSIAN_CULTURE_SOURCES = [
-        "https://www.colta.ru/rss.xml",
-        "https://www.afisha.ru/rss/news.xml",
+        # Note: colta.ru and afisha.ru RSS feeds currently unavailable
     ]
 
     # Russian sports sources (NEW)
     RUSSIAN_SPORTS_SOURCES = [
-        "https://www.sport-express.ru/rss/news.xml",
-        "https://www.championat.com/rss/news.xml",
+        # Note: sport-express.ru and championat.com RSS feeds currently unavailable
     ]
     
     # European sources
     EUROPEAN_SOURCES = [
-        "https://www.euronews.com/rss",
-        "https://www.politico.eu/feed/",
-        "https://www.dw.com/rss/rss-en-world/s-31201/rss.xml",
+        # Note: Many European sources have timeout issues, keeping only reliable ones
+        # "https://www.euronews.com/rss",  # timeout
+        # "https://www.politico.eu/feed/",  # timeout
+        # "https://www.dw.com/rss/rss-en-world/s-31201/rss.xml",  # timeout
+        # "https://www.lemonde.fr/rss/une.xml",  # timeout
+        # "https://www.spiegel.de/international/index.rss",  # timeout
+        # "https://www.thelocal.com/rss",  # 404
     ]
 
     # International general news sources
     INTERNATIONAL_SOURCES = [
         "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
+        "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
         "https://feeds.bbci.co.uk/news/world/rss.xml",
         "https://www.theguardian.com/world/rss",
+        "http://rss.cnn.com/rss/cnn_topstories.rss",  # Use http to avoid SSL issues
+        "https://abcnews.go.com/abcnews/topstories",
+        "https://www.cbsnews.com/latest/rss/main",
+        "https://feeds.nbcnews.com/nbcnews/public/news",
     ]
 
     # International regional sources (NEW)
     INTERNATIONAL_REGIONAL_SOURCES = [
         # Asia-Pacific
         "https://www.scmp.com/rss/feed",
-        "https://www.japantimes.co.jp/rss/news/",
-        "https://www.straitstimes.com/rss",
-        # Middle East
         "https://www.aljazeera.com/xml/rss/all.xml",
-        "https://www.haaretz.com/rss",
-        # Latin America
-        "https://www.bbc.com/mundo/rss.xml",
-        # Africa
-        "https://www.bbc.com/africa/rss.xml",
+        # Note: japantimes.co.jp (403), straitstimes.com (not XML), haaretz.com (404), bbc.com (timeout)
     ]
 
     # International business sources (NEW)
     INTERNATIONAL_BUSINESS_SOURCES = [
-        "https://www.bloomberg.com/feed/topics/economics",
-        "https://www.ft.com/rss",
-        "https://www.wsj.com/xml/rss/3_7085.xml",
-        "https://www.reuters.com/rssFeed/worldNews",
+        "https://www.forbes.com/business/feed/",
+        "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+        "https://www.investing.com/rss/news.rss",
+        "https://www.marketwatch.com/rss/topstories",
+        # Note: bloomberg.com (403), ft.com (not XML), wsj.com (401), reuters.com (401), entrepreneur.com (timeout)
     ]
 
     # International tech sources (NEW)
@@ -125,39 +121,45 @@ class NewsAggregator:
         "https://www.theverge.com/rss/index.xml",
         "https://arstechnica.com/feed/",
         "https://www.wired.com/feed/rss",
+        "https://www.engadget.com/rss.xml",
+        "https://www.cnet.com/rss/news/",
+        "https://www.zdnet.com/news/rss.xml",
+        # Note: gizmodo.com (403), pcmag.com (403), tomsguide.com (404)
     ]
 
     # AI-specialized sources
     AI_SOURCES = [
         "https://www.technologyreview.com/feed/",
         "https://techcrunch.com/category/artificial-intelligence/feed/",
-        "https://www.theverge.com/ai-artificial-intelligence/rss/index.xml",
-        "https://www.artificialintelligence-news.com/feed/",
-        "https://openai.com/blog/rss.xml",
-        "https://www.deeplearning.ai/the-batch/feed/",
-        "https://machinelearningmastery.com/feed/",
+        "https://www.analyticsvidhya.com/blog/feed/",
+        "https://towardsdatascience.com/feed/",
+        # Note: artificialintelligence-news.com (403), venturebeat.com (308 redirect)
     ]
 
     # Politics-specialized sources
     POLITICS_SOURCES = [
-        "https://www.politico.com/rss/politics08.xml",
         "https://foreignpolicy.com/feed/",
         "https://www.foreignaffairs.com/rss.xml",
         "https://www.brookings.edu/feed/",
+        "https://thehill.com/policy/technology/feed/",
+        "https://www.vox.com/rss/index.xml",
+        # Note: axios.com (403 forbidden)
+        # Note: politico.com has timeout issues
     ]
     
     # US-specific sources
     US_SOURCES = [
         "https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml",
-        "https://www.washingtonpost.com/rss/politics",
         "https://feeds.npr.org/1001/rss.xml",
+        "https://feeds.npr.org/1004/rss.xml",  # NPR Politics
+        "https://abcnews.go.com/abcnews/politicsheadlines",
+        # Note: washingtonpost.com has occasional timeout issues
     ]
     
     # Legal & Criminal news sources
     LEGAL_SOURCES = [
         "https://www.theverge.com/rss/index.xml",  # Tech law & policy
-        "https://www.law.com/dailyreport/rss/",
-        "https://feeds.feedburner.com/scl/scl",  # Supreme Court
+        # Note: law.com and feedburner.com have connection issues
     ]
 
     # Social media & alternative sources (NEW)
@@ -187,7 +189,7 @@ class NewsAggregator:
                 follow_redirects=True,
                 verify=True,
                 limits=httpx.Limits(max_keepalive_connections=20),
-                headers={"Accept-Charset": "utf-8"}
+                headers={"Accept-Charset": "utf-8", "User-Agent": "Trendoscope2/1.0"}
             )
         else:
             self.client = None
@@ -212,13 +214,23 @@ class NewsAggregator:
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning)
                 try:
-                    response = self.client.get(url)
+                    response = self.client.get(url, follow_redirects=True)
+                    # Check redirect history to detect loops
+                    if hasattr(response, 'history') and len(response.history) > 0:
+                        # Check for redirect loops (same URLs in history)
+                        redirect_urls = [str(r.url) for r in response.history]
+                        if len(redirect_urls) != len(set(redirect_urls)):
+                            logger.warning(f"Redirect loop detected for {url}, skipping")
+                            return []
+                except httpx.TooManyRedirects:
+                    logger.warning(f"Too many redirects for {url}, skipping")
+                    return []
                 except Exception as e:
                     error_msg = str(e)
                     if any(keyword in error_msg.lower() for keyword in 
                            ['timeout', 'timed out', 'connection', 'ssl', 
-                            'handshake', 'network']):
-                        logger.debug(f"Connection/timeout error for {url}: {error_msg[:100]}")
+                            'handshake', 'network', 'redirect', 'too many']):
+                        logger.debug(f"Connection/timeout/redirect error for {url}: {error_msg[:100]}")
                         return []
                     else:
                         logger.warning(f"Unexpected error fetching {url}: {error_msg}")
@@ -346,6 +358,30 @@ class NewsAggregator:
             "brookings.edu": "Brookings",
             "reddit.com": "Reddit",
             "law.com": "Law.com",
+            "cnn.com": "CNN",
+            "abcnews.com": "ABC News",
+            "cbsnews.com": "CBS News",
+            "nbcnews.com": "NBC News",
+            "engadget.com": "Engadget",
+            "gizmodo.com": "Gizmodo",
+            "cnet.com": "CNET",
+            "zdnet.com": "ZDNet",
+            "pcmag.com": "PC Magazine",
+            "tomsguide.com": "Tom's Guide",
+            "forbes.com": "Forbes",
+            "cnbc.com": "CNBC",
+            "entrepreneur.com": "Entrepreneur",
+            "investing.com": "Investing.com",
+            "marketwatch.com": "MarketWatch",
+            "venturebeat.com": "VentureBeat",
+            "analyticsvidhya.com": "Analytics Vidhya",
+            "towardsdatascience.com": "Towards Data Science",
+            "axios.com": "Axios",
+            "vox.com": "Vox",
+            "lemonde.fr": "Le Monde",
+            "spiegel.de": "Der Spiegel",
+            "thelocal.com": "The Local",
+            "cnews.ru": "CNews",
         }
 
         for pattern, name in patterns.items():

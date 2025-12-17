@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Провокационные Новости | Trendoscope</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
     <style>
         * {
             margin: 0;
@@ -481,6 +482,167 @@
             color: #ff6b6b;
         }
 
+        /* Avatar Player */
+        .avatar-modal-content {
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .avatar-container {
+            padding: 30px 20px;
+        }
+
+        .avatar-face {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            position: relative;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .avatar-eyes {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .eye {
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            position: relative;
+            animation: blink 3s infinite;
+        }
+
+        @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+        }
+
+        .avatar-mouth {
+            width: 60px;
+            height: 30px;
+            border: 3px solid #fff;
+            border-top: none;
+            border-radius: 0 0 60px 60px;
+            margin-top: 20px;
+            transition: all 0.1s;
+        }
+
+        .avatar-mouth.speaking {
+            animation: speak 0.3s ease-in-out infinite;
+        }
+
+        @keyframes speak {
+            0%, 100% { height: 30px; }
+            50% { height: 50px; }
+        }
+
+        .avatar-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .avatar-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #1d9bf0;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .avatar-btn:hover {
+            background: #1a8cd8;
+            transform: scale(1.1);
+        }
+
+        .avatar-btn.playing {
+            background: #10b981;
+        }
+
+        .avatar-select {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .avatar-range {
+            width: 100px;
+        }
+
+        .speed-label {
+            color: #71767b;
+            font-size: 14px;
+            min-width: 40px;
+        }
+
+        .audio-progress {
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #2f3336;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: #1d9bf0;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .progress-time {
+            display: flex;
+            justify-content: space-between;
+            color: #71767b;
+            font-size: 12px;
+        }
+
+        .avatar-status {
+            margin-top: 15px;
+            color: #71767b;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .avatar-status.loading {
+            color: #1d9bf0;
+        }
+
+        .avatar-status.error {
+            color: #ff6b6b;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .feed {
@@ -493,6 +655,11 @@
 
             .modal-content {
                 border-radius: 16px 16px 0 0;
+            }
+
+            .avatar-face {
+                width: 150px;
+                height: 150px;
             }
         }
     </style>
@@ -583,6 +750,9 @@
                 </a>
             </div>
             <div class="modal-footer">
+                <button class="action-btn" onclick="openAvatarPlayerFromModal()" title="Читать вслух">
+                    🔊 Читать вслух
+                </button>
                 <button class="action-btn" onclick="shareToTelegram()">
                     📱 Telegram
                 </button>
@@ -596,8 +766,47 @@
         </div>
     </div>
 
+    <!-- Avatar Player Modal -->
+    <div class="modal" id="avatarModal" onclick="closeAvatarModal(event)">
+        <div class="modal-content avatar-modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 style="margin: 0; flex: 1;">🔊 Чтение вслух</h2>
+                <button class="modal-close" onclick="closeAvatarModal()">&times;</button>
+            </div>
+            <div class="avatar-container">
+                <div class="avatar-face" id="avatarFace">
+                    <div class="avatar-eyes">
+                        <div class="eye left" id="eyeLeft"></div>
+                        <div class="eye right" id="eyeRight"></div>
+                    </div>
+                    <div class="avatar-mouth" id="avatarMouth"></div>
+                </div>
+                <div class="avatar-controls">
+                    <button class="avatar-btn play-pause-btn" id="playPauseBtn" onclick="togglePlayPause()">
+                        ▶
+                    </button>
+                    <select class="avatar-select" id="voiceGenderSelect" onchange="changeVoiceGender()" style="display: none;">
+                        <option value="female">👩 Женский</option>
+                        <option value="male">👨 Мужской</option>
+                    </select>
+                    <input type="range" class="avatar-range" id="speedRange" min="0.5" max="2" step="0.1" value="1" onchange="changeSpeed()">
+                    <span class="speed-label" id="speedLabel">1.0x</span>
+                </div>
+                <div class="audio-progress">
+                    <div class="progress-bar" id="progressBar">
+                        <div class="progress-bar-fill"></div>
+                    </div>
+                    <div class="progress-time">
+                        <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+                    </div>
+                </div>
+                <div class="avatar-status" id="avatarStatus">Готов к чтению</div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const API_URL = 'http://localhost:8003';
+        const API_URL = window.location.origin || 'http://localhost:8004';
         let allNews = [];
         let currentCategory = 'all';
         let currentLanguage = 'all';
@@ -757,6 +966,9 @@
                         <div class="news-actions">
                             <button class="action-btn" onclick="event.stopPropagation(); openModal(${index})">
                                 📖 Читать
+                            </button>
+                            <button class="action-btn" onclick="event.stopPropagation(); openAvatarPlayer(${index})" title="Читать вслух">
+                                🔊 Читать вслух
                             </button>
                             <button class="action-btn translate-btn" onclick="event.stopPropagation(); translateArticle(${index}, '${targetLanguage}')" id="translate-btn-${index}" type="button">
                                 ${translateButtonText}
@@ -1128,6 +1340,254 @@
                 closeModal();
             }
         });
+        // Avatar TTS Functions
+        let currentAudio = null;
+        let currentAudioId = null;
+        let avatarSpeaking = false;
+
+        function openAvatarPlayer(index) {
+            const item = allNews[index];
+            if (!item) return;
+            
+            const text = `${item.title}. ${item.summary || item.description || ''}`;
+            openAvatarPlayerWithText(text, item.language || 'auto');
+        }
+
+        function openAvatarPlayerFromModal() {
+            if (!currentNewsItem) return;
+            
+            const text = `${currentNewsItem.title}. ${currentNewsItem.summary || currentNewsItem.description || document.getElementById('modalText').textContent || ''}`;
+            openAvatarPlayerWithText(text, currentNewsItem.language || 'auto');
+        }
+
+        async function openAvatarPlayerWithText(text, language) {
+            // Show modal
+            document.getElementById('avatarModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Check if multiple voices are available and show voice selector
+            await checkAndShowVoiceSelector();
+            
+            // Reset state
+            resetAvatarState();
+            updateStatus('Генерация аудио...', 'loading');
+            
+            try {
+                // Get selected voice gender
+                const voiceGenderSelect = document.getElementById('voiceGenderSelect');
+                const voiceGender = voiceGenderSelect ? voiceGenderSelect.value : 'female';
+                
+                // Generate TTS
+                const response = await fetch(`${API_URL}/api/tts/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text.substring(0, 5000), // Limit length
+                        language: 'auto', // Always auto-detect language
+                        voice_gender: voiceGender
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'TTS generation failed');
+                }
+                
+                currentAudioId = data.audio_id;
+                updateStatus('Готово к воспроизведению', '');
+                
+                // Load and play audio
+                await loadAndPlayAudio(data.audio_url, data.duration);
+                
+            } catch (error) {
+                console.error('TTS error:', error);
+                updateStatus(`Ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadAndPlayAudio(audioUrl, duration) {
+            try {
+                // Stop current audio if playing
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                // Create audio element
+                const fullUrl = audioUrl.startsWith('http') ? audioUrl : `${API_URL}${audioUrl}`;
+                currentAudio = new Audio(fullUrl);
+                
+                // Set speed
+                const speed = parseFloat(document.getElementById('speedRange').value);
+                currentAudio.playbackRate = speed;
+                
+                // Update total time
+                if (duration) {
+                    document.getElementById('totalTime').textContent = formatTime(duration);
+                } else {
+                    currentAudio.addEventListener('loadedmetadata', () => {
+                        document.getElementById('totalTime').textContent = formatTime(currentAudio.duration);
+                    });
+                }
+                
+                // Progress tracking
+                currentAudio.addEventListener('timeupdate', () => {
+                    updateProgress();
+                });
+                
+                // Play/pause handling
+                currentAudio.addEventListener('play', () => {
+                    avatarSpeaking = true;
+                    document.getElementById('avatarMouth').classList.add('speaking');
+                    document.getElementById('playPauseBtn').textContent = '⏸';
+                    document.getElementById('playPauseBtn').classList.add('playing');
+                    updateStatus('Чтение...', '');
+                });
+                
+                currentAudio.addEventListener('pause', () => {
+                    avatarSpeaking = false;
+                    document.getElementById('avatarMouth').classList.remove('speaking');
+                    document.getElementById('playPauseBtn').textContent = '▶';
+                    document.getElementById('playPauseBtn').classList.remove('playing');
+                    updateStatus('Пауза', '');
+                });
+                
+                currentAudio.addEventListener('ended', () => {
+                    avatarSpeaking = false;
+                    document.getElementById('avatarMouth').classList.remove('speaking');
+                    document.getElementById('playPauseBtn').textContent = '▶';
+                    document.getElementById('playPauseBtn').classList.remove('playing');
+                    updateStatus('Чтение завершено', '');
+                    resetProgress();
+                });
+                
+                currentAudio.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                    updateStatus('Ошибка воспроизведения', 'error');
+                });
+                
+                // Auto-play
+                await currentAudio.play();
+                
+            } catch (error) {
+                console.error('Audio load error:', error);
+                updateStatus(`Ошибка загрузки: ${error.message}`, 'error');
+            }
+        }
+
+        function togglePlayPause() {
+            if (!currentAudio) return;
+            
+            if (currentAudio.paused) {
+                currentAudio.play();
+            } else {
+                currentAudio.pause();
+            }
+        }
+
+        async function checkAndShowVoiceSelector() {
+            // Check if multiple voices are available by trying to get TTS stats
+            try {
+                const response = await fetch(`${API_URL}/api/tts/stats`);
+                if (response.ok) {
+                    const stats = await response.json();
+                    // Show voice selector if we have voice support
+                    const voiceGenderSelect = document.getElementById('voiceGenderSelect');
+                    if (voiceGenderSelect) {
+                        voiceGenderSelect.style.display = 'inline-block';
+                    }
+                }
+            } catch (error) {
+                // If stats endpoint fails, still show selector (assume voices available)
+                const voiceGenderSelect = document.getElementById('voiceGenderSelect');
+                if (voiceGenderSelect) {
+                    voiceGenderSelect.style.display = 'inline-block';
+                }
+            }
+        }
+
+        function changeVoiceGender() {
+            // If audio is playing, regenerate with new voice gender
+            if (currentAudio && !currentAudio.paused) {
+                currentAudio.pause();
+            }
+            
+            // Get current text from modal or last used
+            // For now, just update status
+            updateStatus('Измените голос и нажмите "Читать вслух" снова', '');
+        }
+
+        function changeSpeed() {
+            const speed = parseFloat(document.getElementById('speedRange').value);
+            document.getElementById('speedLabel').textContent = speed.toFixed(1) + 'x';
+            
+            if (currentAudio) {
+                currentAudio.playbackRate = speed;
+            }
+        }
+
+        function updateProgress() {
+            if (!currentAudio) return;
+            
+            const progress = (currentAudio.currentTime / currentAudio.duration) * 100;
+            const progressBar = document.querySelector('.progress-bar-fill');
+            if (progressBar) {
+                progressBar.style.width = progress + '%';
+            }
+            
+            document.getElementById('currentTime').textContent = formatTime(currentAudio.currentTime);
+        }
+
+        function resetProgress() {
+            const progressBar = document.querySelector('.progress-bar-fill');
+            if (progressBar) {
+                progressBar.style.width = '0%';
+            }
+            document.getElementById('currentTime').textContent = '0:00';
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateStatus(message, className) {
+            const statusEl = document.getElementById('avatarStatus');
+            statusEl.textContent = message;
+            statusEl.className = 'avatar-status ' + className;
+        }
+
+        function resetAvatarState() {
+            avatarSpeaking = false;
+            document.getElementById('avatarMouth').classList.remove('speaking');
+            document.getElementById('playPauseBtn').textContent = '▶';
+            document.getElementById('playPauseBtn').classList.remove('playing');
+            resetProgress();
+        }
+
+        function closeAvatarModal(event) {
+            if (!event || event.target.id === 'avatarModal') {
+                // Stop audio
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio = null;
+                }
+                
+                document.getElementById('avatarModal').classList.remove('active');
+                document.body.style.overflow = 'auto';
+                resetAvatarState();
+            }
+        }
+
     </script>
 </body>
 </html>

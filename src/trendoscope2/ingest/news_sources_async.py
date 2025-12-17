@@ -30,7 +30,7 @@ class AsyncNewsAggregator:
     """Async news aggregator with better performance."""
     
     # Import source lists from sync version
-    def __init__(self, timeout: int = 10):
+    def __init__(self, timeout: Optional[int] = None):
         # Import here to avoid circular imports
         from .news_sources import NewsAggregator
         self.RUSSIAN_SOURCES = NewsAggregator.RUSSIAN_SOURCES
@@ -67,7 +67,7 @@ class AsyncNewsAggregator:
     async def fetch_rss_feed(
         self,
         url: str,
-        max_items: int = 10
+        max_items: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Fetch RSS feed asynchronously.
@@ -79,6 +79,8 @@ class AsyncNewsAggregator:
         Returns:
             List of news items
         """
+        if max_items is None:
+            max_items = NEWS_MAX_ITEMS_PER_FEED
         if not self.client:
             logger.warning("httpx not available, cannot fetch async")
             return []
@@ -98,13 +100,27 @@ class AsyncNewsAggregator:
             items = []
             for entry in feed.entries[:max_items]:
                 try:
-                    # Extract title
-                    title = entry.get('title', '').strip()
+                    # Extract title and fix encoding
+                    title = self._fix_encoding(entry.get('title', '').strip())
                     if not title:
                         continue
                     
-                    # Extract summary/description
-                    summary = entry.get('summary', entry.get('description', '')).strip()
+                    # Extract summary/description and fix encoding
+                    summary = self._fix_encoding(entry.get('summary', entry.get('description', '')).strip())
+                    
+                    # Clean HTML from summary
+                    if summary and BeautifulSoup:
+                        try:
+                            soup = BeautifulSoup(summary, 'html.parser')
+                            summary = soup.get_text(separator=' ', strip=True)
+                            # Remove extra whitespace
+                            summary = ' '.join(summary.split())
+                        except Exception as e:
+                            logger.debug(f"HTML cleaning error for {url}: {e}")
+                            # Fallback: simple regex-based HTML tag removal
+                            import re
+                            summary = re.sub(r'<[^>]+>', '', summary)
+                            summary = ' '.join(summary.split())
                     
                     # Extract link
                     link = entry.get('link', '')
@@ -118,8 +134,8 @@ class AsyncNewsAggregator:
                         except:
                             pass
                     
-                    # Extract source
-                    source = feed.feed.get('title', '')
+                    # Extract source and fix encoding
+                    source = self._fix_encoding(feed.feed.get('title', ''))
                     if not source:
                         # Try to extract from URL
                         source = self._extract_source(url)
@@ -201,20 +217,68 @@ class AsyncNewsAggregator:
             return 'general'
     
     def _fix_encoding(self, text: str) -> str:
-        """Fix encoding issues."""
+        """Fix encoding issues including double-encoded UTF-8 (mojibake)."""
         if not text:
             return ""
         try:
             # Try to decode if bytes
             if isinstance(text, bytes):
-                text = text.decode('utf-8', errors='ignore')
+                try:
+                    text = text.decode('utf-8')
+                except UnicodeDecodeError:
+                    text = text.decode('utf-8', errors='replace')
+            
+            if not isinstance(text, str):
+                text = str(text)
+            
+            # Fix double-encoded UTF-8 (mojibake)
+            # Common pattern: "Р"Рё" instead of "Ди"
+            # This happens when UTF-8 bytes are interpreted as Latin-1
+            try:
+                # Detect mojibake patterns (more comprehensive)
+                has_mojibake_pattern = False
+                if len(text) > 0:
+                    mojibake_indicators = [
+                        'Р"', 'РІ', 'РЅ', 'Рѕ', 'Р°', 'Рё', 'СЂ', 'СЃ', 'РЅР°', 'РІРѕ',
+                        'РґРё', 'РїРѕ', 'РєР°', 'РјРё', 'РЅР°С€', 'РІР°С€', 'РїСЂРё'
+                    ]
+                    has_mojibake_pattern = any(indicator in text[:300] for indicator in mojibake_indicators)
+                    
+                    # Also check if text has high-byte chars but no valid Cyrillic
+                    high_byte_chars = sum(1 for c in text[:200] if ord(c) > 127)
+                    cyrillic_chars = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+                    if high_byte_chars > 5 and cyrillic_chars < high_byte_chars * 0.2:
+                        has_mojibake_pattern = True
+                
+                if has_mojibake_pattern or any(ord(c) > 127 for c in text[:200] if text):
+                    # Try: encode as latin1 then decode as utf8
+                    fixed = text.encode('latin1', errors='ignore').decode('utf-8', errors='replace')
+                    # Only use if it looks better
+                    if fixed and '\ufffd' not in fixed[:100]:
+                        # Check if fixed version has more Cyrillic characters
+                        cyrillic_original = sum(1 for c in text if '\u0400' <= c <= '\u04FF')
+                        cyrillic_fixed = sum(1 for c in fixed if '\u0400' <= c <= '\u04FF')
+                        # Also check if fixed has fewer high-byte non-Cyrillic chars
+                        high_byte_original = sum(1 for c in text[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
+                        high_byte_fixed = sum(1 for c in fixed[:200] if ord(c) > 127 and not ('\u0400' <= c <= '\u04FF'))
+                        
+                        # More lenient condition: if fixed has ANY Cyrillic and fewer mojibake chars
+                        if (cyrillic_fixed > cyrillic_original) or \
+                           (cyrillic_fixed > 0 and high_byte_fixed < high_byte_original) or \
+                           (cyrillic_fixed > 0 and cyrillic_original == 0):
+                            text = fixed
+            except (UnicodeEncodeError, UnicodeDecodeError) as e:
+                logger.debug(f"Encoding fix error in async: {e}")
+                pass
+            
             # Clean up common encoding issues
             text = text.replace('\xa0', ' ')  # Non-breaking space
             text = text.replace('\u200b', '')  # Zero-width space
             text = text.replace('\u200c', '')  # Zero-width non-joiner
             text = text.replace('\u200d', '')  # Zero-width joiner
             return str(text)
-        except:
+        except Exception as e:
+            logger.debug(f"Encoding fix error: {e}")
             return str(text)
     
     async def fetch_trending_topics(
