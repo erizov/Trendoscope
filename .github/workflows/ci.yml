@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - "trendoscope2/**"
+      - "app/**"
       - "deploy/**"
   pull_request:
     branches: [main]
     paths:
-      - "trendoscope2/**"
+      - "app/**"
       - "deploy/**"
 
 jobs:
