@@ -28,11 +28,11 @@
 
 ## 📋 Remaining Items from REFACTORING_PLAN.md
 
-### Priority 1.3: Error Handling (Partially Complete)
+### Priority 1.3: Error Handling ✅
 - [x] Standardize exception types - **DONE**
 - [x] Add proper error messages - **DONE**
 - [x] Implement error logging - **DONE**
-- [ ] Add error recovery mechanisms - **TODO** (retry logic, fallbacks)
+- [x] Add error recovery mechanisms - **DONE** (retry logic with exponential backoff)
 
 ### Priority 2.1: Service Layer (Partially Complete)
 - [x] Split large services - **DONE** (NewsService refactored)
@@ -58,11 +58,11 @@
 - [ ] Environment-specific configs - **TODO**
 - [ ] Configuration documentation - **TODO**
 
-### Priority 4: Testing Infrastructure
+### Priority 4: Testing Infrastructure (Partially Complete)
 - [x] Fix test import issues - **DONE**
 - [x] Add test fixtures - **DONE**
-- [ ] Create test utilities - **TODO**
-- [ ] Add test data factories - **TODO**
+- [x] Create test utilities - **DONE** (factories for test data)
+- [x] Add test data factories - **DONE** (create_news_item, create_news_items, etc.)
 - [ ] Implement test coverage goals - **TODO** (currently ~23%, target 80%+)
 
 ### Priority 5: Documentation & Standards
