@@ -9,7 +9,7 @@ This folder contains archived/legacy versions of the Trendoscope project.
 
 ## Current Active Application
 
-The current active application is located in **`trendoscope2/`** at the project root.
+The current active application is located in **`app/`** at the project root.
 
 ## Archive Date
 

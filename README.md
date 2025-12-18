@@ -6,7 +6,7 @@
 
 ```
 Trendoscope/
-├── trendoscope2/          # ✅ ACTIVE APPLICATION
+├── app/                   # ✅ ACTIVE APPLICATION
 │   ├── src/               # Source code
 │   ├── tests/             # Test suite
 │   ├── frontend/          # React frontend
@@ -21,14 +21,14 @@ Trendoscope/
 
 ## Active Application
 
-The current active application is **`trendoscope2/`**.
+The current active application is **`app/`**.
 
-See `trendoscope2/README.md` for detailed documentation.
+See `app/README.md` for detailed documentation.
 
 ## Quick Start
 
 ```bash
-cd trendoscope2
+cd app
 python run.py
 ```
 

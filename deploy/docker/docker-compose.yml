@@ -3,17 +3,17 @@ version: '3.8'
 services:
   api:
     build:
-      context: ../../trendoscope2
+      context: ../../app
       dockerfile: deploy/docker/Dockerfile
-    container_name: trendoscope2-api
+    container_name: trendoscope-api
     ports:
       - "8000:8000"
     environment:
       - REDIS_URL=redis://redis:6379/0
       - USE_REDIS=true
     volumes:
-      - ../../trendoscope2/data:/app/data
-      - ../../trendoscope2/logs:/app/logs
+      - ../../app/data:/app/data
+      - ../../app/logs:/app/logs
     depends_on:
       - redis
     restart: unless-stopped
@@ -40,7 +40,7 @@ services:
   # Optional: PostgreSQL for production
   # postgres:
   #   image: postgres:15-alpine
-  #   container_name: trendoscope2-db
+  #   container_name: trendoscope-db
   #   environment:
   #     - POSTGRES_DB=trendoscope
   #     - POSTGRES_USER=trendoscope

@@ -28,4 +28,4 @@ RUN mkdir -p /app/data /app/logs
 EXPOSE 8000
 
 # Run with reload for development
-CMD ["uvicorn", "trendoscope2.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

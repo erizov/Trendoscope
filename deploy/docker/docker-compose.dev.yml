@@ -3,9 +3,9 @@ version: '3.8'
 services:
   api:
     build:
-      context: ../../trendoscope2
+      context: ../../app
       dockerfile: deploy/docker/Dockerfile.dev
-    container_name: trendoscope2-api-dev
+    container_name: trendoscope-api-dev
     ports:
       - "8000:8000"
     environment:
@@ -13,16 +13,16 @@ services:
       - USE_REDIS=true
       - LOG_LEVEL=DEBUG
     volumes:
-      - ../../trendoscope2/src:/app/src
-      - ../../trendoscope2/data:/app/data
+      - ../../app/src:/app/src
+      - ../../app/data:/app/data
     depends_on:
       - redis
-    command: uvicorn trendoscope2.api.main:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn app.api.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    container_name: trendoscope2-redis-dev
+    container_name: trendoscope-redis-dev
     ports:
       - "6379:6379"
     volumes:
@@ -31,13 +31,13 @@ services:
 
   frontend:
     build:
-      context: ../../trendoscope2/frontend
+      context: ../../app/frontend
       dockerfile: ../docker/Dockerfile.frontend.dev
-    container_name: trendoscope2-frontend-dev
+    container_name: trendoscope-frontend-dev
     ports:
       - "3000:3000"
     volumes:
-      - ../../trendoscope2/frontend:/app
+      - ../../app/frontend:/app
       - /app/node_modules
     environment:
       - VITE_API_URL=http://localhost:8000

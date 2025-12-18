@@ -1,7 +1,7 @@
 services:
   api:
     build:
-      context: ../../trendoscope2
+      context: ../../app
       dockerfile: ../deploy/docker/Dockerfile.api
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql+psycopg2://trendoscope:trendoscope@postgres:5432/trendoscope}
