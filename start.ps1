@@ -111,6 +111,7 @@ if (-not (Test-Path $logDir)) {
 
 # Start the application in background
 $logFile = Join-Path $logDir "app_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+$errorLogFile = Join-Path $logDir "app_$(Get-Date -Format 'yyyyMMdd_HHmmss')_error.log"
 Write-Host "  Log file: $logFile" -ForegroundColor Gray
 Write-Host "  Starting on http://localhost:8004" -ForegroundColor Gray
 
@@ -118,7 +119,7 @@ Write-Host "  Starting on http://localhost:8004" -ForegroundColor Gray
 $process = Start-Process powershell -ArgumentList @(
     "-NoExit",
     "-Command",
-    "cd '$appDir'; `$env:PYTHONPATH='src'; $pythonPath run.py"
+    "cd '$appDir'; `$env:PYTHONPATH='src'; $pythonPath run.py 2>&1 | Tee-Object -FilePath '$logFile'"
 ) -PassThru
 
 # Wait a bit for the server to start
