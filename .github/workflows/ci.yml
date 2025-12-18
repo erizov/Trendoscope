@@ -33,10 +33,16 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
+      - name: Install system dependencies (ffmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
         run: |
           cd trendoscope2
           pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir pytest pytest-cov flake8 black mypy
 
       - name: Lint
@@ -80,10 +86,16 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
+      - name: Install system dependencies (ffmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
         run: |
           cd trendoscope2
           pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir pytest
 
       - name: Start API (background)
@@ -112,10 +124,16 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install dependencies
+      - name: Install system dependencies (ffmpeg)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
         run: |
           cd trendoscope2
           pip install --no-cache-dir -r requirements-minimal.txt
+          pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir pytest httpx
 
       - name: Run prod docker-compose E2E
