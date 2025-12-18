@@ -1,0 +1,64 @@
+.app {
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+}
+
+.app-header {
+  background: rgba(0, 0, 0, 0.95);
+  border-bottom: 1px solid #333;
+  padding: 20px;
+  text-align: center;
+}
+
+.app-header h1 {
+  margin: 0 0 5px 0;
+  font-size: 24px;
+}
+
+.app-content {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #71767b;
+}
+
+.error-message {
+  background: #f00;
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #71767b;
+}
+
+@media (max-width: 768px) {
+  .app-content {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+  }
+}

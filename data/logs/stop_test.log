@@ -1,0 +1,8 @@
+========================================
+Stopping Trendoscope2
+========================================
+
+Docker not available, skipping Redis stop.
+
+Note: Stop the FastAPI window manually (Ctrl+C or close window).
+Stop script completed.

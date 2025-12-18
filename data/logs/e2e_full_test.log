@@ -1,0 +1,190 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.7, pytest-9.0.2, pluggy-1.6.0 -- C:\Python313\python.exe
+cachedir: .pytest_cache
+metadata: {'Python': '3.13.7', 'Platform': 'Windows-11-10.0.26200-SP0', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.10.0', 'langsmith': '0.4.42', 'asyncio': '1.3.0', 'cov': '4.1.0', 'html': '4.1.1', 'metadata': '3.1.1', 'timeout': '2.2.0'}, 'JAVA_HOME': 'C:\\Program Files\\Java\\jdk-17.0.1'}
+rootdir: E:\Python\FastAPI\Trendoscope\trendoscope2
+plugins: anyio-4.10.0, langsmith-0.4.42, asyncio-1.3.0, cov-4.1.0, html-4.1.1, metadata-3.1.1, timeout-2.2.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 10 items
+
+tests/e2e/test_minimal_setup.py::TestDockerContainers::test_docker_running FAILED [ 10%]
+tests/e2e/test_minimal_setup.py::TestDockerContainers::test_redis_container_running FAILED [ 20%]
+tests/e2e/test_minimal_setup.py::TestDockerContainers::test_redis_health FAILED [ 30%]
+tests/e2e/test_minimal_setup.py::TestAPIEndpoints::test_root_endpoint PASSED [ 40%]
+tests/e2e/test_minimal_setup.py::TestAPIEndpoints::test_health_endpoint FAILED [ 50%]
+tests/e2e/test_minimal_setup.py::TestNewsFetching::test_news_feed_endpoint PASSED [ 60%]
+tests/e2e/test_minimal_setup.py::TestNewsFetching::test_news_feed_with_category FAILED [ 70%]
+tests/e2e/test_minimal_setup.py::TestTranslation::test_translate_endpoint PASSED [ 80%]
+tests/e2e/test_minimal_setup.py::TestTranslation::test_translate_russian_to_english FAILED [ 90%]
+tests/e2e/test_minimal_setup.py::TestRutubeExtractor::test_rutube_generate_endpoint FAILED [100%]
+
+================================== FAILURES ===================================
+__________________ TestDockerContainers.test_docker_running ___________________
+tests\e2e\test_minimal_setup.py:88: in test_docker_running
+    assert check_docker_running(), "Docker is not running"
+E   AssertionError: Docker is not running
+E   assert False
+E    +  where False = check_docker_running()
+______________ TestDockerContainers.test_redis_container_running ______________
+tests\e2e\test_minimal_setup.py:92: in test_redis_container_running
+    assert check_redis_container(), "Redis container is not running"
+E   AssertionError: Redis container is not running
+E   assert False
+E    +  where False = check_redis_container()
+___________________ TestDockerContainers.test_redis_health ____________________
+tests\e2e\test_minimal_setup.py:96: in test_redis_health
+    assert check_redis_health(), "Redis is not responding"
+E   AssertionError: Redis is not responding
+E   assert False
+E    +  where False = check_redis_health()
+____________________ TestAPIEndpoints.test_health_endpoint ____________________
+tests\e2e\test_minimal_setup.py:114: in test_health_endpoint
+    response = await api_client.get("/health")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1768: in get
+    return await self.request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1629: in send
+    response = await self._send_handling_auth(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_transports\default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:256: in handle_async_request
+    raise exc from None
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection.py:103: in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:135: in handle_async_request
+    await self._response_closed()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:250: in _response_closed
+    await self.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:258: in aclose
+    await self._network_stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_backends\anyio.py:53: in aclose
+    await self._stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py:1314: in aclose
+    self._transport.close()
+C:\Python313\Lib\asyncio\proactor_events.py:109: in close
+    self._loop.call_soon(self._call_connection_lost, None)
+C:\Python313\Lib\asyncio\base_events.py:833: in call_soon
+    self._check_closed()
+C:\Python313\Lib\asyncio\base_events.py:556: in _check_closed
+    raise RuntimeError('Event loop is closed')
+E   RuntimeError: Event loop is closed
+________________ TestNewsFetching.test_news_feed_with_category ________________
+tests\e2e\test_minimal_setup.py:148: in test_news_feed_with_category
+    response = await api_client.get("/api/news/feed", params={"category": "all", "limit": 5})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1768: in get
+    return await self.request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1629: in send
+    response = await self._send_handling_auth(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_transports\default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:256: in handle_async_request
+    raise exc from None
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection.py:103: in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:135: in handle_async_request
+    await self._response_closed()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:250: in _response_closed
+    await self.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:258: in aclose
+    await self._network_stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_backends\anyio.py:53: in aclose
+    await self._stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py:1314: in aclose
+    self._transport.close()
+C:\Python313\Lib\asyncio\proactor_events.py:109: in close
+    self._loop.call_soon(self._call_connection_lost, None)
+C:\Python313\Lib\asyncio\base_events.py:833: in call_soon
+    self._check_closed()
+C:\Python313\Lib\asyncio\base_events.py:556: in _check_closed
+    raise RuntimeError('Event loop is closed')
+E   RuntimeError: Event loop is closed
+______________ TestTranslation.test_translate_russian_to_english ______________
+tests\e2e\test_minimal_setup.py:192: in test_translate_russian_to_english
+    response = await api_client.post(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1859: in post
+    return await self.request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1540: in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1629: in send
+    response = await self._send_handling_auth(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1657: in _send_handling_auth
+    response = await self._send_handling_redirects(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1694: in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_client.py:1730: in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpx\_transports\default.py:394: in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:256: in handle_async_request
+    raise exc from None
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection_pool.py:236: in handle_async_request
+    response = await connection.handle_async_request(
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\connection.py:103: in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:135: in handle_async_request
+    await self._response_closed()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:250: in _response_closed
+    await self.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_async\http11.py:258: in aclose
+    await self._network_stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\httpcore\_backends\anyio.py:53: in aclose
+    await self._stream.aclose()
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\anyio\_backends\_asyncio.py:1314: in aclose
+    self._transport.close()
+C:\Python313\Lib\asyncio\proactor_events.py:109: in close
+    self._loop.call_soon(self._call_connection_lost, None)
+C:\Python313\Lib\asyncio\base_events.py:833: in call_soon
+    self._check_closed()
+C:\Python313\Lib\asyncio\base_events.py:556: in _check_closed
+    raise RuntimeError('Event loop is closed')
+E   RuntimeError: Event loop is closed
+______________ TestRutubeExtractor.test_rutube_generate_endpoint ______________
+tests\e2e\test_minimal_setup.py:227: in test_rutube_generate_endpoint
+    assert response.status_code == 200
+E   assert 500 == 200
+E    +  where 500 = <Response [500 Internal Server Error]>.status_code
+=========================== short test summary info ===========================
+FAILED tests/e2e/test_minimal_setup.py::TestDockerContainers::test_docker_running
+FAILED tests/e2e/test_minimal_setup.py::TestDockerContainers::test_redis_container_running
+FAILED tests/e2e/test_minimal_setup.py::TestDockerContainers::test_redis_health
+FAILED tests/e2e/test_minimal_setup.py::TestAPIEndpoints::test_health_endpoint
+FAILED tests/e2e/test_minimal_setup.py::TestNewsFetching::test_news_feed_with_category
+FAILED tests/e2e/test_minimal_setup.py::TestTranslation::test_translate_russian_to_english
+FAILED tests/e2e/test_minimal_setup.py::TestRutubeExtractor::test_rutube_generate_endpoint
+=================== 7 failed, 3 passed in 123.63s (0:02:03) ===================

@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Trendoscope2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 2rem;
+        background: #0f172a;
+        color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+      .card {
+        max-width: 480px;
+        padding: 2rem;
+        border-radius: 1rem;
+        background: rgba(15, 23, 42, 0.9);
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.7);
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 1rem;
+        font-size: 1.8rem;
+      }
+      p {
+        margin: 0 0 1.5rem;
+        color: #9ca3af;
+      }
+      a {
+        display: inline-block;
+        padding: 0.6rem 1.2rem;
+        border-radius: 9999px;
+        background: #3b82f6;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      a:hover {
+        background: #2563eb;
+      }
+    </style>
+    <script>
+      // Check protocol immediately (before DOMContentLoaded)
+      (function() {
+        const isFileProtocol = window.location.protocol === "file:";
+        
+        if (isFileProtocol) {
+          // Show error message if opened via file://
+          document.addEventListener("DOMContentLoaded", function () {
+            document.body.innerHTML = `
+              <div class="card" style="border: 2px solid #ef4444;">
+                <h1 style="color: #ef4444;">⚠️ Неверный способ открытия</h1>
+                <p>Эта страница должна открываться через HTTP-сервер, а не напрямую как файл.</p>
+                <p style="font-size: 0.9rem; color: #9ca3af;">
+                  Убедитесь, что сервер запущен, и откройте:<br>
+                  <strong style="color: #3b82f6;">http://localhost:8004/</strong>
+                </p>
+                <a href="http://localhost:8004/" style="margin-top: 1rem;">Открыть через HTTP</a>
+              </div>
+            `;
+          });
+          return;
+        }
+        
+        // Normal redirect for HTTP protocol - execute immediately
+        const target = "/static/news_feed.html";
+        if (window.location.pathname === "/" || window.location.pathname === "/index.html") {
+          window.location.replace(target);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Перенаправление на главную страницу новостей…</h1>
+      <p>Если перенаправление не произошло автоматически, нажмите кнопку ниже.</p>
+      <a href="/static/news_feed.html">Перейти на главную</a>
+    </div>
+  </body>
+</html>

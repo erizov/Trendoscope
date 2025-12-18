@@ -1,0 +1,16 @@
+========================================
+Starting Trendoscope2
+========================================
+
+Docker not available. Running without Redis (degraded mode).
+
+Starting Trendoscope2 FastAPI application...
+API: http://localhost:8004
+Frontend: http://localhost:8004
+Docs: http://localhost:8004/docs
+
+Trendoscope2 API is starting in a new window.
+Check the new PowerShell window for logs.
+
+To stop: .\\scripts\\stop.ps1
+To restart: .\\scripts\\restart.ps1

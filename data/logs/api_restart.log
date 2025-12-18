@@ -1,0 +1,176 @@
+INFO:     Will watch for changes in these directories: ['E:\\Python\\FastAPI\\Trendoscope\\trendoscope2']
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+INFO:     Started reloader process [17368] using WatchFiles
+INFO:     Started server process [15004]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:58787 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58806 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Processing Rutube video: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Fetching video info from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Downloading audio directly from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Converting audio to Whisper format: C:\Users\erizo\AppData\Local\Temp\rutube_gv1b2c4b\audio.wav
+INFO:trendoscope2.ingest.rutube_processor:Audio downloaded: C:\Users\erizo\AppData\Local\Temp\rutube_gv1b2c4b\audio_processed.wav, size: 39113628 bytes
+INFO:trendoscope2.nlp.transcriber:Loading Whisper model: base
+INFO:trendoscope2.nlp.transcriber:Whisper model loaded successfully
+INFO:trendoscope2.nlp.transcriber:Detected language: ru (confidence: 98.82%)
+INFO:trendoscope2.nlp.transcriber:Transcribing audio: C:\Users\erizo\AppData\Local\Temp\rutube_gv1b2c4b\audio_processed.wav
+INFO:trendoscope2.nlp.transcriber:Audio file size: 39113628 bytes
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\whisper\transcribe.py:132: UserWarning: FP16 is not supported on CPU; using FP32 instead
+  warnings.warn("FP16 is not supported on CPU; using FP32 instead")
+INFO:trendoscope2.nlp.transcriber:Transcription complete. Language: ru, Text length: 15743 characters
+INFO:     127.0.0.1:58813 - "POST /api/rutube/generate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62166 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62176 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62180 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62285 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55296 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Fetching news: category=all, limit=10
+INFO:trendoscope2.ingest.news_sources:Fetching from 60 sources...
+INFO:httpx:HTTP Request: GET https://vc.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/RSS/main.xml "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://lenta.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://dtf.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/best/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://tass.ru/rss/v2.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.rg.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.vedomosti.ru/rss/news "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.mk.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/rss/main.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.kp.ru/rss/news.xml "HTTP/1.1 404 "
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://3dnews.ru/news/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.gazeta.ru/export/rss/first.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/rss/roem-all-news.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss.asp "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://ria.ru/export/rss2/archive/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.fontanka.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.rbc.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.afisha.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.forbes.ru/rss.xml "HTTP/1.1 302 Found"
+INFO:httpx:HTTP Request: GET https://www.forbes.ru/tmgrdfrend/showcaptcha?cc=1&form-fb-hint=2.150&mt=36B851BCFE92A06F247004E556DF86FA64AE19A2A698B07480F17FFEDB7B5D9B8F67CE90DBD76E66F96C8C1E9167B2DED535DF48C0A36938DC5BF8AEC3E5AE5562019C94E2B459C7BF2054D027485B24DB5C41579F99F0C064B4B12787496B5DA5D65465E3C1538B12F7B7BE0E877492033B8C7F4B7C7EB26B310D82FBED26BEE3B90FF756A9A03A9D15FB7041C8F4CCAEBD3D842679C0D040630E6010E12156577D35087D2373E98736D17D3033BAAE0C8664F9D1F97FD8A51E9D8553414B5A9952D56CB0F8D0035C39A2B9D1A416E782933A604D6D61CCC4DAB66B4C&retpath=aHR0cHM6Ly93d3cuZm9yYmVzLnJ1L3Jzcy54bWw__f54bb1bbf76a6833d78c357499b209d6&t=7%252F1765760832%252F40a085362385e8f86f7cd92184dd9355&u=7817739147412114723&s=50e43fa294770f64e9baad02c7db2f90 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.championat.com/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.sport-express.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/World.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theguardian.com/world/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.japantimes.co.jp/rss/news/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.aljazeera.com/xml/rss/all.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.scmp.com/rss/feed "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET http://www.scmp.com/rss/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.haaretz.com/rss "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.bloomberg.com/feed/topics/economics "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.scmp.com/rss/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.ft.com/rss "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/rss "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://www.wsj.com/xml/rss/3_7085.xml "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.reuters.com/rssFeed/worldNews "HTTP/1.1 401 HTTP Forbidden"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/ "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/rss/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.ft.com/myft "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.wired.com/feed/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/global "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/category/artificial-intelligence/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/ai-artificial-intelligence/rss/index.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.technologyreview.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://arstechnica.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://openai.com/blog/rss.xml "HTTP/1.1 307 Temporary Redirect"
+INFO:httpx:HTTP Request: GET https://openai.com/news/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.artificialintelligence-news.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://machinelearningmastery.com/feed/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.deeplearning.ai/the-batch/feed/ "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.brookings.edu/feed/ "HTTP/1.1 302 Found"
+INFO:httpx:HTTP Request: GET https://www.brookings.edu/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://foreignpolicy.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.foreignaffairs.com/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://feeds.npr.org/1001/rss.xml "HTTP/1.1 200 OK"
+INFO:trendoscope2.ingest.news_sources:Fetched 56 items total
+INFO:trendoscope2.api.main:Fetched 56 news items
+INFO:     127.0.0.1:55302 - "GET /api/news/feed?limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Fetching news: category=all, limit=5
+INFO:trendoscope2.ingest.news_sources:Fetching from 60 sources...
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/RSS/main.xml "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://lenta.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://dtf.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.rg.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/rss/main.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/best/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.kp.ru/rss/news.xml "HTTP/1.1 404 "
+INFO:httpx:HTTP Request: GET https://www.mk.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.vedomosti.ru/rss/news "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://3dnews.ru/news/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://tass.ru/rss/v2.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.gazeta.ru/export/rss/first.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/rss/roem-all-news.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://vc.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss.asp "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://ria.ru/export/rss2/archive/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.rbc.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.fontanka.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.forbes.ru/rss.xml "HTTP/1.1 302 Found"
+INFO:httpx:HTTP Request: GET https://www.forbes.ru/tmgrdfrend/showcaptcha?cc=1&form-fb-hint=2.150&mt=556987E208935770B4799AC171B6016E0838BA8C99DF693EBF59783E84E9EC643ED97784E7FB1EFD9D318CB13059AD24B10EDF5A38F8626C5FBD44572C010BD7E2E6C972A87A97214A51CCEAEE2DF236A1E2561804567A719A523E1E0FB7D12A3F19481C7F3C482A99C6E1BF6512BD5F7F441C17EB2C6C9CA3B0177E7A4DA53BD83AC07A73CDBD36D196810173DA29E2AA27A1B0DD1597E3296E488250E9A70F3F062732D5ADC279C1C4014141205284777973BB2FDA1C4320DBA273E2AA35DD374C1ADB01BAED521827297E05E239E8C4B667F53D089B089AB4C1AB8A&retpath=aHR0cHM6Ly93d3cuZm9yYmVzLnJ1L3Jzcy54bWw__f54bb1bbf76a6833d78c357499b209d6&t=7%252F1765760849%252F4018a1e32d48110fb4baf0f990fb0529&u=7817740291484157994&s=f0884a736de4aa84cc69ba67d593c8f4 "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.afisha.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.sport-express.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.championat.com/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/World.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theguardian.com/world/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.japantimes.co.jp/rss/news/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.aljazeera.com/xml/rss/all.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/rss "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://www.scmp.com/rss/feed "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET http://www.scmp.com/rss/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/ "HTTP/1.1 302 Moved Temporarily"
+INFO:httpx:HTTP Request: GET https://www.bloomberg.com/feed/topics/economics "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.straitstimes.com/global "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.ft.com/rss "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.wsj.com/xml/rss/3_7085.xml "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.scmp.com/rss/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.reuters.com/rssFeed/worldNews "HTTP/1.1 401 HTTP Forbidden"
+INFO:httpx:HTTP Request: GET https://www.ft.com/myft "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/rss/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/category/artificial-intelligence/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.wired.com/feed/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.technologyreview.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/ai-artificial-intelligence/rss/index.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.haaretz.com/rss "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://openai.com/blog/rss.xml "HTTP/1.1 307 Temporary Redirect"
+INFO:httpx:HTTP Request: GET https://www.artificialintelligence-news.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://openai.com/news/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.deeplearning.ai/the-batch/feed/ "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://machinelearningmastery.com/feed/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://arstechnica.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://foreignpolicy.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.brookings.edu/feed/ "HTTP/1.1 302 Found"
+INFO:httpx:HTTP Request: GET https://www.brookings.edu/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.foreignaffairs.com/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://feeds.npr.org/1001/rss.xml "HTTP/1.1 200 OK"
+INFO:trendoscope2.ingest.news_sources:Fetched 56 items total
+INFO:trendoscope2.api.main:Fetched 56 news items
+INFO:     127.0.0.1:61406 - "GET /api/news/feed?category=all&limit=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61469 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61475 - "POST /api/news/translate?target_language=ru HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61487 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61496 - "POST /api/news/translate?target_language=en HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61602 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Processing Rutube video: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Fetching video info from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Downloading audio directly from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Converting audio to Whisper format: C:\Users\erizo\AppData\Local\Temp\rutube_5p7dfezu\audio.wav
+INFO:trendoscope2.ingest.rutube_processor:Audio downloaded: C:\Users\erizo\AppData\Local\Temp\rutube_5p7dfezu\audio_processed.wav, size: 39113628 bytes
+INFO:trendoscope2.nlp.transcriber:Detected language: ru (confidence: 98.82%)
+INFO:trendoscope2.nlp.transcriber:Transcribing audio: C:\Users\erizo\AppData\Local\Temp\rutube_5p7dfezu\audio_processed.wav
+INFO:trendoscope2.nlp.transcriber:Audio file size: 39113628 bytes
+INFO:trendoscope2.nlp.transcriber:Transcription complete. Language: ru, Text length: 15743 characters
+INFO:     127.0.0.1:61615 - "POST /api/rutube/generate HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'tests\e2e\test_minimal_setup.py', 'src\trendoscope2\api\main.py'. Reloading...

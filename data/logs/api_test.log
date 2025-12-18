@@ -1,0 +1,173 @@
+INFO:     Will watch for changes in these directories: ['E:\\Python\\FastAPI\\Trendoscope\\trendoscope2']
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+INFO:     Started reloader process [23392] using WatchFiles
+INFO:     Started server process [1736]
+INFO:     Waiting for application startup.
+INFO:trendoscope2.api.main:Starting background tasks...
+INFO:trendoscope2.services.background_tasks:Starting all background tasks...
+INFO:trendoscope2.services.background_tasks:Started 1 background task(s)
+INFO:trendoscope2.api.main:Background tasks started
+INFO:trendoscope2.services.background_tasks:Starting background news fetcher (interval: 300s)
+INFO:trendoscope2.services.background_tasks:Background: Fetching news...
+INFO:trendoscope2.ingest.news_sources_async:Fetching from 35 sources asynchronously...
+INFO:     Application startup complete.
+INFO:httpx:HTTP Request: GET https://www.vedomosti.ru/rss/news "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.mk.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://3dnews.ru/news/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.rg.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss.asp "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://tass.ru/rss/v2.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://lenta.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://machinelearningmastery.com/feed/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/RSS/main.xml "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://ria.ru/export/rss2/archive/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/category/artificial-intelligence/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.technologyreview.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://feeds.npr.org/1001/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/best/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.gazeta.ru/export/rss/first.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.kp.ru/rss/news.xml "HTTP/1.1 404 "
+INFO:httpx:HTTP Request: GET https://openai.com/blog/rss.xml "HTTP/1.1 307 Temporary Redirect"
+INFO:httpx:HTTP Request: GET https://dtf.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theguardian.com/world/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/ai-artificial-intelligence/rss/index.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/World.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.fontanka.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.artificialintelligence-news.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.deeplearning.ai/the-batch/feed/ "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://vc.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://openai.com/news/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/rss/main.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/rss/roem-all-news.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top/ "HTTP/1.1 200 OK"
+INFO:     127.0.0.1:60289 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.ingest.news_sources_async:Fetched 60 unique items from 35 sources
+INFO:trendoscope2.services.background_tasks:Background: Fetched 60 news items
+INFO:     127.0.0.1:54834 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54839 - "GET / HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\uvicorn\protocols\http\httptools_impl.py", line 401, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\fastapi\routing.py", line 338, in app
+    response = actual_response_class(content, **response_args)
+  File "C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\starlette\responses.py", line 302, in __init__
+    media_type = guess_type(filename or path)[0] or "text/plain"
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\mimetypes.py", line 324, in guess_type
+    return _db.guess_type(url, strict)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Python313\Lib\mimetypes.py", line 125, in guess_type
+    url = os.fspath(url)
+TypeError: expected str, bytes or os.PathLike object, not dict
+INFO:     127.0.0.1:54852 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60940 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60950 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Fetching news: category=all, limit=10, use_cache=True
+INFO:trendoscope2.api.main:Using 60 cached news items
+INFO:trendoscope2.api.main:Fetched 60 news items
+INFO:     127.0.0.1:60957 - "GET /api/news/feed?limit=10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60963 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Fetching news: category=all, limit=5, use_cache=True
+INFO:trendoscope2.api.main:Using 60 cached news items
+INFO:trendoscope2.api.main:Fetched 60 news items
+INFO:     127.0.0.1:60971 - "GET /api/news/feed?category=all&limit=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51875 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51881 - "POST /api/news/translate?target_language=ru HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51888 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51894 - "POST /api/news/translate?target_language=en HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51901 - "GET /health HTTP/1.1" 200 OK
+INFO:trendoscope2.api.main:Processing Rutube video: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Fetching video info from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Downloading audio directly from: https://rutube.ru/video/ec56b2172a1743077d951c79ac46eee6/
+INFO:trendoscope2.ingest.rutube_processor:Converting audio to Whisper format: C:\Users\erizo\AppData\Local\Temp\rutube_gxinvvxh\audio.wav
+INFO:trendoscope2.ingest.rutube_processor:Audio downloaded: C:\Users\erizo\AppData\Local\Temp\rutube_gxinvvxh\audio_processed.wav, size: 39113628 bytes
+INFO:trendoscope2.nlp.transcriber:Loading Whisper model: base
+INFO:trendoscope2.nlp.transcriber:Whisper model loaded successfully
+INFO:trendoscope2.nlp.transcriber:Detected language: ru (confidence: 98.82%)
+INFO:trendoscope2.nlp.transcriber:Transcribing audio: C:\Users\erizo\AppData\Local\Temp\rutube_gxinvvxh\audio_processed.wav
+INFO:trendoscope2.nlp.transcriber:Audio file size: 39113628 bytes
+C:\Users\erizo\AppData\Roaming\Python\Python313\site-packages\whisper\transcribe.py:132: UserWarning: FP16 is not supported on CPU; using FP32 instead
+  warnings.warn("FP16 is not supported on CPU; using FP32 instead")
+INFO:trendoscope2.services.background_tasks:Background: Fetching news...
+INFO:trendoscope2.ingest.news_sources_async:Fetching from 35 sources asynchronously...
+INFO:httpx:HTTP Request: GET https://ria.ru/export/rss2/archive/index.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://tass.ru/rss/v2.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.theguardian.com/world/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://techcrunch.com/category/artificial-intelligence/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/World.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://vc.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://machinelearningmastery.com/feed/ "HTTP/1.1 403 Forbidden"
+INFO:httpx:HTTP Request: GET https://3dnews.ru/news/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://dtf.ru/rss/all "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/best/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.technologyreview.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss.asp "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://lenta.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.gazeta.ru/export/rss/first.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.vedomosti.ru/rss/news "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.rg.ru/rss.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://feeds.npr.org/1001/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://openai.com/blog/rss.xml "HTTP/1.1 307 Temporary Redirect"
+INFO:httpx:HTTP Request: GET https://www.fontanka.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.theverge.com/ai-artificial-intelligence/rss/index.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.kp.ru/rss/news.xml "HTTP/1.1 404 "
+INFO:httpx:HTTP Request: GET https://rss.nytimes.com/services/xml/rss/nyt/Politics.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.deeplearning.ai/the-batch/feed/ "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/RSS/main.xml "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.mk.ru/rss/news.xml "HTTP/1.1 404 Not Found"
+INFO:httpx:HTTP Request: GET https://roem.ru/feed/ "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.artificialintelligence-news.com/feed/ "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://roem.ru/rss/roem-all-news.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://openai.com/news/rss.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://www.kommersant.ru/rss/main.xml "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top "HTTP/1.1 301 Moved Permanently"
+INFO:httpx:HTTP Request: GET https://www.interfax.ru/rss "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://habr.com/ru/rss/articles/top/ "HTTP/1.1 200 OK"
+INFO:trendoscope2.ingest.news_sources_async:Fetched 60 unique items from 35 sources
+INFO:trendoscope2.services.background_tasks:Background: Fetched 60 news items
+INFO:trendoscope2.nlp.transcriber:Transcription complete. Language: ru, Text length: 15743 characters
+INFO:     127.0.0.1:51915 - "POST /api/rutube/generate HTTP/1.1" 200 OK
