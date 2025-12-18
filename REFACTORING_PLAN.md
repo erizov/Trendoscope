@@ -27,33 +27,33 @@ This document outlines a comprehensive refactoring plan to improve code quality,
 
 ### Priority 1: Critical Issues (Immediate)
 
-#### 1.1 Fix Circular Imports
+#### 1.1 Fix Circular Imports ✅
 **Problem**: Circular dependencies between modules
 **Impact**: High - prevents proper testing and causes runtime issues
 
 **Solution**:
-- [ ] Refactor `core/container.py` to use lazy imports
-- [ ] Move service initialization to factory functions
-- [ ] Use dependency injection more consistently
-- [ ] Break circular dependencies with interfaces
+- [x] Refactor `core/container.py` to use lazy imports
+- [x] Move service initialization to factory functions
+- [x] Use dependency injection more consistently
+- [x] Break circular dependencies with interfaces
 
 **Files to modify**:
-- `src/app/core/container.py`
-- `src/app/services/cache_service.py`
-- `src/app/config.py`
+- `src/app/core/container.py` ✅
+- `src/app/services/cache_service.py` ✅
+- `src/app/config.py` ✅
 
-#### 1.2 Fix Missing Modules
+#### 1.2 Fix Missing Modules ✅
 **Problem**: `app.storage.news_search` module doesn't exist
 **Impact**: High - test failures
 
 **Solution**:
-- [ ] Create `src/app/storage/news_search.py` or
-- [ ] Update test to use correct import path
-- [ ] Implement missing functionality
+- [x] Create `src/app/storage/news_search.py`
+- [x] Update test to use correct import path
+- [x] Implement missing functionality
 
 **Files to modify**:
-- `tests/unit/test_news_search.py`
-- Create or update storage module
+- `tests/unit/test_news_search.py` ✅
+- `src/app/storage/news_search.py` ✅ Created
 
 #### 1.3 Improve Error Handling
 **Problem**: Inconsistent error handling across modules
