@@ -91,4 +91,7 @@ try {
 }
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor G
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "  All services stopped" -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green
+Write-Host ""

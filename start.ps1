@@ -114,7 +114,12 @@ $logFile = Join-Path $logDir "app_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Write-Host "  Log file: $logFile" -ForegroundColor Gray
 Write-Host "  Starting on http://localhost:8004" -ForegroundColor Gray
 
-$process = Start-Process -FilePath $pythonPath -ArgumentList "run.py" -WorkingDirectory $appDir -PassThru -NoNewWindow -RedirectStandardOutput $logFile -RedirectStandardError $logFile
+# Start in new window so we can see output
+$process = Start-Process powershell -ArgumentList @(
+    "-NoExit",
+    "-Command",
+    "cd '$appDir'; `$env:PYTHONPATH='src'; $pythonPath run.py"
+) -PassThru
 
 # Wait a bit for the server to start
 Start-Sleep -Seconds 3
