@@ -131,12 +131,12 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd trendoscope2
+          cd app
           pip install --no-cache-dir -r requirements-minimal.txt
           pip install --no-cache-dir -r requirements.txt
           pip install --no-cache-dir pytest httpx
 
       - name: Run prod docker-compose E2E
         run: |
-          pytest trendoscope2/tests/e2e/test_prod_stack.py -v --tb=short
+          pytest app/tests/e2e/test_prod_stack.py -v --tb=short
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains Docker deployment configurations for Trendoscope2.
+This directory contains Docker deployment configurations for Trendoscope.
 
 ## Architecture
 
@@ -118,3 +118,4 @@ docker-compose up -d
 - Database backups (automated)
 - Volume snapshots
 - Configuration backups
+

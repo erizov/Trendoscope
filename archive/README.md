@@ -17,8 +17,9 @@ Archived: 2025-01-XX
 
 ## Reason for Archive
 
-These folders contain older versions of the application before the major refactoring and enhancement phases. The active development is now in `trendoscope2/`.
+These folders contain older versions of the application before the major refactoring and enhancement phases. The active development is now in `app/`.
 
 ## Note
 
 Do not modify files in this archive. They are kept for reference only.
+

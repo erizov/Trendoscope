@@ -1,4 +1,4 @@
-# Production Dockerfile for Trendoscope2 API
+# Production Dockerfile for Trendoscope API
 FROM python:3.11-slim as builder
 
 WORKDIR /app
@@ -46,3 +46,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Run application
 CMD ["python", "run.py"]
+

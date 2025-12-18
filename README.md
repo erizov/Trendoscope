@@ -43,3 +43,4 @@ See `deploy/docker/README.md` for Docker deployment instructions.
 ## Archive
 
 Legacy versions are stored in `archive/` for reference only.
+

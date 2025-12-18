@@ -9,23 +9,23 @@ This log captures CI/CD steps run with Docker available.
 
 ## Steps Executed
 1) Start Redis (Docker)
-   - `cd trendoscope2`
+   - `cd app`
    - `docker compose -f docker/docker-compose.local.yml up -d redis`
-   - Health: `docker inspect ... trendoscope2-redis` → **healthy**
-   - Health: `docker inspect ... trendoscope2-redis` → **healthy**
+   - Health: `docker inspect ... trendoscope-redis` → **healthy**
+   - Health: `docker inspect ... trendoscope-redis` → **healthy**
 
 2) Start API (local process)
    - `Start-Process python run.py` (pid captured)
    - Health: `curl http://localhost:8004/health` → `{"status":"healthy","redis":"ok","database":"ok"}`
 
 3) Full E2E Test Suite
-   - `cd trendoscope2`
+   - `cd app`
    - `pytest tests/e2e/test_minimal_setup.py -v --tb=short`
    - Result: **10 passed, 0 failed, 0 skipped**
    - Log: `data/logs/e2e_docker_run.log`
 
 4) Teardown
-   - `cd trendoscope2`
+   - `cd app`
    - `docker compose -f docker/docker-compose.local.yml down`
    - `Stop-Process <pid>`
 
@@ -101,18 +101,18 @@ All jobs run automatically on push/PR to `main` or `develop` branches.
 - **E2E tests**  
   - Local (minimal stack, API started separately):  
     - From repo root:  
-      - `cd trendoscope2`  
+      - `cd app`  
       - `pytest tests/e2e/test_minimal_setup.py -v --tb=short`  
   - Local (full production stack from `deploy/docker/docker-compose.prod.yml`):  
     - From repo root (requires Docker and compose):  
-      - `pytest trendoscope2/tests/e2e/test_prod_stack.py -v --tb=short`  
+      - `pytest app/tests/e2e/test_prod_stack.py -v --tb=short`  
   - GitHub Actions (see `.github/workflows/ci.yml`):  
     - Job `e2e-docker`: minimal Docker + API E2E  
     - Job `prod-stack-e2e`: full production `deploy/docker/docker-compose.prod.yml` E2E
 
 - **Logs**  
-  - Application/test logs (local): `trendoscope2/data/logs/`  
-    - E2E Docker run log: `trendoscope2/data/logs/e2e_docker_run.log`  
+  - Application/test logs (local): `app/data/logs/`  
+    - E2E Docker run log: `app/data/logs/e2e_docker_run.log`  
   - Docker container logs (production-style):  
     - API: `docker logs -f deploy-api-1`  
     - Redis: `docker logs -f deploy-redis-1`  

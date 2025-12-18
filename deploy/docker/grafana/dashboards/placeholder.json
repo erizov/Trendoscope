@@ -52,7 +52,7 @@
   "time": { "from": "now-15m", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Trendoscope2 - Placeholder",
+  "title": "Trendoscope - Placeholder",
   "version": 1,
   "weekStart": ""
 }

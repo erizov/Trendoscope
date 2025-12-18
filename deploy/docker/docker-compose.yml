@@ -25,7 +25,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: trendoscope2-redis
+    container_name: trendoscope-redis
     ports:
       - "6379:6379"
     volumes:
@@ -52,3 +52,4 @@ services:
 volumes:
   redis-data:
   # postgres-data:
+
