@@ -1,0 +1,11 @@
+[tool.ruff]
+line-length = 79
+target-version = "py311"
+
+# Keep rules minimal for now; focus on syntax and basic style.
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint]
+preview = false
+
